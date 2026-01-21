@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+    "engine",
+    "games/dev/doomexe",
+    "tools/asset_generator"
+]
+default-members = ["games/dev/doomexe"]
+
+[workspace.dependencies]
+bevy = { version = "0.15", features = ["dynamic_linking"] }
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "1.0"
+mlua = { version = "0.10", features = ["lua54", "vendored", "send"] }
+rand = "0.8"
+
+# Profile for development - faster builds at the cost of runtime performance
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3 # Optimize dependencies even in dev mode

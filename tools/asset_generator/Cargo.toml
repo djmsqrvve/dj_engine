@@ -1,0 +1,8 @@
+[package]
+name = "asset_generator"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+image = "0.24"
+midly = { version = "0.5", features = ["std"] }

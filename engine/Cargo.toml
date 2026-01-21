@@ -1,0 +1,16 @@
+[package]
+name = "dj_engine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = "1.0"
+mlua = { workspace = true }
+midly = { version = "0.5", features = ["std"] }
+rodio = "0.19"
+bevy-inspector-egui = "0.28"
+
+
