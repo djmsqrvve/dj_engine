@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# DJ Engine Helper Script
+# Usage: ./dj [command]
+
+COMMAND=$1
+SHIFT_ARGS="${@:2}"
+
+case $COMMAND in
+    "e" | "editor")
+        echo "🚀 Starting DJ Engine Editor..."
+        cargo run -p dj_engine $SHIFT_ARGS
+        ;;
+    "d" | "doomexe")
+        echo "🎮 Starting DoomExe (Legacy Mode)..."
+        cargo run -p doomexe $SHIFT_ARGS
+        ;;
+    "t" | "test")
+        echo "🧪 Running DJ Engine Tests..."
+        cargo test --workspace $SHIFT_ARGS
+        ;;
+    "g" | "gen")
+        echo "🛠 Running Asset Generator..."
+        cargo run -p asset_generator $SHIFT_ARGS
+        ;;
+    *)
+        echo "DJ Engine CLI API"
+        echo "Usage: ./dj [command]"
+        echo ""
+        echo "Commands:"
+        echo "  e, editor   - Launch the DJ Engine Editor"
+        echo "  d, doomexe  - Run the DoomExe game binary"
+        echo "  t, test     - Run all workspace tests"
+        echo "  g, gen      - Run the asset generator"
+        echo ""
+        ;;
+esac
