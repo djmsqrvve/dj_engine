@@ -91,6 +91,7 @@ fn update_diagnostics_system(
     mut query: Query<(&mut Text, &mut TextColor), With<DiagnosticText>>,
     entities: Query<Entity>,
     executor: Option<Res<GraphExecutor>>,
+    windows: Query<&Window>,
 ) {
     if !config.enabled {
         return;
@@ -117,13 +118,19 @@ fn update_diagnostics_system(
         "No Executor".to_string()
     };
 
+    let (width, height) = if let Ok(window) = windows.get_single() {
+        (window.width() as i32, window.height() as i32)
+    } else {
+        (0, 0)
+    };
+
     if let Ok((mut text, mut color)) = query.get_single_mut() {
         let fps_text = fps.map_or("N/A".to_string(), |v| format!("{:.1}", v));
         let ms_text = frame_time.map_or("N/A".to_string(), |v| format!("{:.2}", v));
 
         text.0 = format!(
-            "FPS: {}\nFrame Time: {}ms\nEntities: {}\nStoryStatus: {}", 
-            fps_text, ms_text, entity_count, story_status
+            "FPS: {}\nFrame Time: {}ms\nEntities: {}\nStoryStatus: {}\nWindow: {}x{}", 
+            fps_text, ms_text, entity_count, story_status, width, height
         );
         
         // Color coding based on performance
@@ -145,14 +152,21 @@ fn console_fps_logger_system(
     time: Res<Time>,
     diagnostics: Res<DiagnosticsStore>,
     mut last_log: Local<f32>,
+    windows: Query<&Window>,
 ) {
     if time.elapsed_secs() - *last_log > 5.0 {
-        if let Some(fps) = diagnostics
+        let fps = diagnostics
             .get(&FrameTimeDiagnosticsPlugin::FPS)
             .and_then(|diag| diag.smoothed())
-        {
-            info!("Diagnostic FPS: {:.1}", fps);
-        }
+            .unwrap_or(0.0);
+            
+        let (w, h) = if let Ok(window) = windows.get_single() {
+            (window.width() as i32, window.height() as i32)
+        } else {
+            (0, 0)
+        };
+        
+        info!("Performance: {:.1} FPS | Window: {}x{}", fps, w, h);
         *last_log = time.elapsed_secs();
     }
 }
