@@ -13,9 +13,14 @@ pub use ffi::{
     SharedGenericState,
 };
 
+/// Events for script control.
+#[derive(Event, Debug, Clone, Reflect)]
+pub enum ScriptCommand {
+    /// Load and execute a Lua script from file
+    Load { path: String },
+}
+
 /// Scripting plugin that provides the Lua runtime.
-/// Note: This plugin only sets up the Lua context and core APIs.
-/// Games should register their own APIs and sync systems.
 pub struct DJScriptingPlugin;
 
 impl Plugin for DJScriptingPlugin {
@@ -30,8 +35,35 @@ impl Plugin for DJScriptingPlugin {
             }
         }
 
-        app.insert_resource(lua_ctx);
+        app.insert_resource(lua_ctx)
+            .register_type::<ScriptCommand>()
+            .add_event::<ScriptCommand>()
+            .add_systems(Update, handle_script_commands);
 
         info!("DJ Scripting Plugin initialized");
+    }
+}
+
+/// System that processes script commands.
+fn handle_script_commands(
+    lua_ctx: Res<LuaContext>,
+    mut events: EventReader<ScriptCommand>,
+) {
+    for event in events.read() {
+        match event {
+            ScriptCommand::Load { path } => {
+                info!("Scripting: Loading script from {}", path);
+                let lua = lua_ctx.lua.lock().unwrap();
+                
+                let result: mlua::Result<()> = (|| {
+                    let script = std::fs::read_to_string(path)?;
+                    lua.load(&script).exec()
+                })();
+
+                if let Err(e) = result {
+                    error!("Failed to execute script {}: {}", path, e);
+                }
+            }
+        }
     }
 }

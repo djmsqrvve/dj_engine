@@ -27,6 +27,8 @@ pub mod story_graph;
 pub mod midi;
 pub mod types;
 
+pub mod editor;
+
 /// Prelude module for convenient imports
 pub mod prelude {
     // Core engine plugin
