@@ -26,7 +26,8 @@ impl Plugin for DiagnosticsPlugin {
                 update_diagnostics_system.run_if(resource_exists::<DiagnosticConfig>),
                 console_fps_logger_system.run_if(resource_exists::<DiagnosticConfig>),
             ))
-            .add_plugins(inspector::InspectorPlugin)
+            // Disabled temporarily due to WSL2/LLVMpipe compatibility issues (incompatible window kind panic)
+            // .add_plugins(inspector::InspectorPlugin)
             .add_plugins(console::ConsolePlugin);
     }
 }
