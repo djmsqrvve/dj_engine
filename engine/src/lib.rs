@@ -18,6 +18,7 @@ pub mod animation;
 pub mod assets;
 pub mod audio;
 pub mod core;
+pub mod data;
 pub mod diagnostics;
 pub mod input;
 pub mod rendering;
@@ -47,6 +48,17 @@ pub mod prelude {
 
     // Engine types
     pub use crate::types::*;
+
+    // Data model types (for editor and runtime)
+    pub use crate::data::{
+        Project, ProjectSettings, EditorPreferences,
+        Scene, Layer, Entity, SceneType, EntityType,
+        Database, ItemRow, NpcRow, TowerRow, EnemyRow, LootTableRow, QuestRow,
+        AssetIndex, Prefab,
+        StoryGraphData, StoryNodeData, StoryNodeType,
+        load_project, load_scene, load_database, load_story_graph, DataError,
+    };
+    pub use crate::data::spawner::{LoadedScene, SceneDataPlugin};
 
     // Re-export commonly used rendering items
     pub use crate::rendering::{MainCamera, GAME_HEIGHT, GAME_WIDTH};

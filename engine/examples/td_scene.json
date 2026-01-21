@@ -1,0 +1,159 @@
+{
+  "id": "td_map_01",
+  "name": "Forest Defense - TD Demo",
+  "scene_type": "td",
+  "size_tiles": { "width": 25, "height": 18 },
+  "tile_size": { "width": 32, "height": 32 },
+  "background_color": { "r": 0.15, "g": 0.2, "b": 0.1, "a": 1.0 },
+  "default_spawn": {
+    "player": { "x": 0.0, "y": 0.0, "z": 0.0 },
+    "camera": { "x": 400.0, "y": 288.0, "z": 0.0 }
+  },
+  "audio": {
+    "music_track_id": "bgm_battle",
+    "loop_music": true
+  },
+  "layers": [
+    { "id": "ground", "name": "Ground", "order": 0, "visible": true, "locked": true },
+    { "id": "path", "name": "Enemy Path", "order": 5, "visible": true, "locked": false },
+    { "id": "towers", "name": "Towers", "order": 10, "visible": true, "locked": false },
+    { "id": "spawners", "name": "Spawners", "order": 15, "visible": true, "locked": false }
+  ],
+  "entities": [
+    {
+      "id": "tower_gun_01",
+      "name": "Gun Turret",
+      "entity_type": "tower",
+      "layer_id": "towers",
+      "components": {
+        "transform": {
+          "position": { "x": 200.0, "y": 300.0, "z": 0.0 },
+          "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+        },
+        "sprite": {
+          "sprite_id": "sprites/tower_gun.png",
+          "sorting_layer": "towers",
+          "sorting_order": 0
+        },
+        "tower": {
+          "tower_id": "tower_gun",
+          "damage": 25,
+          "range": 200.0,
+          "cooldown": 1.5,
+          "build_cost": 100,
+          "build_time": 0.0,
+          "targeting_mode": "first",
+          "projectile_id": "projectile_bullet"
+        }
+      }
+    },
+    {
+      "id": "tower_slow_01",
+      "name": "Slow Field",
+      "entity_type": "tower",
+      "layer_id": "towers",
+      "components": {
+        "transform": {
+          "position": { "x": 350.0, "y": 250.0, "z": 0.0 },
+          "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+        },
+        "sprite": {
+          "sprite_id": "sprites/tower_slow.png",
+          "sorting_layer": "towers",
+          "sorting_order": 0
+        },
+        "tower": {
+          "tower_id": "tower_slow",
+          "damage": 0,
+          "range": 150.0,
+          "cooldown": 0.5,
+          "build_cost": 80,
+          "targeting_mode": "closest",
+          "effect_id": "effect_slow"
+        }
+      }
+    },
+    {
+      "id": "spawner_main",
+      "name": "Enemy Spawner",
+      "entity_type": "spawner",
+      "layer_id": "spawners",
+      "components": {
+        "transform": {
+          "position": { "x": 50.0, "y": 288.0, "z": 0.0 },
+          "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+        },
+        "sprite": {
+          "sprite_id": "sprites/spawner_portal.png",
+          "sorting_layer": "spawners",
+          "sorting_order": 0,
+          "animation": {
+            "clip_id": "anim_portal_swirl",
+            "speed": 1.0,
+            "loop_anim": true
+          }
+        },
+        "spawner": {
+          "wave_count": 5,
+          "spawn_interval": 2.0,
+          "start_delay": 3.0,
+          "loop_waves": false,
+          "waves": [
+            { "enemy_template_id": "goblin_01", "count": 5, "interval": 1.0 },
+            { "enemy_template_id": "goblin_01", "count": 8, "interval": 0.8 },
+            { "enemy_template_id": "orc_01", "count": 3, "interval": 1.5 },
+            { "enemy_template_id": "orc_01", "count": 5, "interval": 1.0 },
+            { "enemy_template_id": "boss_troll", "count": 1, "interval": 0.0 }
+          ],
+          "path_id": "path_main"
+        }
+      }
+    },
+    {
+      "id": "goal_zone",
+      "name": "Defend Zone",
+      "entity_type": "trigger",
+      "layer_id": "ground",
+      "components": {
+        "transform": {
+          "position": { "x": 750.0, "y": 288.0, "z": 0.0 },
+          "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+        },
+        "collision": {
+          "enabled": true,
+          "body_type": "static",
+          "shape": "box",
+          "box_size": { "x": 64.0, "y": 200.0, "z": 0.0 },
+          "is_trigger": true
+        },
+        "interactivity": {
+          "trigger_type": "custom",
+          "trigger_id": "goal_reached",
+          "events": {
+            "on_enter": "enemy_reached_goal"
+          }
+        }
+      }
+    }
+  ],
+  "pathfinding": {
+    "enabled": true,
+    "grid": {
+      "width": 25,
+      "height": 18,
+      "cells": [
+        { "x": 0, "y": 9, "walkable": true, "buildable": false },
+        { "x": 1, "y": 9, "walkable": true, "buildable": false },
+        { "x": 2, "y": 9, "walkable": true, "buildable": false },
+        { "x": 3, "y": 9, "walkable": true, "buildable": false },
+        { "x": 4, "y": 9, "walkable": true, "buildable": false },
+        { "x": 5, "y": 8, "walkable": true, "buildable": false },
+        { "x": 6, "y": 7, "walkable": true, "buildable": false },
+        { "x": 7, "y": 7, "walkable": true, "buildable": false },
+        { "x": 8, "y": 8, "walkable": true, "buildable": false },
+        { "x": 9, "y": 9, "walkable": true, "buildable": false },
+        { "x": 10, "y": 9, "walkable": true, "buildable": false }
+      ]
+    }
+  }
+}

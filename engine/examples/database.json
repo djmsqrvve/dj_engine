@@ -1,0 +1,191 @@
+{
+  "items": [
+    {
+      "id": "sword_01",
+      "name": { "en": "Iron Sword", "jp": "鉄の剣" },
+      "item_type": "weapon",
+      "damage": 15,
+      "defense": 0,
+      "heal_amount": 0,
+      "price": 50,
+      "sell_value": 25,
+      "max_stack": 1,
+      "rarity": "common",
+      "sprite_id": "sprites/item_sword.png",
+      "description": { "en": "A sturdy iron sword. Nothing fancy, but gets the job done.", "jp": "頑丈な鉄の剣。派手ではないが、仕事はこなせる。" }
+    },
+    {
+      "id": "potion_hp",
+      "name": { "en": "Health Potion", "jp": "回復薬" },
+      "item_type": "potion",
+      "damage": 0,
+      "defense": 0,
+      "heal_amount": 50,
+      "price": 25,
+      "sell_value": 10,
+      "max_stack": 99,
+      "rarity": "common",
+      "sprite_id": "sprites/item_potion_red.png",
+      "description": { "en": "Restores 50 HP when consumed.", "jp": "使用時に50HPを回復。" },
+      "scripts": {
+        "on_use": "use_health_potion"
+      }
+    },
+    {
+      "id": "gold",
+      "name": { "en": "Gold", "jp": "ゴールド" },
+      "item_type": "currency",
+      "max_stack": 999999,
+      "rarity": "common",
+      "sprite_id": "sprites/item_gold.png",
+      "description": { "en": "The universal currency.", "jp": "普遍的な通貨。" }
+    },
+    {
+      "id": "rare_amulet",
+      "name": { "en": "Amulet of Protection", "jp": "守護のアミュレット" },
+      "item_type": "armor",
+      "defense": 10,
+      "price": 500,
+      "sell_value": 200,
+      "max_stack": 1,
+      "rarity": "rare",
+      "sprite_id": "sprites/item_amulet.png",
+      "description": { "en": "A magical amulet that provides protection from harm.", "jp": "害から守る魔法のアミュレット。" }
+    }
+  ],
+  "npcs": [
+    {
+      "id": "merchant_01",
+      "name": { "en": "Merchant", "jp": "商人" },
+      "dialogue_set_id": "dialogue_merchant",
+      "location_tags": ["town", "shop"],
+      "default_faction": "neutral",
+      "default_quest_ids": ["quest_fetch_herbs"],
+      "portrait_id": "portrait_merchant_neutral"
+    },
+    {
+      "id": "guard_01",
+      "name": { "en": "Town Guard", "jp": "町の衛兵" },
+      "dialogue_set_id": "dialogue_guard",
+      "location_tags": ["town", "gate"],
+      "default_faction": "town",
+      "portrait_id": "portrait_guard"
+    }
+  ],
+  "towers": [
+    {
+      "id": "tower_gun",
+      "name": { "en": "Gun Turret", "jp": "ガンタレット" },
+      "damage": 25,
+      "range": 200.0,
+      "cooldown": 1.5,
+      "cost": 100,
+      "build_time": 0.0,
+      "upgrade_to_id": "tower_gun_mk2",
+      "projectile_id": "projectile_bullet",
+      "description": { "en": "A basic turret that fires bullets at enemies.", "jp": "敵に弾丸を発射する基本的なタレット。" }
+    },
+    {
+      "id": "tower_slow",
+      "name": { "en": "Slow Field", "jp": "スローフィールド" },
+      "damage": 0,
+      "range": 150.0,
+      "cooldown": 0.5,
+      "cost": 80,
+      "effect_id": "effect_slow",
+      "description": { "en": "Slows enemies in range. Does not deal damage.", "jp": "範囲内の敵を遅くする。ダメージは与えない。" }
+    },
+    {
+      "id": "tower_bomb",
+      "name": { "en": "Bomb Tower", "jp": "ボムタワー" },
+      "damage": 50,
+      "range": 150.0,
+      "cooldown": 3.0,
+      "cost": 200,
+      "projectile_id": "projectile_bomb",
+      "effect_id": "effect_explosion",
+      "description": { "en": "Deals heavy area damage with explosive projectiles.", "jp": "爆発性の投射物で広範囲に大ダメージ。" }
+    }
+  ],
+  "enemies": [
+    {
+      "id": "goblin_01",
+      "name": { "en": "Goblin", "jp": "ゴブリン" },
+      "hp": 50,
+      "damage": 5,
+      "speed": 80.0,
+      "experience": 25,
+      "loot_table_id": "loot_goblin",
+      "behavior_profile_id": "basic_melee"
+    },
+    {
+      "id": "orc_01",
+      "name": { "en": "Orc Warrior", "jp": "オーク戦士" },
+      "hp": 120,
+      "damage": 15,
+      "speed": 60.0,
+      "experience": 75,
+      "loot_table_id": "loot_orc",
+      "behavior_profile_id": "aggressive_melee"
+    },
+    {
+      "id": "boss_troll",
+      "name": { "en": "Forest Troll", "jp": "森のトロル" },
+      "hp": 500,
+      "damage": 30,
+      "speed": 40.0,
+      "experience": 500,
+      "loot_table_id": "loot_boss",
+      "behavior_profile_id": "boss_slow"
+    }
+  ],
+  "loot_tables": [
+    {
+      "id": "loot_common",
+      "entries": [
+        { "item_id": "gold", "chance": 1.0, "min_quantity": 5, "max_quantity": 15 },
+        { "item_id": "potion_hp", "chance": 0.3, "min_quantity": 1, "max_quantity": 1 }
+      ]
+    },
+    {
+      "id": "loot_goblin",
+      "entries": [
+        { "item_id": "gold", "chance": 0.8, "min_quantity": 1, "max_quantity": 10 },
+        { "item_id": "potion_hp", "chance": 0.1, "min_quantity": 1, "max_quantity": 1 }
+      ]
+    },
+    {
+      "id": "loot_orc",
+      "entries": [
+        { "item_id": "gold", "chance": 0.9, "min_quantity": 10, "max_quantity": 25 },
+        { "item_id": "sword_01", "chance": 0.05, "min_quantity": 1, "max_quantity": 1 }
+      ]
+    },
+    {
+      "id": "loot_boss",
+      "entries": [
+        { "item_id": "gold", "chance": 1.0, "min_quantity": 100, "max_quantity": 200 },
+        { "item_id": "rare_amulet", "chance": 0.5, "min_quantity": 1, "max_quantity": 1 }
+      ]
+    }
+  ],
+  "quests": [
+    {
+      "id": "quest_fetch_herbs",
+      "name": { "en": "Lost Herbs", "jp": "失われた薬草" },
+      "description": { "en": "Find the merchant's lost herb delivery in the forest.", "jp": "森で商人が失くした薬草の配達を見つける。" },
+      "start_conditions": [],
+      "completion_conditions": [
+        { "type": "has_item", "item_id": "quest_herbs", "quantity": 1 }
+      ],
+      "rewards": {
+        "gold": 100,
+        "experience": 50,
+        "item_rewards": [
+          { "item_id": "potion_hp", "quantity": 3 }
+        ],
+        "flags": { "quest_fetch_herbs_complete": true }
+      }
+    }
+  ]
+}

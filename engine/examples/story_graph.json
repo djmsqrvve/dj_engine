@@ -1,0 +1,154 @@
+{
+  "id": "intro_dialogue",
+  "name": "Introduction Sequence",
+  "description": "Opening dialogue when player first meets the merchant",
+  "graph_type": "dialogue",
+  "root_node_id": "start",
+  "variables": {
+    "has_met_merchant": false,
+    "accepted_quest": false
+  },
+  "nodes": [
+    {
+      "id": "start",
+      "position": { "x": 100.0, "y": 100.0, "z": 0.0 },
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "merchant_01",
+        "portrait_id": "portrait_merchant_neutral",
+        "text": { "en": "Greetings, traveler! I haven't seen you around these parts before.", "jp": "こんにちは、旅人さん！この辺りで見かけたことはありませんね。" },
+        "voice_line_id": "voice_merchant_greet",
+        "duration": null,
+        "next_node_id": "choice_intro"
+      }
+    },
+    {
+      "id": "choice_intro",
+      "position": { "x": 300.0, "y": 100.0, "z": 0.0 },
+      "data": {
+        "type": "choice",
+        "prompt": { "en": "How do you respond?" },
+        "options": [
+          {
+            "id": "opt_friendly",
+            "text": { "en": "I'm new here. What can you tell me about this place?", "jp": "ここは初めてです。この場所について教えてください。" },
+            "target_node_id": "friendly_response",
+            "conditions": [],
+            "effects": []
+          },
+          {
+            "id": "opt_business",
+            "text": { "en": "Skip the pleasantries. What are you selling?", "jp": "挨拶は抜きにして、何を売っていますか？" },
+            "target_node_id": "business_response",
+            "conditions": [],
+            "effects": []
+          },
+          {
+            "id": "opt_quest",
+            "text": { "en": "Do you need any help with something?", "jp": "何かお手伝いできることはありますか？" },
+            "target_node_id": "quest_offer",
+            "conditions": [],
+            "effects": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "friendly_response",
+      "position": { "x": 500.0, "y": 50.0, "z": 0.0 },
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "merchant_01",
+        "portrait_id": "portrait_merchant_happy",
+        "text": { "en": "Ah, a curious one! This is the Town Square, the heart of our little village. You'll find all sorts of folks here.", "jp": "おお、好奇心旺盛ですね！ここは町の広場、私たちの小さな村の中心です。" },
+        "next_node_id": "set_met_flag"
+      }
+    },
+    {
+      "id": "business_response",
+      "position": { "x": 500.0, "y": 150.0, "z": 0.0 },
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "merchant_01",
+        "portrait_id": "portrait_merchant_neutral",
+        "text": { "en": "Straight to business, I like that! I've got potions, weapons, and all sorts of adventuring gear.", "jp": "仕事の話、いいですね！ポーション、武器、冒険用品、何でもありますよ。" },
+        "next_node_id": "set_met_flag"
+      }
+    },
+    {
+      "id": "quest_offer",
+      "position": { "x": 500.0, "y": 250.0, "z": 0.0 },
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "merchant_01",
+        "portrait_id": "portrait_merchant_worried",
+        "text": { "en": "Actually... yes! I've lost my delivery of herbs somewhere in the forest. Would you be willing to find them for me?", "jp": "実は…そうなんです！森のどこかで薬草の配達を失くしてしまって。探してもらえますか？" },
+        "next_node_id": "quest_choice"
+      }
+    },
+    {
+      "id": "quest_choice",
+      "position": { "x": 700.0, "y": 250.0, "z": 0.0 },
+      "data": {
+        "type": "choice",
+        "prompt": {},
+        "options": [
+          {
+            "id": "accept_quest",
+            "text": { "en": "I'll help you find them.", "jp": "探すのを手伝います。" },
+            "target_node_id": "quest_accepted",
+            "effects": [
+              { "type": "set_var", "params": { "variable": "accepted_quest", "value": true } },
+              { "type": "set_quest_state", "params": { "quest_id": "quest_fetch_herbs", "state": "active" } }
+            ]
+          },
+          {
+            "id": "decline_quest",
+            "text": { "en": "Sorry, I'm busy right now.", "jp": "すみません、今は忙しいです。" },
+            "target_node_id": "quest_declined"
+          }
+        ]
+      }
+    },
+    {
+      "id": "quest_accepted",
+      "position": { "x": 900.0, "y": 200.0, "z": 0.0 },
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "merchant_01",
+        "portrait_id": "portrait_merchant_happy",
+        "text": { "en": "Thank you so much! The herbs should be somewhere near the old oak tree in the forest. I'll reward you handsomely!", "jp": "ありがとうございます！薬草は森の古い樫の木の近くにあるはずです。たっぷりお礼しますよ！" },
+        "next_node_id": "end_success"
+      }
+    },
+    {
+      "id": "quest_declined",
+      "position": { "x": 900.0, "y": 300.0, "z": 0.0 },
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "merchant_01",
+        "portrait_id": "portrait_merchant_sad",
+        "text": { "en": "I understand. If you change your mind, you know where to find me.", "jp": "わかりました。気が変わったら、私はここにいますよ。" },
+        "next_node_id": "set_met_flag"
+      }
+    },
+    {
+      "id": "set_met_flag",
+      "position": { "x": 700.0, "y": 100.0, "z": 0.0 },
+      "data": {
+        "type": "action",
+        "lua_script_id": "set_flag",
+        "params": { "flag": "has_met_merchant", "value": true },
+        "next_node_id": "end_success"
+      }
+    },
+    {
+      "id": "end_success",
+      "position": { "x": 1100.0, "y": 200.0, "z": 0.0 },
+      "data": {
+        "type": "end",
+        "end_type": "return_to_gameplay"
+      }
+    }
+  ]
+}

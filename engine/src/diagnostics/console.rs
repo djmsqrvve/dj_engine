@@ -6,6 +6,23 @@ use crate::story_graph::GraphExecutor;
 #[derive(Resource)]
 struct ConsoleReceiver(Arc<Mutex<Receiver<String>>>);
 
+/// Resource storing log messages for the Editor UI.
+#[derive(Resource, Default, Clone)]
+pub struct ConsoleLogStore {
+    pub logs: Vec<String>,
+}
+
+impl ConsoleLogStore {
+    pub fn log(&mut self, message: String) {
+        let timestamp = chrono::Local::now().format("%H:%M:%S");
+        self.logs.push(format!("[{}] {}", timestamp, message));
+        // Keep only last 100 logs
+        if self.logs.len() > 100 {
+            self.logs.remove(0);
+        }
+    }
+}
+
 /// Event fired when a CLI command is entered.
 #[derive(Event)]
 pub struct ConsoleCommandEvent(pub String);
@@ -40,6 +57,7 @@ impl Plugin for ConsolePlugin {
         });
 
         app.insert_resource(ConsoleReceiver(Arc::new(Mutex::new(rx))))
+            .init_resource::<ConsoleLogStore>()
             .add_event::<ConsoleCommandEvent>()
             .add_systems(Update, listen_for_console_input)
             .add_systems(Update, handle_console_commands);

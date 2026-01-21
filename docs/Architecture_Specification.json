@@ -1,0 +1,468 @@
+{
+  "project": {
+    "name": "dj_engine",
+    "version": "0.1.0",
+    "description": "Unified Bevy game engine for JRPG (DoomExe) and RTS (RTS-TBD)",
+    "year": 2026,
+    "status": "pre_implementation",
+    "estimated_mvp_weeks": 20,
+    "team_size": "1-5 developers"
+  },
+  
+  "core_architecture": {
+    "paradigm": "Entity Component System (ECS)",
+    "framework": "Bevy 0.15",
+    "language": "Rust",
+    "scripting": "Lua 5.4 (via mlua)",
+    "editor": "Egui + custom node editor"
+  },
+  
+  "shared_systems": [
+    {
+      "name": "Universal Unit System",
+      "priority": "high",
+      "phase": 3,
+      "components": [
+        "Actor (base)",
+        "Stats (HP, Mana, Abilities)",
+        "Inventory",
+        "AnimationState",
+        "Transform (Bevy built-in)",
+        "GlobalTransform (Bevy built-in)",
+        "Visibility (Bevy built-in)"
+      ],
+      "jrpg_additions": [
+        "DirectInput (keyboard/gamepad)",
+        "PartyLeader (manage party members)",
+        "PartyMember (track leader)"
+      ],
+      "rts_additions": [
+        "RTSUnit (selection, UI)",
+        "PathfindingAgent (movement)",
+        "AutoAttack (combat)"
+      ],
+      "reuse_percentage": 95
+    },
+    
+    {
+      "name": "Story Graph / Visual Novel System",
+      "priority": "critical",
+      "phase": 1,
+      "components": [
+        "StoryGraph (Resource)",
+        "StoryNode (Component)",
+        "StoryDirector (Component)"
+      ],
+      "node_types": [
+        "Dialogue",
+        "Choice",
+        "Action (Lua execution)",
+        "Conditional",
+        "CameraTransition",
+        "TimeControl",
+        "End"
+      ],
+      "serialization": "JSON (serde)",
+      "reuse_percentage": 100
+    },
+    
+    {
+      "name": "Director / Event Sequencing System",
+      "priority": "high",
+      "phase": 2,
+      "commands": [
+        "CameraTransition",
+        "PlayAnimation",
+        "ShowUI",
+        "ExecuteLua",
+        "Delay",
+        "WaitFor",
+        "TimeControl",
+        "Branch"
+      ],
+      "serialization": "JSON (serde)",
+      "reuse_percentage": 100
+    },
+    
+    {
+      "name": "Lua Integration Layer",
+      "priority": "high",
+      "phase": 4,
+      "api_functions": [
+        "unit:move_to(x, y)",
+        "unit:play_animation(animation_id)",
+        "unit:cast_spell(spell_id, target_id)",
+        "unit:take_damage(amount)",
+        "unit:add_item(item_id)",
+        "party:add_member(unit_id)",
+        "trigger_dialogue(scene_id)",
+        "director:play_sequence(sequence_json)",
+        "camera:transition_to_unit(unit_id, duration)",
+        "get_unit(unit_id) -> Unit"
+      ],
+      "binding_library": "mlua 0.9",
+      "reuse_percentage": 100
+    },
+    
+    {
+      "name": "Camera System",
+      "priority": "medium",
+      "phase": 2,
+      "modes": [
+        {
+          "name": "RPGFollowHero",
+          "follow_target": "u64 (Actor ID)",
+          "distance_behind": "f32",
+          "look_ahead_offset": "f32",
+          "used_by": "DoomExe"
+        },
+        {
+          "name": "RTSGodView",
+          "center": "[f32; 3]",
+          "zoom": "f32",
+          "used_by": "RTS-TBD"
+        },
+        {
+          "name": "FixedCutscene",
+          "position": "[f32; 3]",
+          "look_at": "[f32; 3]",
+          "used_by": "Both (during dialogue/cutscenes)"
+        }
+      ],
+      "reuse_percentage": 100
+    }
+  ],
+  
+  "phase_breakdown": {
+    "phase_1": {
+      "name": "Story Graph Foundation",
+      "weeks": "1-4",
+      "deliverables": [
+        "StoryNode ECS component",
+        "StoryGraph resource + JSON serialization",
+        "story_advancement_system",
+        "Story Graph UI rendering (dialogue, choices)",
+        "Basic Lua trigger: trigger_dialogue(scene_id)"
+      ],
+      "dependencies": "None (can run standalone)"
+    },
+    
+    "phase_2": {
+      "name": "Director System",
+      "weeks": "5-8",
+      "deliverables": [
+        "DirectorCommand enum and Director component",
+        "director_system implementation",
+        "CameraTransition logic (RPG <-> RTS <-> Cutscene)",
+        "TimeControl integration (pause/resume world)",
+        "Complex 5+ minute cutscene test"
+      ],
+      "dependencies": "Phase 1"
+    },
+    
+    "phase_3": {
+      "name": "Universal Unit Archetype",
+      "weeks": "9-12",
+      "deliverables": [
+        "Actor, Stats, AbilitySet, Inventory components",
+        "JRPG layer: DirectInput + PartyLeader",
+        "RTS layer: RTSUnit + Pathfinding + AutoAttack",
+        "Cross-game unit testing (same unit in both engines)",
+        "Query optimization with without() filters"
+      ],
+      "dependencies": "Phase 2"
+    },
+    
+    "phase_4": {
+      "name": "Lua API Standardization",
+      "weeks": "13-16",
+      "deliverables": [
+        "10 core Lua functions (unit:*, party:*, trigger_*, camera:*)",
+        "mlua bindings + error handling",
+        "Unit spawning/despawning via Lua",
+        "Lua <-> Bevy type marshalling",
+        "Same script runs in both DoomExe and RTS"
+      ],
+      "dependencies": "Phase 3"
+    },
+    
+    "phase_5": {
+      "name": "Editor Enhancements",
+      "weeks": "17-20",
+      "deliverables": [
+        "Story Graph Visual Editor (drag-drop nodes, live preview)",
+        "Story Variable Inspector (define vars, track dependencies)",
+        "Story Asset Manager (localization, voice lines, versioning)",
+        "Egui-based node creation UI",
+        "Export story graphs to JSON for version control"
+      ],
+      "dependencies": "Phase 1-2"
+    }
+  },
+  
+  "critical_decisions": {
+    "time_management": {
+      "question": "Should game world pause during dialogue?",
+      "answer": "Yes, but with layered control",
+      "implementation": {
+        "global_pause": "Pauses JRPG gameplay + RTS pathfinding during cutscenes",
+        "exception": "Can enable layer-based time scales for specific systems",
+        "resource": "GameTimeScale { global: f32, ui_layer: f32, combat_layer: f32 }"
+      }
+    },
+    
+    "lua_unit_api": {
+      "question": "How to standardize unit behavior across JRPG and RTS?",
+      "answer": "Single Lua API; internal systems handle game-specific logic",
+      "example": "unit:move_to(x, y) → JRPG uses direct control, RTS uses pathfinding"
+    },
+    
+    "story_graph_execution": {
+      "question": "Story Graph vs Director—which owns the sequence?",
+      "answer": "Story Graph defines WHAT; Director handles HOW and WHEN",
+      "flow": "story_node → director_command → system_execution"
+    },
+    
+    "component_bloat": {
+      "question": "How to avoid 20-component monolithic Unit?",
+      "answer": "Use Bevy 0.15 Required Components + selective composition",
+      "rule": "Base unit has 4-5 components; games add 2-3 each via Optional marker components"
+    }
+  },
+  
+  "dependencies": {
+    "core": [
+      {
+        "name": "bevy",
+        "version": "0.15",
+        "features": ["dynamic_linking", "bevy_picking"]
+      },
+      {
+        "name": "mlua",
+        "version": "0.9",
+        "features": ["lua54", "serde"]
+      },
+      {
+        "name": "serde_json",
+        "version": "1.0"
+      }
+    ],
+    
+    "optional": [
+      {
+        "name": "bevy_rapier3d",
+        "version": "0.28",
+        "purpose": "Physics/pathfinding (RTS)"
+      },
+      {
+        "name": "bevy_inspector_egui",
+        "version": "latest",
+        "purpose": "Runtime entity inspector"
+      },
+      {
+        "name": "bevy_framepace",
+        "version": "latest",
+        "purpose": "Performance profiling"
+      }
+    ]
+  },
+  
+  "file_structure": {
+    "src": {
+      "main.rs": "Entry point, plugin registration",
+      "lib.rs": "Public API exports",
+      
+      "components": {
+        "actor.rs": "Actor, Stats, AnimationState",
+        "story.rs": "StoryNode, StoryGraph, StoryDirector",
+        "director.rs": "Director, DirectorCommand",
+        "inventory.rs": "Inventory, InventoryItem",
+        "mod.rs": "Module exports"
+      },
+      
+      "systems": {
+        "story": {
+          "advancement.rs": "story_advancement_system",
+          "choice_selection.rs": "handle_choice_selected_event",
+          "mod.rs": "System exports"
+        },
+        
+        "director": {
+          "execution.rs": "director_system",
+          "camera.rs": "camera_transition_system",
+          "time.rs": "time_control_system",
+          "mod.rs": "System exports"
+        },
+        
+        "actor": {
+          "movement.rs": "JRPG input + RTS pathfinding",
+          "combat.rs": "spell casting, auto-attack",
+          "animation.rs": "animation state transitions",
+          "mod.rs": "System exports"
+        }
+      },
+      
+      "resources": {
+        "story_assets.rs": "Story graph asset loading",
+        "lua_context.rs": "Shared Lua VM",
+        "mod.rs": "Resource exports"
+      },
+      
+      "lua": {
+        "bindings.rs": "mlua table/function definitions",
+        "unit_api.rs": "unit:* functions",
+        "party_api.rs": "party:* functions",
+        "world_api.rs": "trigger_dialogue, camera:* functions",
+        "mod.rs": "Lua layer exports"
+      }
+    },
+    
+    "assets": {
+      "story_graphs": {
+        "intro.json": "Opening cutscene (shared)",
+        "mission_01.json": "Mission briefing (shared)",
+        "battle_start.json": "Combat intro (shared)"
+      },
+      
+      "lua": {
+        "doomexe_init.lua": "JRPG game scripts",
+        "rts_init.lua": "RTS game scripts"
+      },
+      
+      "sprites": {
+        "hero.png": "Hero sprite sheet",
+        "ui_dialog.png": "Dialogue UI elements"
+      }
+    },
+    
+    "editor": {
+      "story_graph_editor.rs": "Bevy Egui story graph visual editor",
+      "variable_inspector.rs": "Story variable inspector",
+      "asset_manager.rs": "Story asset management UI"
+    },
+    
+    "tests": {
+      "story_advancement_test.rs": "Story graph traversal tests",
+      "director_test.rs": "Event sequencing tests",
+      "lua_binding_test.rs": "Lua API tests"
+    }
+  },
+  
+  "testing_strategy": {
+    "unit_tests": {
+      "story_graph": "Test node transitions, branching, merging",
+      "director": "Test command sequencing, timing, state management",
+      "lua_bindings": "Test type marshalling, error handling"
+    },
+    
+    "integration_tests": {
+      "full_cutscene": "5+ minute sequence: camera → dialogue → Lua action",
+      "cross_game": "Spawn unit in DoomExe, verify identical behavior in RTS",
+      "story_execution": "Execute story graph with 10+ branches"
+    },
+    
+    "performance_tests": {
+      "story_load": "< 100ms to load 50 story graphs",
+      "dialogue_render": "< 16ms to render dialogue UI",
+      "unit_query": "< 2ms to query 1000 actors with filters"
+    }
+  },
+  
+  "performance_targets": {
+    "frame_rate": {
+      "target": 60,
+      "unit": "FPS",
+      "platform": "mid-range hardware (GTX 1060, Ryzen 5)"
+    },
+    
+    "story_system": {
+      "node_advancement": "< 0.1ms",
+      "lua_execution": "< 5ms per script",
+      "dialogue_display": "< 2ms"
+    },
+    
+    "memory": {
+      "story_graph_cache": "< 50MB for 100 loaded graphs",
+      "active_units": "< 10MB per 1000 actors",
+      "lua_vm": "< 20MB"
+    }
+  },
+  
+  "success_criteria": {
+    "functional": [
+      "Story graph executes in both DoomExe and RTS",
+      "Camera transitions between 3 modes smoothly",
+      "Universal unit works with JRPG + RTS controls",
+      "Lua API is standardized (same script in both games)",
+      "60 FPS maintained during gameplay + cutscenes"
+    ],
+    
+    "architectural": [
+      "≥95% code reuse between games",
+      "No monolithic God components",
+      "Event ordering prevents race conditions",
+      "Required Components minimize archetype fragmentation",
+      "Lua layer cleanly separates script from ECS"
+    ],
+    
+    "workflow": [
+      "Non-programmers can create content without recompilation",
+      "Story graphs version-controlled (JSON in Git)",
+      "Egui editor provides real-time preview",
+      "Designers can adjust dialogue/timing without code changes"
+    ]
+  },
+  
+  "team_structure": {
+    "solo_developer": {
+      "timeline_weeks": 20,
+      "focus": ["Do Phases 1-2 first (story + director)", "Parallelize Phases 3-4 (unit + lua)"]
+    },
+    
+    "two_developers": {
+      "timeline_weeks": 12,
+      "dev_1": "Systems (story, director, lua) - Phases 1-4",
+      "dev_2": "Editor + Art Integration - Phases 1-5"
+    },
+    
+    "three_developers": {
+      "timeline_weeks": 10,
+      "dev_1": "Core systems (story, director)",
+      "dev_2": "Units + Lua integration",
+      "dev_3": "Editor + Testing"
+    }
+  },
+  
+  "deliverables_checklist": {
+    "phase_1": ["✓ StoryNode enum", "✓ JSON serialization", "✓ story_advancement_system", "✓ UI rendering"],
+    "phase_2": ["✓ Director component", "✓ Camera transitions", "✓ TimeControl", "✓ 5min cutscene test"],
+    "phase_3": ["✓ Actor archetype", "✓ JRPG controls", "✓ RTS selection/pathfinding", "✓ Cross-game unit"],
+    "phase_4": ["✓ Lua bindings (10 functions)", "✓ Type marshalling", "✓ Same script in both games"],
+    "phase_5": ["✓ Story Graph visual editor", "✓ Variable inspector", "✓ Asset manager"]
+  },
+  
+  "documentation": {
+    "generated": [
+      "Technical Roadmap (2500 lines)",
+      "IDE Configuration Guide (1500 lines)",
+      "AI Coding Assistant Config (2000 lines)",
+      "Implementation Summary (quick reference)",
+      "Architecture Spec (this file - JSON)"
+    ],
+    "to_create": [
+      "API Documentation (cargo doc)",
+      "Lua API Reference (for designers)",
+      "Editor Tutorial (for content creators)",
+      "Debugging Guide (troubleshooting)"
+    ]
+  },
+  
+  "metadata": {
+    "version": "1.0",
+    "created": "2026-01-21",
+    "last_updated": "2026-01-21",
+    "format": "JSON",
+    "owner": "dj_engine development team",
+    "status": "ready_for_implementation"
+  }
+}

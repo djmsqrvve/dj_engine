@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::window::WindowResolution;
 use dj_engine::prelude::*;
 
 mod assets;

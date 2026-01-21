@@ -1,0 +1,180 @@
+{
+  "id": "town_square",
+  "name": "Town Square - JRPG Demo",
+  "scene_type": "jrpg",
+  "size_tiles": { "width": 20, "height": 15 },
+  "tile_size": { "width": 32, "height": 32 },
+  "background_color": { "r": 0.1, "g": 0.15, "b": 0.2, "a": 1.0 },
+  "default_spawn": {
+    "player": { "x": 160.0, "y": 120.0, "z": 0.0 },
+    "camera": { "x": 160.0, "y": 120.0, "z": 0.0 }
+  },
+  "audio": {
+    "music_track_id": "bgm_town",
+    "loop_music": true
+  },
+  "scripts": {
+    "on_enter": "town_enter",
+    "on_exit": null
+  },
+  "layers": [
+    { "id": "background", "name": "Background", "order": -10, "visible": true, "locked": false, "parallax": { "x": 0.5, "y": 0.5, "z": 1.0 } },
+    { "id": "ground", "name": "Ground", "order": 0, "visible": true, "locked": false, "parallax": { "x": 1.0, "y": 1.0, "z": 1.0 } },
+    { "id": "objects", "name": "Objects", "order": 10, "visible": true, "locked": false, "parallax": { "x": 1.0, "y": 1.0, "z": 1.0 } },
+    { "id": "npcs", "name": "NPCs", "order": 20, "visible": true, "locked": false, "parallax": { "x": 1.0, "y": 1.0, "z": 1.0 } }
+  ],
+  "entities": [
+    {
+      "id": "npc_merchant",
+      "name": "Merchant",
+      "entity_type": "npc",
+      "layer_id": "npcs",
+      "components": {
+        "transform": {
+          "position": { "x": 200.0, "y": 180.0, "z": 0.0 },
+          "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "scale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+          "lock_uniform_scale": false
+        },
+        "sprite": {
+          "sprite_id": "sprites/npc_merchant.png",
+          "sorting_layer": "npcs",
+          "sorting_order": 0,
+          "tint": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+          "flip_x": false,
+          "flip_y": false,
+          "animation": {
+            "clip_id": "anim_idle",
+            "speed": 1.0,
+            "loop_anim": true
+          }
+        },
+        "npc": {
+          "npc_id": "merchant_01",
+          "display_name": { "en": "Merchant", "jp": "商人" },
+          "dialogue_set_id": "dialogue_merchant",
+          "quest_ids": ["quest_fetch_herbs"],
+          "inventory_preset_id": "shop_general",
+          "faction": "neutral"
+        },
+        "interactivity": {
+          "trigger_type": "npc",
+          "trigger_id": "merchant_interact",
+          "lua_script_id": null,
+          "events": {
+            "on_interact": "start_dialogue"
+          }
+        }
+      }
+    },
+    {
+      "id": "door_to_dungeon",
+      "name": "Dungeon Entrance",
+      "entity_type": "trigger",
+      "layer_id": "objects",
+      "components": {
+        "transform": {
+          "position": { "x": 480.0, "y": 320.0, "z": 0.0 },
+          "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+        },
+        "sprite": {
+          "sprite_id": "sprites/door_dungeon.png",
+          "sorting_layer": "objects",
+          "sorting_order": 0
+        },
+        "collision": {
+          "enabled": true,
+          "body_type": "static",
+          "shape": "box",
+          "box_size": { "x": 32.0, "y": 64.0, "z": 0.0 },
+          "is_trigger": true
+        },
+        "interactivity": {
+          "trigger_type": "door",
+          "trigger_id": "door_dungeon_01",
+          "parameters": {
+            "destination_scene": "dungeon_floor_1",
+            "spawn_point": "entrance"
+          },
+          "events": {
+            "on_interact": "change_scene"
+          }
+        }
+      }
+    },
+    {
+      "id": "chest_loot_01",
+      "name": "Treasure Chest",
+      "entity_type": "prop",
+      "layer_id": "objects",
+      "components": {
+        "transform": {
+          "position": { "x": 100.0, "y": 280.0, "z": 0.0 },
+          "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+        },
+        "sprite": {
+          "sprite_id": "sprites/chest_closed.png",
+          "sorting_layer": "objects",
+          "sorting_order": 5
+        },
+        "interactivity": {
+          "trigger_type": "chest",
+          "trigger_id": "chest_01",
+          "parameters": {
+            "loot_table_id": "loot_common",
+            "one_time": true
+          },
+          "events": {
+            "on_interact": "open_chest"
+          }
+        }
+      }
+    },
+    {
+      "id": "enemy_goblin_patrol",
+      "name": "Goblin Scout",
+      "entity_type": "enemy",
+      "layer_id": "npcs",
+      "components": {
+        "transform": {
+          "position": { "x": 350.0, "y": 200.0, "z": 0.0 },
+          "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+        },
+        "sprite": {
+          "sprite_id": "sprites/enemy_goblin.png",
+          "sorting_layer": "npcs",
+          "sorting_order": 0,
+          "animation": {
+            "clip_id": "anim_walk",
+            "speed": 1.0,
+            "loop_anim": true
+          }
+        },
+        "enemy": {
+          "enemy_id": "goblin_01",
+          "behavior_profile_id": "patrol_aggressive",
+          "aggro_range": 100.0,
+          "patrol_path_id": "path_goblin_01"
+        },
+        "combat_stats": {
+          "max_hp": 50,
+          "hp": 50,
+          "mana": 0,
+          "damage": 8,
+          "defense": 2,
+          "attack_speed": 1.0,
+          "move_speed": 80.0,
+          "crit_chance": 0.05,
+          "loot_table_id": "loot_goblin"
+        }
+      }
+    }
+  ],
+  "pathfinding": {
+    "enabled": false,
+    "grid": { "width": 0, "height": 0, "cells": [] }
+  }
+}

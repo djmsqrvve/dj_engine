@@ -1,0 +1,197 @@
+You are an expert Rust + Bevy + tools programmer helping me implement a custom 2D editor and data schema for my in-house engine, dj_engine. The engine targets two games from one shared codebase:
+
+DoomExe (JRPG): 2D, tile-based, story-driven, dialogue heavy, turn-based combat
+
+Tower Defense RTS: 2D grid, pathfinding, tower placement, enemy waves
+
+The core goals:
+
+~90% shared systems between JRPG and TD
+
+Data-driven content: scenes, story graphs, and game data in JSON
+
+Non-programmers can build full JRPG and TD levels in an editor
+
+Runtime: Bevy 0.15 + Rust + Lua (mlua) with a standardized Lua API
+
+1. Overall context (what already exists)
+I already have:
+
+A detailed engine roadmap with:
+
+Story Graph system (enums, JSON format, and a story_advancement_system)
+
+Director system with 8 command types for cutscenes
+
+Universal Unit / Actor architecture for shared JRPG + RTS units
+
+Lua bindings + API design
+
+20-week implementation plan broken into 5 phases
+
+A detailed editor specification that defines:
+
+6 main tabs:
+
+Scene
+
+Hierarchy
+
+Inspector
+
+Story Graph
+
+Database
+
+Palette / Asset Browser
+
+Keyboard shortcuts and workflows
+
+Example JSON exports for scenes and story graphs
+
+Clear success criteria for “Phase 5: Editor complete”:
+
+Can create playable JRPG level
+
+Can create playable TD map
+
+Non-programmers can create content
+
+Hot-reload / quick iteration
+
+A proposed engine-agnostic data schema for:
+
+Project settings
+
+Scenes, layers, entities, and components
+
+Story graphs and nodes
+
+Database tables (items, NPCs, towers, enemies, loot tables, quests)
+
+Asset index and prefabs
+
+Assume all of the above is consistent and can be adapted to concrete Rust types and JSON (via serde).
+
+2. Your job
+Your job is to turn this design into concrete, implementation-ready artifacts, step by step:
+
+Data model & serialization
+
+Define Rust structs and enums for:
+
+Project, ProjectSettings, EditorPreferences
+
+Scene, Layer, Entity
+
+Component structs: TransformComponent, SpriteComponent, CollisionComponent, InteractivityComponent, NpcComponent, EnemyComponent, CombatStatsComponent, TowerComponent, SpawnerComponent, AudioSourceComponent, CameraAnchorComponent
+
+StoryGraph, StoryNode, and each node type’s data (DialogueNodeData, ChoiceNodeData, etc.)
+
+Database and all row types (ItemRow, NpcRow, TowerRow, EnemyRow, LootTableRow, QuestRow)
+
+AssetIndex and Prefab
+
+All types should be:
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+
+Ready to be stored/loaded via JSON
+
+Use enums and newtypes where it improves safety (e.g., SceneType, BodyType, TriggerType, StoryNodeType, TargetingMode).
+
+File layout & conventions
+
+Propose a Rust module layout, for example:
+
+data/scene.rs
+
+data/components.rs
+
+data/story.rs
+
+data/database.rs
+
+data/project.rs
+
+data/assets.rs
+
+Show the top-level Project type that ties all of these together.
+
+Minimal runtime integration (Bevy)
+
+Sketch how to:
+
+Load a Scene JSON into Bevy and spawn entities using the ECS components.
+
+Map the data components (TransformComponent, SpriteComponent, etc.) into real Bevy components.
+
+Write example Bevy systems that:
+
+Load a scene file at startup.
+
+Spawn entities from the deserialized scene.
+
+Hook up a simple Story Graph runner that reads StoryGraph JSON and advances nodes.
+
+Editor-oriented utilities
+
+Add helper methods on the data types that are editor-friendly, for example:
+
+Scene::find_entity(&self, id: &str) -> Option<&Entity>
+
+Scene::add_entity(&mut self, entity: Entity)
+
+StoryGraph::validate() returning a list of validation errors (missing node IDs, bad references, etc.).
+
+Add IDs as String (or newtypes) in a way that makes it easy for an editor to reference and manipulate them.
+
+JSON examples
+
+Based on the schema, produce:
+
+A small but realistic JRPG scene JSON (map with tiles, NPC, door, trigger, etc.).
+
+A small but realistic TD scene JSON (pathfinding grid, towers, spawner).
+
+A Story Graph JSON with dialogue → choice → action nodes.
+
+A Database JSON snippet with at least items, NPCs, towers, and enemies.
+
+Focus on clarity and correctness. The goal is that a Rust + Bevy developer can copy these types and starter systems into a repo and immediately begin wiring up:
+
+A Bevy-based runtime that loads these JSON files.
+
+A separate editor (Rust, or Rust + egui, or similar) that reads/writes the same types.
+
+3. Constraints & style
+Language: Rust 2021, Bevy 0.15 style.
+
+Use serde everywhere.
+
+Use idiomatic naming and avoid over-complication:
+
+Prefer simple structures with clear fields over over-engineered generics.
+
+Include TODO comments where editor-specific behavior will plug in later, rather than trying to implement the whole editor UI.
+
+4. What to output first
+The full set of Rust data types (structs/enums) for:
+
+Project + settings
+
+Scenes + entities + components
+
+StoryGraph + nodes
+
+Database + rows
+
+AssetIndex + Prefab
+
+Then, after that is done, propose:
+
+A file/module layout
+
+A basic load_project() function that reads a project.json and loads sub-files
+
+A basic Bevy system that takes a Scene and spawns entities.

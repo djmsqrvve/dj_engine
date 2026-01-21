@@ -1,7 +1,27 @@
 #!/bin/bash
 
 # DJ Engine Helper Script
-# Usage: ./dj [command]
+# Usage: ./dj [command] [args]
+
+VERBOSE=0
+ARGS=()
+
+# Process arguments to detect verbose flag
+for arg in "$@"; do
+    if [[ "$arg" == "-v" || "$arg" == "--verbose" ]]; then
+        VERBOSE=1
+    else
+        ARGS+=("$arg")
+    fi
+done
+
+if [ $VERBOSE -eq 1 ]; then
+    export RUST_LOG=debug
+    echo "🔍 Verbose mode enabled (RUST_LOG=debug)"
+fi
+
+# Reset positional parameters to the filtered arguments
+set -- "${ARGS[@]}"
 
 COMMAND=$1
 SHIFT_ARGS="${@:2}"
@@ -9,29 +29,36 @@ SHIFT_ARGS="${@:2}"
 case $COMMAND in
     "e" | "editor")
         echo "🚀 Starting DJ Engine Editor..."
-        cargo run -p dj_engine $SHIFT_ARGS
+        cargo run -p dj_engine --bin dj_engine -- $SHIFT_ARGS
         ;;
     "d" | "doomexe")
         echo "🎮 Starting DoomExe (Legacy Mode)..."
-        cargo run -p doomexe $SHIFT_ARGS
+        cargo run -p doomexe -- $SHIFT_ARGS
         ;;
     "t" | "test")
         echo "🧪 Running DJ Engine Tests..."
         cargo test --workspace $SHIFT_ARGS
         ;;
+    "m" | "minimal")
+        echo "🟥 Starting Minimal Visibility Test..."
+        cargo run -p dj_engine --bin minimal
+        ;;
     "g" | "gen")
         echo "🛠 Running Asset Generator..."
-        cargo run -p asset_generator $SHIFT_ARGS
+        cargo run -p asset_generator -- $SHIFT_ARGS
         ;;
     *)
         echo "DJ Engine CLI API"
-        echo "Usage: ./dj [command]"
+        echo "Usage: ./dj [command] [flags]"
         echo ""
         echo "Commands:"
         echo "  e, editor   - Launch the DJ Engine Editor"
         echo "  d, doomexe  - Run the DoomExe game binary"
         echo "  t, test     - Run all workspace tests"
         echo "  g, gen      - Run the asset generator"
+        echo ""
+        echo "Flags:"
+        echo "  -v, --verbose - Enable debug logging (RUST_LOG=debug)"
         echo ""
         ;;
 esac
