@@ -65,7 +65,7 @@ impl Plugin for DJAudioPlugin {
             .add_event::<AudioCommand>()
             .add_systems(Update, handle_audio_commands);
 
-        info!("DJ Audio Plugin initialized");
+        info!("DJ Audio Plugin initialized (Note: If on WSL2, ensure PulseAudio/PipeWire is bridgeable if ALSA errors occur)");
     }
 }
 

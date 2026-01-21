@@ -90,9 +90,9 @@ fn handle_console_commands(
                 for (entity, window) in windows.iter() {
                     found = true;
                     println!(
-                        "Entity: {:?}\nTitle: \"{}\"\nResolution: {}x{}\nPosition: {:?}\nFocused: {}\nVisible: {}",
+                        "Entity: {:?}\nTitle: \"{}\"\nResolution: {}x{}\nScale Factor: {}\nPosition: {:?}\nFocused: {}\nVisible: {}",
                         entity, window.title, window.width(), window.height(),
-                        window.position, window.focused, window.visible
+                        window.scale_factor(), window.position, window.focused, window.visible
                     );
                 }
                 if !found { println!("No active windows detected (Headless mode?)"); }

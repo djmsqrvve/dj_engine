@@ -22,6 +22,10 @@ fn main() {
                     primary_window: Some(Window {
                         title: "DJ Engine V1.0".into(),
                         resolution: (800.0, 600.0).into(),
+                        position: WindowPosition::Centered(MonitorSelection::Primary),
+                        // Force a scale factor to avoid "0mm display size" math errors
+                        resolution_scale_factor_override: Some(1.0),
+                        present_mode: bevy::window::PresentMode::AutoVsync,
                         ..default()
                     }),
                     ..default()
