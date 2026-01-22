@@ -1,64 +1,78 @@
-# dj_engine Project Context
+# dj_engine Technical Specification
 
-## Overview
-**dj_engine** is a formally specified, ambitious game engine project built on **Rust** and **Bevy 0.15**. It is designed to create "cursed" narrative-heavy games with procedural 2D character animation and palette-driven visual effects.
+## 🚀 Project Status: Milestone 1 (Hamster Narrator)
+**Current Phase:** Phase 1 of 5 (Story Graph & Foundation)
+**Core Tech:** Rust, Bevy 0.15, Lua 5.4 (mlua), Egui
 
-The project is currently in **Milestone 1 (Hamster Narrator)** of a rigorous **5-Phase Development Plan**. It involves a custom Bevy-based engine (`dj_engine`), a primary game target (`doomexe`), and an extensive suite of asset tools.
+## 🗺️ Documentation Map
+*   **`docs/MASTER-DOCUMENTATION-INDEX.md`**: The entry point.
+*   **`docs/Architecture_Specification.json`**: The canonical high-level spec.
+*   **`docs/complete-detailed-docs.md`**: Implementation guides & code templates.
+*   **`docs/Game_Engine_Technical_Roadmap.md`**: The 20-week execution plan.
 
-## Key Directories
+## 🏛️ Core Architecture Pillars
 
-*   **`docs/`**: **THE SOURCE OF TRUTH.** Contains ~15,000 lines of detailed specifications.
-    *   `MASTER-DOCUMENTATION-INDEX.md`: The entry point for all documentation.
-    *   `complete-detailed-docs.md`: Contains code templates and detailed implementation guides for Phases 0-2.
-    *   `Game_Engine_Technical_Roadmap.md`: The comprehensive 20-week execution plan.
-    *   `Implementation_Summary.md`: A summary of the current implementation state.
-*   **`engine/`**: The core shared library.
-    *   `src/animation`: Procedural animation system (breathing, blinking).
-    *   `src/scripting`: Lua integration (`mlua`) for game logic.
-    *   `src/story_graph`: JSON-serializable node system for narrative branching.
-    *   `src/data`: Serialization types (Projects, Scenes, Database).
-    *   `src/rendering`: Custom rendering pipeline (offscreen target -> upscaling -> post-processing).
-*   **`games/`**:
-    *   `dev/doomexe`: The flagship game. A JRPG/Visual Novel hybrid featuring a "Hamster" narrator and corruption mechanics.
-*   **`tools/`**:
-    *   `asset_generator`: Rust-based tools for asset processing.
-*   **`archive/`**: Contains historical context, previous iterations (`AI_SUMMARY.md`), and legacy prototypes.
-    *   `games/dev/doomexe/legacy_web_prototype`: A React/Vite prototype of the game concept.
+### 1. Universal Unit (`Actor`)
+Standardized ECS entity structure for characters across genres (JRPG/RTS).
+*   **Required Components:** `Actor` (ID/Name), `Stats` (HP/Mana), `Transform`, `Visibility`.
+*   **Optional Layers:**
+    *   `DirectInput` + `PartyLeader` (JRPG)
+    *   `RTSUnit` + `PathfindingAgent` (RTS)
+*   **Philosophy:** Use `#[require(Component)]` to enforce dependencies.
 
-## Architecture & Concepts
+### 2. Story Graph System (`engine/src/story_graph`)
+A directed graph of nodes driving narrative flow.
+*   **Resource:** `StoryGraph` (holds `HashMap<NodeId, StoryNode>`).
+*   **Executor:** `GraphExecutor` (manages state: `Running`, `WaitingForInput`, etc.).
+*   **Events:** `StoryFlowEvent` (Executor -> UI), `StoryInputEvent` (UI -> Executor).
+*   **Node Types:**
+    *   `Dialogue`: `{ speaker, text, portrait, next }`
+    *   `Choice`: `{ prompt, options: Vec<{text, next}> }`
+    *   `Branch`: `{ flag, if_true, if_false }`
+    *   `Event`: `{ event_id, payload }` (Triggers Lua or custom logic)
+    *   `Scene`, `Audio`, `Wait`, `SetFlag`
 
-### The "Three Pillars"
-1.  **Universal Unit/Actor:** A standardized ECS entity structure (`Actor`, `Stats`) designed to work across genres (JRPG & RTS).
-2.  **Story Graph:** A JSON-serializable node system for branching narratives, driven by a `StoryDirector` and executed via Lua.
-3.  **Lua Scripting:** Extensive FFI layer allowing high-level game logic and cutscenes to be written in Lua without recompiling Rust.
+### 3. Scripting Layer (`engine/src/scripting`)
+Lua integration for game logic and cutscenes.
+*   **Engine:** `mlua` 0.9.
+*   **Resource:** `LuaContext` (thread-safe `Mutex<Lua>`).
+*   **Pattern:** Game plugins register their own APIs (e.g., `unit:move_to`).
+*   **FFI:** Rust exposes functions; Lua scripts are assets.
 
-### Visual Style
-*   **Procedural Animation:** Characters are assembled from sprite parts (eyes, mouth, body) and animated procedurally (sine waves for breathing, timers for blinking).
-*   **Corruption:** Visual effects driven by palette manipulation and shader-based distortion.
-*   **Retro Aesthetic:** Low-resolution internal rendering scaled up with CRT effects.
+### 4. Data Serialization (`engine/src/data`)
+**Strict Separation:** Runtime ECS components != Serialized Data.
+*   **Runtime:** `bevy::prelude::Component`
+*   **Serialized:** `serde::Serialize` structs (e.g., `StoryGraphData`, `SceneData`).
+*   **Loader:** `GraphExecutor::load_from_data()` bridges the gap.
 
-## Development Workflow
+## 🛠️ Developer Cheatsheet
 
-### Building & Running
-*   **Run the Game (`doomexe`):**
-    ```bash
-    cargo run -p doomexe
-    ```
-*   **Run Tests:**
-    ```bash
-    cargo test --workspace
-    ```
-*   **Build Release:**
-    ```bash
-    cargo build --release
-    ```
+### Common Commands
+```bash
+# Run the main game (DoomExe)
+cargo run -p doomexe
 
-### Code Conventions
-*   **Specification-First:** Changes should align with the documentation in `docs/`.
-*   **Bevy 0.15:** Uses modern Bevy features like `#[require(Component)]` and Observers.
-*   **Workspace:** All code is organized in a Cargo Workspace.
+# Run all tests
+cargo test --workspace
 
-## Important References
-*   **`docs/MASTER-DOCUMENTATION-INDEX.md`**: Start here to navigate the massive documentation library.
-*   **`docs/complete-detailed-docs.md`**: Contains the "Phase 0-2" implementation details and code templates.
-*   **`engine/src/lib.rs`**: Core engine entry point.
+# Check for compilation errors
+cargo check --workspace
+```
+
+### Key File Locations
+*   **Engine Lib:** `engine/src/lib.rs`
+*   **Story Graph Logic:** `engine/src/story_graph/mod.rs`
+*   **Hamster Component:** `games/dev/doomexe/src/hamster/components.rs`
+*   **Game Entry:** `games/dev/doomexe/src/main.rs`
+
+### "Start to Finish" Roadmap Summary
+1.  **Phase 1 (Now):** Story Graph foundation, basic UI, "Hamster" narrator.
+2.  **Phase 2:** Director system (Camera, TimeControl, Event Sequencing).
+3.  **Phase 3:** Universal Unit (JRPG + RTS shared components).
+4.  **Phase 4:** Standardized Lua API (write once, run anywhere).
+5.  **Phase 5:** Visual Editors (Story Graph Editor in Egui).
+
+## ⚠️ Critical Constraints
+1.  **Do not** mix logic into `data` structs. They are for storage only.
+2.  **Do not** call Bevy queries from Lua. Use events or deferred commands.
+3.  **Always** check `docs/Architecture_Specification.json` before creating new subsystems.
