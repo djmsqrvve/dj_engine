@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use std::collections::HashSet;
 
 /// Logical game actions, abstracted from physical input.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Reflect)]
 pub enum InputAction {
     /// Confirm selection (Space, Enter, gamepad A)
     Confirm,

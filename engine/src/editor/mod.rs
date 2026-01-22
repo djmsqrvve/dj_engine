@@ -188,9 +188,11 @@ fn automated_ui_test_system(
             test_state.step += 1;
         }
         2 => {
+            debug!("TEST: Executing spawn step");
             console.log("TEST: Simulating click/spawn at (100, 100)".into());
             // Manually spawn entity as if clicked
              commands.spawn((
+                LogicalEntity,
                 Name::new("Hamster [100, 100]"),
                 Sprite {
                     color: Color::srgb(0.8, 0.5, 0.2),
@@ -626,8 +628,8 @@ fn draw_controls_view(ui: &mut egui::Ui, world: &mut World) {
             ui.label(RichText::new("KEYS").strong());
             ui.end_row();
 
-            // Group by Action
-            let mut actions: std::collections::HashMap<crate::input::InputAction, Vec<String>> = std::collections::HashMap::new();
+            // Group by Action (BTreeMap for deterministic order)
+            let mut actions: std::collections::BTreeMap<crate::input::InputAction, Vec<String>> = std::collections::BTreeMap::new();
             for (key, action) in &config.keyboard_map {
                 actions.entry(*action).or_default().push(format!("{:?}", key));
             }
@@ -687,7 +689,7 @@ fn draw_grid(ui: &mut egui::Ui, world: &mut World) {
             let selected_item = world.resource::<EditorUiState>().selected_palette_item.clone();
             
             if let Some(item) = selected_item {
-                info!("Editor: Spawning {} at ({}, {})", item, snap_x, snap_y);
+                debug!("Editor: USER CLICK SPAWN: {} at ({}, {})", item, snap_x, snap_y);
                 
                 // Determine color based on item
                 let color = match item.as_str() {
@@ -1010,6 +1012,7 @@ fn world_to_scene(world: &mut World) -> Scene {
 }
 
 fn load_scene_into_editor(world: &mut World, scene: Scene) {
+    debug!("load_scene_into_editor called for scene: {}", scene.id);
     // 1. Clear existing entities (only those marked as LogicalEntity)
     let entities_to_despawn: Vec<Entity> = world.query_filtered::<Entity, With<LogicalEntity>>().iter(world).collect();
     for e in entities_to_despawn {
