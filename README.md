@@ -11,6 +11,10 @@
   <a href="https://github.com/djmsqrvve/dj_engine/actions"><img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build"></a>
 </p>
 
+<p align="center">
+  <img src="docs/images/editor_screenshot.png" alt="DJ Engine Editor" width="800">
+</p>
+
 ---
 
 ## ✨ Features
@@ -34,10 +38,32 @@ cd dj_engine
 ./dj e
 
 # Run all tests
-./dj test
+./dj t
 
 # Build for release
-cargo build --release
+./dj b
+```
+
+## 🛠️ CLI Commands
+
+All commands go through the `dj` helper script:
+
+```bash
+# Development
+./dj e          # Run editor
+./dj d          # Run DoomExe game
+./dj m          # Run minimal test
+
+# Testing & Quality
+./dj t          # Run all tests
+./dj c          # Check code compiles
+./dj fmt        # Format code
+./dj lint       # Run Clippy linter
+
+# Build
+./dj b          # Build release
+./dj doc        # Generate documentation
+./dj clean      # Clean build artifacts
 ```
 
 ## 📁 Project Structure
@@ -69,24 +95,11 @@ dj_engine/
 | [Testing Guide](docs/TESTING.md) | How to write and run tests |
 | [Project Structure](docs/PROJECT_STRUCTURE.md) | Detailed file layout |
 
-## 🛠️ Development
-
-### Prerequisites
+## 🛠️ Prerequisites
 
 - **Rust 1.75+** - [Install Rust](https://rustup.rs/)
 - **Git** - For version control
 - **Linux/WSL2** recommended (Windows native works but may have graphics quirks)
-
-### Common Commands
-
-```bash
-./dj e          # Run editor
-./dj test       # Run tests
-./dj d          # Run with diagnostics
-cargo fmt       # Format code
-cargo clippy    # Lint code
-cargo doc       # Generate docs
-```
 
 ## 🤝 Contributing
 

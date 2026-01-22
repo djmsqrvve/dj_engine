@@ -60,12 +60,25 @@ This opens the Egui-based visual editor where you can:
 - Create story graphs (Story Graph view)
 - Inspect entities and resources
 
-### Editor Keyboard Shortcuts
+### All CLI Commands
 
-| Key | Action |
-|-----|--------|
-| `Ctrl+S` | Save project |
-| `F1` | Toggle console |
+```bash
+# Development
+./dj e          # Run editor
+./dj d          # Run DoomExe game
+./dj m          # Run minimal test
+
+# Testing & Quality
+./dj t          # Run all tests
+./dj c          # Check code compiles
+./dj fmt        # Format code
+./dj lint       # Run Clippy linter
+
+# Build
+./dj b          # Build release
+./dj doc        # Generate documentation
+./dj clean      # Clean build artifacts
+```
 
 ---
 
