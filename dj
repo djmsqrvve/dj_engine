@@ -32,7 +32,7 @@ case $COMMAND in
         cargo run -p dj_engine --bin dj_engine -- $SHIFT_ARGS
         ;;
     "d" | "doomexe")
-        echo "🎮 Starting DoomExe (Legacy Mode)..."
+        echo "🎮 Starting DoomExe..."
         cargo run -p doomexe -- $SHIFT_ARGS
         ;;
     "t" | "test")
@@ -47,18 +47,56 @@ case $COMMAND in
         echo "🛠 Running Asset Generator..."
         cargo run -p asset_generator -- $SHIFT_ARGS
         ;;
+    "fmt" | "format")
+        echo "✨ Formatting code..."
+        cargo fmt --all
+        ;;
+    "lint" | "clippy")
+        echo "🔎 Running Clippy linter..."
+        cargo clippy --workspace -- -W clippy::all
+        ;;
+    "doc" | "docs")
+        echo "📚 Generating documentation..."
+        cargo doc --workspace --no-deps $SHIFT_ARGS
+        echo "📖 Open: target/doc/dj_engine/index.html"
+        ;;
+    "check" | "c")
+        echo "✅ Checking code..."
+        cargo check --workspace
+        ;;
+    "build" | "b")
+        echo "🔨 Building release..."
+        cargo build --release --workspace
+        ;;
+    "clean")
+        echo "🧹 Cleaning build artifacts..."
+        cargo clean
+        ;;
     *)
-        echo "DJ Engine CLI API"
+        echo "DJ Engine CLI"
         echo "Usage: ./dj [command] [flags]"
         echo ""
-        echo "Commands:"
-        echo "  e, editor   - Launch the DJ Engine Editor"
-        echo "  d, doomexe  - Run the DoomExe game binary"
-        echo "  t, test     - Run all workspace tests"
-        echo "  g, gen      - Run the asset generator"
+        echo "Development:"
+        echo "  e, editor    - Launch the DJ Engine Editor"
+        echo "  d, doomexe   - Run the DoomExe game"
+        echo "  m, minimal   - Run minimal visibility test"
+        echo ""
+        echo "Testing & Quality:"
+        echo "  t, test      - Run all workspace tests"
+        echo "  c, check     - Check code compiles"
+        echo "  fmt, format  - Format code (cargo fmt)"
+        echo "  lint, clippy - Run Clippy linter"
+        echo ""
+        echo "Build:"
+        echo "  b, build     - Build release binaries"
+        echo "  doc, docs    - Generate documentation"
+        echo "  clean        - Clean build artifacts"
+        echo ""
+        echo "Tools:"
+        echo "  g, gen       - Run asset generator"
         echo ""
         echo "Flags:"
-        echo "  -v, --verbose - Enable debug logging (RUST_LOG=debug)"
+        echo "  -v, --verbose - Enable debug logging"
         echo ""
         ;;
 esac
