@@ -1,0 +1,29 @@
+{
+  "name": "Default Scene",
+  "scene_type": "overworld",
+  "tile_size": { "width": 32, "height": 32 },
+  "layers": [
+    {
+      "id": "background",
+      "name": "Background",
+      "z_index": 0,
+      "visible": true,
+      "locked": false
+    }
+  ],
+  "entities": [
+    {
+      "id": "hamster_narrator",
+      "name": "Hamster",
+      "entity_type": "npc",
+      "layer_id": "background",
+      "components": {
+        "transform": {
+          "position": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "rotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+          "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+        }
+      }
+    }
+  ]
+}

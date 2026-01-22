@@ -77,6 +77,10 @@ struct AutomatedTestActive {
     step: usize,
 }
 
+/// Marker component for entities that should show up in the game scene hierarchy.
+#[derive(Component, Default)]
+pub struct LogicalEntity;
+
 pub struct EditorPlugin;
 
 impl Plugin for EditorPlugin {
@@ -291,16 +295,32 @@ fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
             }
             if ui.button("📂 Load Project").clicked() {
                 // For now, load default dev path
-                let mut project = world.resource_mut::<ProjectMetadata>();
-                project.name = "DoomExe".into();
                 let path = PathBuf::from("games/dev/doomexe");
-                project.path = Some(path.clone());
+                let mut project_meta = world.resource_mut::<ProjectMetadata>();
+                project_meta.path = Some(path.clone());
                 
+                // Try load project.json
+                let project_file = path.join("project.json");
+                if project_file.exists() {
+                    match loader::load_project(&project_file) {
+                        Ok(project) => {
+                            project_meta.name = project.name;
+                            info!("Loaded project: {}", project_meta.name);
+                        },
+                        Err(e) => error!("Failed to load project.json: {}", e),
+                    }
+                } else {
+                    project_meta.name = "DoomExe".into();
+                }
+
                 // Try load scene
                 let scene_path = path.join("scenes/current_scene.json");
                 if scene_path.exists() {
                      match loader::load_scene(&scene_path) {
-                         Ok(scene) => load_scene_into_editor(world, scene),
+                         Ok(scene) => {
+                             load_scene_into_editor(world, scene);
+                             info!("Loaded scene: current_scene");
+                         },
                          Err(e) => error!("Failed to load scene: {}", e),
                      }
                 } else {
@@ -313,7 +333,7 @@ fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                      match loader::load_story_graph(&graph_path) {
                          Ok(graph) => {
                              world.insert_resource(ActiveStoryGraph(graph));
-                             info!("Loaded story graph");
+                             info!("Loaded story graph: main");
                          }
                          Err(e) => error!("Failed to load story graph: {}", e),
                      }
@@ -679,6 +699,7 @@ fn draw_grid(ui: &mut egui::Ui, world: &mut World) {
                 };
 
                 world.spawn((
+                    LogicalEntity,
                     Name::new(format!("{} [{:.0}, {:.0}]", item, snap_x, snap_y)),
                     Sprite {
                         color,
@@ -989,9 +1010,8 @@ fn world_to_scene(world: &mut World) -> Scene {
 }
 
 fn load_scene_into_editor(world: &mut World, scene: Scene) {
-    // 1. Clear existing entities (naive approach: despawn everything with a Name)
-    // Real engine would use a SceneRoot component
-    let entities_to_despawn: Vec<Entity> = world.query_filtered::<Entity, With<Name>>().iter(world).collect();
+    // 1. Clear existing entities (only those marked as LogicalEntity)
+    let entities_to_despawn: Vec<Entity> = world.query_filtered::<Entity, With<LogicalEntity>>().iter(world).collect();
     for e in entities_to_despawn {
         world.despawn(e);
     }
@@ -1004,6 +1024,7 @@ fn load_scene_into_editor(world: &mut World, scene: Scene) {
         let scale = transform.scale;
         
         let mut entity_cmd = world.spawn((
+            LogicalEntity,
             Name::new(entity_data.name),
             Transform::from_xyz(pos.x, pos.y, pos.z).with_scale(Vec3::new(scale.x, scale.y, scale.z))
         ));
