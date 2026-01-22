@@ -19,8 +19,8 @@ fn main() {
     let editor_mode = args.contains(&"--editor".to_string());
     
     // Parse Resolution
-    let mut width = if editor_mode { 1280.0 } else { 800.0 };
-    let mut height = if editor_mode { 720.0 } else { 600.0 };
+    let mut width = if editor_mode { 1920.0 } else { 1024.0 };
+    let mut height = if editor_mode { 1080.0 } else { 768.0 };
     
     for i in 0..args.len() {
         if args[i] == "--width" && i + 1 < args.len() {

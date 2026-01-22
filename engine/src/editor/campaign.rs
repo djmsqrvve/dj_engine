@@ -36,37 +36,43 @@ pub fn draw_campaign_editor(
 
         // ACT Container
         if node.node_type == CampaignNodeType::Act {
-            let act_rect = egui::Rect::from_min_size(node_pos, egui::vec2(300.0, 200.0));
+            let act_rect = egui::Rect::from_min_size(node_pos, egui::vec2(320.0, 240.0));
+            // Multi-layered visual for "Premium" feel
+            painter.rect_filled(act_rect, 5.0, egui::Color32::from_rgba_unmultiplied(100, 100, 200, 20));
             painter.rect_stroke(
                 act_rect, 
                 5.0, 
-                egui::Stroke::new(2.0, egui::Color32::from_rgb(100, 100, 150))
+                egui::Stroke::new(3.0, egui::Color32::from_rgb(0, 255, 204)) // COLOR_PRIMARY (Mint)
             );
             painter.text(
-                node_pos + egui::vec2(10.0, 10.0),
+                node_pos + egui::vec2(15.0, 15.0),
                 egui::Align2::LEFT_TOP,
-                &node.name,
-                egui::FontId::proportional(20.0),
-                egui::Color32::WHITE,
+                &node.name.to_uppercase(),
+                egui::FontId::proportional(22.0),
+                egui::Color32::from_rgb(0, 255, 204),
             );
         } 
         // Normal Node
         else {
-            let color = match node.node_type {
-                CampaignNodeType::Start => egui::Color32::GREEN,
-                CampaignNodeType::End => egui::Color32::RED,
-                CampaignNodeType::StoryGraph => egui::Color32::LIGHT_BLUE,
-                CampaignNodeType::Scene => egui::Color32::GOLD,
-                CampaignNodeType::Act => egui::Color32::TRANSPARENT, // Handled above
+            let (fill, stroke_color) = match node.node_type {
+                CampaignNodeType::Start => (egui::Color32::from_rgb(0, 100, 0), egui::Color32::GREEN),
+                CampaignNodeType::End => (egui::Color32::from_rgb(100, 0, 0), egui::Color32::RED),
+                CampaignNodeType::StoryGraph => (egui::Color32::from_rgb(0, 50, 100), egui::Color32::LIGHT_BLUE),
+                CampaignNodeType::Scene => (egui::Color32::from_rgb(100, 80, 0), egui::Color32::GOLD),
+                CampaignNodeType::Act => (egui::Color32::TRANSPARENT, egui::Color32::TRANSPARENT), 
             };
 
-            painter.circle_filled(node_pos, 20.0, color);
+            // Glow effect for nodes
+            painter.circle_filled(node_pos, 25.0, stroke_color.linear_multiply(0.2));
+            painter.circle_filled(node_pos, 22.0, fill);
+            painter.circle_stroke(node_pos, 22.0, egui::Stroke::new(2.0, stroke_color));
+            
             painter.text(
                 node_pos,
                 egui::Align2::CENTER_CENTER,
                 &node.name,
-                egui::FontId::proportional(14.0),
-                egui::Color32::BLACK,
+                egui::FontId::proportional(12.0),
+                egui::Color32::WHITE,
             );
         }
 
