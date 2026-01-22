@@ -5,11 +5,13 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use bevy::prelude::*;
 
 use super::components::Vec3Data;
+use super::scene::{Scene, EntityType};
 
 /// Story graph type categorization.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum StoryGraphType {
     /// Dialogue/conversation
@@ -22,9 +24,10 @@ pub enum StoryGraphType {
 }
 
 /// Story node type enumeration.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum StoryNodeType {
+    Start,
     /// Dialogue display
     Dialogue,
     /// Player choice
@@ -41,8 +44,15 @@ pub enum StoryNodeType {
     End,
 }
 
+// ... (skipping unchanged code if possible, but replace_file_content needs contiguous block? No, I can target specific blocks)
+// Since node_type() and next_node_ids() are further down, I will use multiple replace chunks if they were separate tool calls, but here I can just replace the enum first.
+
+// Wait, I messed up the thinking. I can use MultiReplaceFileContent or multiple ReplaceFileContent.
+// I'll do StoryNodeType update first.
+
+
 /// Condition operator for story conditions.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum ConditionOperator {
     #[default]
@@ -56,7 +66,7 @@ pub enum ConditionOperator {
 }
 
 /// End node behavior.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum EndType {
     /// Return to normal gameplay
@@ -69,7 +79,7 @@ pub enum EndType {
 }
 
 /// Effect type for story effects.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum EffectType {
     /// Set a variable
@@ -84,11 +94,33 @@ pub enum EffectType {
     SetQuestState,
 }
 
+/// Requirement: Entity must exist in the scene.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Reflect)]
+pub struct RequiredEntity {
+    /// Entity ID that must exist
+    pub entity_id: String,
+    /// Expected entity type (optional check)
+    #[serde(default)]
+    pub entity_type: Option<EntityType>,
+}
+
+/// Requirement: Item must exist in inventory (or be available).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Reflect)]
+pub struct RequiredItem {
+    /// Item ID that is required
+    pub item_id: String,
+    /// Quantity required
+    #[serde(default = "default_one")]
+    pub quantity: u32,
+}
+
+fn default_one() -> u32 { 1 }
+
 /// Localized string (text in multiple languages).
 pub type LocalizedString = HashMap<String, String>;
 
 /// A condition for story branching.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct StoryCondition {
     /// Variable name to check
     pub variable: String,
@@ -96,22 +128,24 @@ pub struct StoryCondition {
     #[serde(default)]
     pub operator: ConditionOperator,
     /// Value to compare against
+    #[reflect(ignore)]
     pub value: serde_json::Value,
 }
 
 /// An effect/action that modifies game state.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct StoryEffect {
     /// Effect type
     #[serde(rename = "type")]
     pub effect_type: EffectType,
     /// Effect parameters
     #[serde(default)]
+    #[reflect(ignore)]
     pub params: HashMap<String, serde_json::Value>,
 }
 
 /// Dialogue node data.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct DialogueNodeData {
     /// Speaker ID (NPC, party member, or "narrator")
     pub speaker_id: String,
@@ -132,7 +166,7 @@ pub struct DialogueNodeData {
 }
 
 /// A choice option in a choice node.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct ChoiceOption {
     /// Unique option identifier
     pub id: String,
@@ -149,7 +183,7 @@ pub struct ChoiceOption {
 }
 
 /// Choice node data.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct ChoiceNodeData {
     /// Optional prompt text per language
     #[serde(default)]
@@ -159,12 +193,13 @@ pub struct ChoiceNodeData {
 }
 
 /// Action node data.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct ActionNodeData {
     /// Lua script ID to execute
     pub lua_script_id: String,
     /// Script parameters
     #[serde(default)]
+    #[reflect(ignore)]
     pub params: HashMap<String, serde_json::Value>,
     /// Next node ID
     #[serde(default)]
@@ -172,7 +207,7 @@ pub struct ActionNodeData {
 }
 
 /// Conditional node data.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct ConditionalNodeData {
     /// Condition to evaluate
     pub condition: StoryCondition,
@@ -183,7 +218,7 @@ pub struct ConditionalNodeData {
 }
 
 /// Camera node data.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct CameraNodeData {
     /// Camera preset ID
     #[serde(default)]
@@ -226,7 +261,7 @@ impl Default for CameraNodeData {
 }
 
 /// Time control node data.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct TimeControlNodeData {
     /// Whether to pause gameplay
     #[serde(default)]
@@ -252,7 +287,7 @@ impl Default for TimeControlNodeData {
 }
 
 /// End node data.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 pub struct EndNodeData {
     /// End behavior type
     #[serde(default)]
@@ -262,10 +297,18 @@ pub struct EndNodeData {
     pub target_scene_id: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
+pub struct StartNodeData {
+    /// Next node ID logic should flow to
+    #[serde(default)]
+    pub next_node_id: Option<String>,
+}
+
 /// Story node variant data (tagged union).
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum StoryNodeVariant {
+    Start(StartNodeData),
     Dialogue(DialogueNodeData),
     Choice(ChoiceNodeData),
     Action(ActionNodeData),
@@ -276,7 +319,7 @@ pub enum StoryNodeVariant {
 }
 
 /// A node in a story graph.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct StoryNodeData {
     /// Unique node identifier
     pub id: String,
@@ -285,6 +328,13 @@ pub struct StoryNodeData {
     pub position: Vec3Data,
     /// Node data variant
     pub data: StoryNodeVariant,
+    /// Entities required by this node (e.g. speakers, targets)
+    #[serde(default)]
+    pub required_entities: Vec<RequiredEntity>,
+    /// Items required by this node
+    #[serde(default)]
+    pub required_items: Vec<RequiredItem>,
+
 }
 
 impl StoryNodeData {
@@ -300,6 +350,21 @@ impl StoryNodeData {
                 text: text_map,
                 ..Default::default()
             }),
+            required_entities: Vec::new(),
+            required_items: Vec::new(),
+        }
+    }
+
+    /// Create a new start node.
+    pub fn start(id: impl Into<String>, next_id: Option<impl Into<String>>) -> Self {
+        Self {
+            id: id.into(),
+            position: Vec3Data::default(),
+            data: StoryNodeVariant::Start(StartNodeData {
+                next_node_id: next_id.map(|s| s.into()),
+            }),
+            required_entities: Vec::new(),
+            required_items: Vec::new(),
         }
     }
 
@@ -309,12 +374,15 @@ impl StoryNodeData {
             id: id.into(),
             position: Vec3Data::default(),
             data: StoryNodeVariant::End(EndNodeData::default()),
+            required_entities: Vec::new(),
+            required_items: Vec::new(),
         }
     }
 
     /// Get the node type.
     pub fn node_type(&self) -> StoryNodeType {
         match &self.data {
+            StoryNodeVariant::Start(_) => StoryNodeType::Start,
             StoryNodeVariant::Dialogue(_) => StoryNodeType::Dialogue,
             StoryNodeVariant::Choice(_) => StoryNodeType::Choice,
             StoryNodeVariant::Action(_) => StoryNodeType::Action,
@@ -328,6 +396,7 @@ impl StoryNodeData {
     /// Get the next node ID(s) for this node.
     pub fn next_node_ids(&self) -> Vec<&str> {
         match &self.data {
+            StoryNodeVariant::Start(s) => s.next_node_id.as_deref().into_iter().collect(),
             StoryNodeVariant::Dialogue(d) => d.next_node_id.as_deref().into_iter().collect(),
             StoryNodeVariant::Choice(c) => c.options.iter().map(|o| o.target_node_id.as_str()).collect(),
             StoryNodeVariant::Action(a) => a.next_node_id.as_deref().into_iter().collect(),
@@ -352,8 +421,17 @@ pub enum ValidationError {
     UnreachableNode(String),
 }
 
+/// Validation error when checking against a scene.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SceneValidationError {
+    /// Node requires an entity that is missing from the scene
+    MissingRequiredEntity { node_id: String, entity_id: String },
+    /// Node requires an entity of a specific type, but found different type
+    WrongEntityType { node_id: String, entity_id: String, expected: EntityType, found: EntityType },
+}
+
 /// A complete story graph.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct StoryGraphData {
     /// Unique graph identifier
     pub id: String,
@@ -366,9 +444,11 @@ pub struct StoryGraphData {
     #[serde(default)]
     pub graph_type: StoryGraphType,
     /// Root node ID (entry point)
+    #[serde(default)]
     pub root_node_id: String,
     /// Initial variable values
     #[serde(default)]
+    #[reflect(ignore)]
     pub variables: HashMap<String, serde_json::Value>,
     /// All nodes in the graph
     pub nodes: Vec<StoryNodeData>,
@@ -429,6 +509,40 @@ impl StoryGraphData {
 
         errors
     }
+
+    /// Validate the story graph against a specific scene.
+    pub fn validate_against_scene(&self, scene: &Scene) -> Vec<SceneValidationError> {
+        let mut errors = Vec::new();
+
+        for node in &self.nodes {
+            for req in &node.required_entities {
+                match scene.find_entity(&req.entity_id) {
+                    Some(entity) => {
+                        if let Some(expected_type) = req.entity_type {
+                            if entity.entity_type != expected_type {
+                                errors.push(SceneValidationError::WrongEntityType {
+                                    node_id: node.id.clone(),
+                                    entity_id: req.entity_id.clone(),
+                                    expected: expected_type,
+                                    found: entity.entity_type,
+                                });
+                            }
+                        }
+                    }
+                    None => {
+                        errors.push(SceneValidationError::MissingRequiredEntity {
+                            node_id: node.id.clone(),
+                            entity_id: req.entity_id.clone(),
+                        });
+                    }
+                }
+            }
+        }
+
+        errors
+    }
+
+
 }
 
 #[cfg(test)]
@@ -457,10 +571,49 @@ mod tests {
             graph_type: StoryGraphType::Dialogue,
             root_node_id: "nonexistent".to_string(),
             variables: HashMap::new(),
+
             nodes: vec![],
         };
 
         let errors = graph.validate();
         assert!(errors.iter().any(|e| matches!(e, ValidationError::MissingRootNode(_))));
+    }
+
+    #[test]
+    fn test_validate_against_scene() {
+        use crate::data::scene::{Scene, Entity, EntityType};
+        
+        let mut graph = StoryGraphData::new("test", "Test");
+        let mut node = StoryNodeData::dialogue("node1", "Hero", "Hi");
+        node.required_entities.push(RequiredEntity {
+            entity_id: "hero_01".to_string(),
+            entity_type: Some(EntityType::Npc),
+        });
+        graph.add_node(node);
+
+        // Case 1: Entity missing
+        let scene = Scene::default();
+        let errors = graph.validate_against_scene(&scene);
+        assert_eq!(errors.len(), 1);
+        assert!(matches!(errors[0], SceneValidationError::MissingRequiredEntity { .. }));
+
+        // Case 2: Entity exists but wrong type
+        let mut scene = Scene::default();
+        let mut entity = Entity::new("hero_01", "Hero");
+        entity.entity_type = EntityType::Enemy; // Wrong type
+        scene.add_entity(entity);
+        
+        let errors = graph.validate_against_scene(&scene);
+        assert_eq!(errors.len(), 1);
+        assert!(matches!(errors[0], SceneValidationError::WrongEntityType { .. }));
+
+        // Case 3: Correct
+        let mut scene = Scene::default();
+        let mut entity = Entity::new("hero_01", "Hero");
+        entity.entity_type = EntityType::Npc; // Correct type
+        scene.add_entity(entity);
+
+        let errors = graph.validate_against_scene(&scene);
+        assert!(errors.is_empty());
     }
 }

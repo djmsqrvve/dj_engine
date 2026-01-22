@@ -4,12 +4,13 @@
 //! Scenes can be JRPG maps, TD maps, or shared between both game types.
 
 use serde::{Deserialize, Serialize};
+use bevy::prelude::*;
 
 
 use super::components::{EntityComponents, Vec3Data, ColorData};
 
 /// Scene type categorization.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum SceneType {
     /// JRPG-style map (tilemap, NPCs, story triggers)
@@ -22,7 +23,7 @@ pub enum SceneType {
 }
 
 /// Entity type categorization.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum EntityType {
     /// Non-player character (friendly)
@@ -47,14 +48,14 @@ pub enum EntityType {
 }
 
 /// 2D size with integer dimensions.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 pub struct TileSize {
     pub width: u32,
     pub height: u32,
 }
 
 /// Default spawn points for player and camera.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct DefaultSpawn {
     /// Player spawn position
     #[serde(default)]
@@ -65,7 +66,7 @@ pub struct DefaultSpawn {
 }
 
 /// Scene audio settings.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 pub struct SceneAudio {
     /// Background music track ID
     #[serde(default)]
@@ -78,7 +79,7 @@ pub struct SceneAudio {
 fn default_true() -> bool { true }
 
 /// Scene script hooks.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 pub struct SceneScripts {
     /// Script to run when entering the scene
     #[serde(default)]
@@ -89,7 +90,7 @@ pub struct SceneScripts {
 }
 
 /// Layer in a scene (for organizing entities).
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct Layer {
     /// Unique layer identifier
     pub id: String,
@@ -144,7 +145,7 @@ impl Layer {
 }
 
 /// Pathfinding cell for TD maps.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 pub struct PathfindingCell {
     /// Cell X coordinate
     pub x: i32,
@@ -159,7 +160,7 @@ pub struct PathfindingCell {
 }
 
 /// Pathfinding grid for TD maps.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 pub struct PathfindingGrid {
     /// Grid width in cells
     pub width: u32,
@@ -171,7 +172,7 @@ pub struct PathfindingGrid {
 }
 
 /// Scene pathfinding configuration.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 pub struct ScenePathfinding {
     /// Whether pathfinding is enabled for this scene
     #[serde(default)]
@@ -182,7 +183,7 @@ pub struct ScenePathfinding {
 }
 
 /// An entity in a scene.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct Entity {
     /// Unique entity identifier
     pub id: String,
@@ -248,7 +249,7 @@ impl Entity {
 }
 
 /// A complete scene/map.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct Scene {
     /// Unique scene identifier
     pub id: String,

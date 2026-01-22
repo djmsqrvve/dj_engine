@@ -5,9 +5,10 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use bevy::prelude::*;
 
 /// 3D vector (used for positions, rotations, scales).
-#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct Vec3Data {
     pub x: f32,
     pub y: f32,
@@ -26,7 +27,7 @@ impl Vec3Data {
 }
 
 /// RGBA color with float components.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct ColorData {
     pub r: f32,
     pub g: f32,
@@ -62,7 +63,7 @@ impl ColorData {
 }
 
 /// Physics body type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum BodyType {
     /// Does not move, affected by nothing
@@ -75,7 +76,7 @@ pub enum BodyType {
 }
 
 /// Collision shape type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum CollisionShape {
     #[default]
@@ -85,7 +86,7 @@ pub enum CollisionShape {
 }
 
 /// Trigger type for interactive objects.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum TriggerType {
     #[default]
@@ -97,7 +98,7 @@ pub enum TriggerType {
 }
 
 /// Tower targeting mode (TD-specific).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
 pub enum TargetingMode {
     /// Target the enemy that entered first
@@ -112,7 +113,7 @@ pub enum TargetingMode {
 }
 
 /// Animation configuration for sprites.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct AnimationData {
     /// Animation clip asset ID
     pub clip_id: Option<String>,
@@ -128,7 +129,8 @@ fn default_speed() -> f32 { 1.0 }
 fn default_true() -> bool { true }
 
 /// Transform component data.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct TransformComponent {
     /// World position
     pub position: Vec3Data,
@@ -159,7 +161,8 @@ impl Default for TransformComponent {
 }
 
 /// Sprite/visual appearance component data.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct SpriteComponent {
     /// Sprite asset ID
     pub sprite_id: String,
@@ -184,7 +187,8 @@ pub struct SpriteComponent {
 }
 
 /// Collision/physics component data.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct CollisionComponent {
     /// Whether collision is enabled
     #[serde(default = "default_true")]
@@ -236,7 +240,7 @@ impl Default for CollisionComponent {
 }
 
 /// Event hooks for interactive objects.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 pub struct InteractivityEvents {
     /// Event/script to run on interaction (E key, click, etc.)
     pub on_interact: Option<String>,
@@ -249,7 +253,8 @@ pub struct InteractivityEvents {
 }
 
 /// Interactivity component data.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct InteractivityComponent {
     /// Type of trigger
     #[serde(default)]
@@ -259,6 +264,7 @@ pub struct InteractivityComponent {
     pub trigger_id: String,
     /// Custom parameters for the trigger
     #[serde(default)]
+    #[reflect(ignore)]
     pub parameters: HashMap<String, serde_json::Value>,
     /// Lua script ID to execute
     #[serde(default)]
@@ -272,7 +278,8 @@ pub struct InteractivityComponent {
 pub type LocalizedString = HashMap<String, String>;
 
 /// NPC component data.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct NpcComponent {
     /// NPC ID (links to database NpcRow)
     pub npc_id: String,
@@ -294,7 +301,8 @@ pub struct NpcComponent {
 }
 
 /// Enemy component data.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct EnemyComponent {
     /// Enemy ID (links to database EnemyRow)
     pub enemy_id: String,
@@ -310,7 +318,8 @@ pub struct EnemyComponent {
 }
 
 /// Combat stats component data.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct CombatStatsComponent {
     /// Maximum hit points
     pub max_hp: i32,
@@ -359,7 +368,8 @@ impl Default for CombatStatsComponent {
 }
 
 /// Tower component data (TD-specific).
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct TowerComponent {
     /// Tower ID (links to database TowerRow)
     pub tower_id: String,
@@ -413,7 +423,7 @@ impl Default for TowerComponent {
 }
 
 /// Wave definition for spawners.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 pub struct SpawnerWave {
     /// Enemy template ID to spawn
     pub enemy_template_id: String,
@@ -427,7 +437,8 @@ pub struct SpawnerWave {
 fn default_spawn_interval() -> f32 { 1.0 }
 
 /// Spawner component data (TD and JRPG).
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct SpawnerComponent {
     /// Total number of waves
     pub wave_count: u32,
@@ -462,7 +473,8 @@ impl Default for SpawnerComponent {
 }
 
 /// Audio source component data.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct AudioSourceComponent {
     /// Audio clip asset ID
     pub clip_id: String,
@@ -491,7 +503,7 @@ impl Default for AudioSourceComponent {
 }
 
 /// Camera bounds for anchoring.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct CameraBounds {
     pub min_x: f32,
     pub max_x: f32,
@@ -500,7 +512,8 @@ pub struct CameraBounds {
 }
 
 /// Camera anchor component data.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Component, Reflect)]
+#[reflect(Component)]
 pub struct CameraAnchorComponent {
     /// Camera movement bounds
     #[serde(default)]
@@ -511,7 +524,7 @@ pub struct CameraAnchorComponent {
 }
 
 /// Container for all possible entity components.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct EntityComponents {
     /// Transform (always present)
     pub transform: TransformComponent,
@@ -547,6 +560,7 @@ pub struct EntityComponents {
     pub camera_anchor: Option<CameraAnchorComponent>,
     /// Custom/extension properties
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[reflect(ignore)]
     pub custom: HashMap<String, serde_json::Value>,
 }
 

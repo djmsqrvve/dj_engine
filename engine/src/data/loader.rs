@@ -142,6 +142,33 @@ pub fn save_story_graph(graph: &StoryGraphData, path: &Path) -> Result<(), DataE
     Ok(())
 }
 
+/// Save the entire project structure to a directory.
+///
+/// This creates the necessary subdirectories (scenes, assets, etc.) and saves the `project.json` file.
+///
+/// # Arguments
+/// * `project` - The project data to save
+/// * `root_path` - The root directory for the project
+pub fn save_project_structure(project: &Project, root_path: &Path) -> Result<(), DataError> {
+    if !root_path.exists() {
+        fs::create_dir_all(root_path)?;
+    }
+
+    let paths = &project.settings.paths;
+
+    // Create subdirectories
+    fs::create_dir_all(root_path.join(&paths.scenes))?;
+    fs::create_dir_all(root_path.join(&paths.story_graphs))?;
+    fs::create_dir_all(root_path.join(&paths.database))?;
+    fs::create_dir_all(root_path.join(&paths.assets))?;
+
+    // Save project.json
+    let project_file = root_path.join("project.json");
+    save_project(project, &project_file)?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -164,5 +191,21 @@ mod tests {
     fn test_load_not_found() {
         let result = load_project(Path::new("/nonexistent/path.json"));
         assert!(matches!(result, Err(DataError::NotFound(_))));
+    }
+
+    #[test]
+    fn test_save_project_structure() {
+        let project = Project::new("Structure Test");
+        let temp_dir = tempfile::tempdir().unwrap();
+        let root_path = temp_dir.path();
+
+        let result = save_project_structure(&project, root_path);
+        assert!(result.is_ok());
+
+        assert!(root_path.join("project.json").exists());
+        assert!(root_path.join("scenes").exists());
+        assert!(root_path.join("story_graphs").exists());
+        assert!(root_path.join("database").exists());
+        assert!(root_path.join("assets").exists());
     }
 }

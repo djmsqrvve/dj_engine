@@ -61,6 +61,10 @@ pub enum StoryNode {
         payload: String,
         next: Option<NodeId>,
     },
+    /// Start execution of the graph.
+    Start {
+        next: Option<NodeId>,
+    },
     /// End execution of the current graph.
     End,
 }
@@ -138,12 +142,92 @@ pub struct GraphExecutor {
     pub wait_timer: Timer,
 }
 
+use crate::data::story::{StoryGraphData, StoryNodeVariant};
+
 impl GraphExecutor {
     pub fn start(&mut self, graph: StoryGraph) {
         let start = graph.start_node;
         self.active_graph = Some(graph);
         self.current_node = start;
         self.status = ExecutionStatus::Running;
+    }
+
+    /// Helper to bridge Editor Data -> Runtime Graph
+    pub fn load_from_data(&mut self, data: &StoryGraphData) {
+        let mut graph = StoryGraph::new();
+        let mut id_map: HashMap<String, NodeId> = HashMap::new();
+
+        // Pass 1: Allocate IDs
+        for node_data in &data.nodes {
+            let next_id = graph.next_id; // Peek next ID
+            // We insert a placeholder to reserve the ID
+            graph.add(StoryNode::End); 
+            id_map.insert(node_data.id.clone(), next_id);
+        }
+
+        // Pass 2: Overwrite with actual data
+        for node_data in &data.nodes {
+            let runtime_id = id_map[&node_data.id];
+            
+            let resolve = |opt_id: &Option<String>| -> Option<NodeId> {
+                opt_id.as_ref().and_then(|id| id_map.get(id).cloned())
+            };
+            
+            let node = match &node_data.data {
+                StoryNodeVariant::Start(d) => StoryNode::Start {
+                    next: resolve(&d.next_node_id),
+                },
+                StoryNodeVariant::Dialogue(d) => StoryNode::Dialogue {
+                    speaker: d.speaker_id.clone(),
+                    text: d.text.get("en").cloned().unwrap_or_default(),
+                    portrait: d.portrait_id.clone(),
+                    next: resolve(&d.next_node_id),
+                },
+                StoryNodeVariant::Choice(c) => StoryNode::Choice {
+                    speaker: "Player".into(), // Default?
+                    prompt: c.prompt.get("en").cloned().unwrap_or_default(),
+                    options: c.options.iter().map(|o| GraphChoice {
+                        text: o.text.get("en").cloned().unwrap_or_default(),
+                        next: Some(id_map[&o.target_node_id]), // Choices must have targets?
+                        flag_required: None,
+                    }).collect(),
+                },
+                StoryNodeVariant::Action(a) => {
+                     // For now, assume action is Event? or Lua script?
+                     // Maps to Event for prototype
+                     StoryNode::Event {
+                         event_id: "lua_script".into(),
+                         payload: a.lua_script_id.clone(),
+                         next: resolve(&a.next_node_id),
+                     }
+                },
+                StoryNodeVariant::End(e) => {
+                    if let Some(scene) = &e.target_scene_id {
+                        StoryNode::Scene {
+                            path: scene.clone(),
+                            duration: 1.0,
+                            next: None, // End of graph after scene change? Or new graph?
+                        }
+                    } else {
+                        StoryNode::End
+                    }
+                },
+                _ => StoryNode::End, // Unimplemented variants
+            };
+
+            graph.nodes.insert(runtime_id, node);
+        }
+
+        if let Ok(start_id) = data.root_node_id.parse::<usize>() {
+             // If root_node_id happens to be numerical? unlikely. 
+             // We need to look up root node from map.
+        }
+        
+        if let Some(start_id) = id_map.get(&data.root_node_id) {
+            graph.set_start(*start_id);
+        }
+
+        self.start(graph);
     }
 }
 
@@ -297,7 +381,9 @@ fn advance_node(executor: &mut GraphExecutor) {
                     StoryNode::Scene { next, .. } => *next,
                     StoryNode::Wait { next, .. } => *next,
                     StoryNode::SetFlag { next, .. } => *next,
+                    StoryNode::SetFlag { next, .. } => *next,
                     StoryNode::Event { next, .. } => *next,
+                    StoryNode::Start { next, .. } => *next,
                     _ => None,
                 }
             } else { None }
@@ -376,6 +462,9 @@ fn process_node(
         }
         StoryNode::End => {
             NodeAction::End
+        }
+        StoryNode::Start { .. } => {
+            NodeAction::Advance
         }
     }
 }
