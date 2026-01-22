@@ -1,33 +1,42 @@
 # DJ Engine
 
-[![Rust](https://img.shields.io/badge/Rust-1.75+-orange)](https://www.rust-lang.org/)
-[![Bevy](https://img.shields.io/badge/Bevy-0.15-green)](https://bevyengine.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+<p align="center">
+  <strong>A modular game engine for narrative-heavy JRPGs and visual novels</strong>
+</p>
 
-A modular game engine for **narrative-heavy JRPGs** and **visual novels**, built with Rust and Bevy.
+<p align="center">
+  <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Rust-1.75+-orange?style=flat-square" alt="Rust"></a>
+  <a href="https://bevyengine.org/"><img src="https://img.shields.io/badge/Bevy-0.15-green?style=flat-square" alt="Bevy"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License"></a>
+  <a href="https://github.com/djmsqrvve/dj_engine/actions"><img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build"></a>
+</p>
+
+---
 
 ## ✨ Features
 
-- **Story Graph System** - Node-based dialogue and narrative branching
-- **Egui Editor** - Visual editor for scenes and story graphs  
-- **Lua Scripting** - Runtime scripting via mlua
-- **Data-Driven** - JSON-serializable scenes, databases, and graphs
-- **Procedural Animation** - Palette-driven corruption effects
+| Feature | Description |
+|---------|-------------|
+| **Story Graph** | Node-based dialogue and narrative branching |
+| **Egui Editor** | Visual editor for scenes and story graphs |
+| **Lua Scripting** | Runtime scripting via mlua |
+| **Data-Driven** | JSON-serializable scenes, databases, and graphs |
+| **Modular Design** | Plugin-based architecture for extensibility |
 
 ## 🚀 Quick Start
 
 ```bash
-# Clone
+# Clone the repository
 git clone https://github.com/djmsqrvve/dj_engine.git
 cd dj_engine
 
-# Run Editor
+# Run the editor
 ./dj e
 
-# Run Tests  
+# Run all tests
 ./dj test
 
-# Build Release
+# Build for release
 cargo build --release
 ```
 
@@ -35,24 +44,64 @@ cargo build --release
 
 ```
 dj_engine/
-├── engine/          # Core engine library
-│   ├── src/         # Rust source (data, editor, story_graph, scripting)
-│   └── examples/    # Example JSON files
-├── games/dev/       # Game projects (doomexe)
-├── docs/            # Documentation
-└── tools/           # Asset utilities
+├── engine/              # Core engine library
+│   ├── src/
+│   │   ├── core/        # Engine initialization
+│   │   ├── data/        # Serializable data types
+│   │   ├── editor/      # Egui visual editor
+│   │   ├── story_graph/ # Narrative system
+│   │   ├── scripting/   # Lua integration
+│   │   └── diagnostics/ # Debug tools
+│   └── examples/        # Example JSON files
+├── games/               # Game projects
+│   └── dev/doomexe/     # Main development game
+├── docs/                # Documentation
+└── tools/               # Asset utilities
 ```
 
 ## 📖 Documentation
 
-- [Architecture](docs/Architecture_Specification.json) - Core design spec
-- [Roadmap](docs/Game_Engine_Technical_Roadmap.md) - 20-week development plan
-- [Complete Docs](docs/complete-detailed-docs.md) - Implementation guides
+| Document | Description |
+|----------|-------------|
+| [Getting Started](docs/GETTING_STARTED.md) | First-time setup guide |
+| [Architecture](docs/ARCHITECTURE.md) | System design overview |
+| [Code Style](docs/CODE_STYLE.md) | Coding standards |
+| [Testing Guide](docs/TESTING.md) | How to write and run tests |
+| [Project Structure](docs/PROJECT_STRUCTURE.md) | Detailed file layout |
+
+## 🛠️ Development
+
+### Prerequisites
+
+- **Rust 1.75+** - [Install Rust](https://rustup.rs/)
+- **Git** - For version control
+- **Linux/WSL2** recommended (Windows native works but may have graphics quirks)
+
+### Common Commands
+
+```bash
+./dj e          # Run editor
+./dj test       # Run tests
+./dj d          # Run with diagnostics
+cargo fmt       # Format code
+cargo clippy    # Lint code
+cargo doc       # Generate docs
+```
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting a PR.
 
-## 📄 License
+- 🐛 [Report a Bug](.github/ISSUE_TEMPLATE/bug_report.md)
+- 💡 [Request a Feature](.github/ISSUE_TEMPLATE/feature_request.md)
+- 📖 [Improve Documentation](docs/)
 
-MIT © [djmsqrvve](https://github.com/djmsqrvve)
+## 📜 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/djmsqrvve">djmsqrvve</a>
+</p>
