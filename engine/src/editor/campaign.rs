@@ -5,9 +5,7 @@ use crate::data::campaign::{CampaignData, CampaignNodeType};
 #[derive(Resource, Default)]
 pub struct CampaignEditorState {
     pub active_campaign: CampaignData,
-    pub selection: Option<String>,
     pub pan: Vec2,
-    pub zoom: f32,
 }
 
 pub fn draw_campaign_editor(
