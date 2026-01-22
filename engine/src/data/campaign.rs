@@ -5,7 +5,6 @@
 
 use serde::{Deserialize, Serialize};
 use bevy::prelude::*;
-use std::collections::HashMap;
 
 use super::components::Vec3Data;
 

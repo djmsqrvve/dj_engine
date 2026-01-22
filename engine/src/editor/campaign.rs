@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts};
-use crate::data::campaign::{CampaignData, CampaignNodeData, CampaignNodeType};
+use bevy_egui::egui;
+use crate::data::campaign::{CampaignData, CampaignNodeType};
 
 #[derive(Resource, Default)]
 pub struct CampaignEditorState {
@@ -17,9 +17,9 @@ pub fn draw_campaign_editor(
     ui.heading("Campaign Board");
     ui.separator();
 
-    let painter = ui.painter();
     let rect = ui.available_rect_before_wrap();
     let response = ui.allocate_rect(rect, egui::Sense::drag());
+    let painter = ui.painter();
 
     // Handle Pan
     if response.dragged() {
