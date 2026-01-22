@@ -65,10 +65,14 @@ impl Default for InputConfig {
                 (KeyCode::Space, InputAction::Confirm),
                 (KeyCode::Enter, InputAction::Confirm),
                 (KeyCode::KeyZ, InputAction::Confirm),
+                (KeyCode::Digit1, InputAction::Confirm),
+                (KeyCode::KeyC, InputAction::Confirm),
                 // Cancel
                 (KeyCode::Escape, InputAction::Cancel),
                 (KeyCode::Backspace, InputAction::Cancel),
                 (KeyCode::KeyX, InputAction::Cancel),
+                (KeyCode::Digit0, InputAction::Cancel),
+                (KeyCode::KeyV, InputAction::Cancel),
                 // Menu
                 (KeyCode::Tab, InputAction::Menu),
                 // Directions - Arrow keys

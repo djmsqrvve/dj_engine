@@ -35,6 +35,7 @@ pub enum EditorView {
     Level,
     StoryGraph,
     Campaign,
+    Controls,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -329,9 +330,9 @@ fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
 
         // View Switcher Tabs
         let mut ui_state = world.resource_mut::<EditorUiState>();
-        ui.selectable_value(&mut ui_state.current_view, EditorView::Level, RichText::new("🌍 Level Editor").strong());
         ui.selectable_value(&mut ui_state.current_view, EditorView::StoryGraph, RichText::new("🕸 Story Graph").strong());
         ui.selectable_value(&mut ui_state.current_view, EditorView::Campaign, RichText::new("🗺 Campaign").strong());
+        ui.selectable_value(&mut ui_state.current_view, EditorView::Controls, RichText::new("⌨ Controls").strong());
         
         ui.add_space(10.0);
         ui.separator();
@@ -580,7 +581,46 @@ fn draw_central_panel(ui: &mut egui::Ui, world: &mut World) {
             let mut state = world.resource_mut::<CampaignEditorState>();
             campaign::draw_campaign_editor(ui, &mut state);
         }
+        EditorView::Controls => {
+            draw_controls_view(ui, world);
+        }
     }
+}
+
+fn draw_controls_view(ui: &mut egui::Ui, world: &mut World) {
+    use crate::input::InputConfig;
+    
+    ui.heading(RichText::new("ENGINE CONTROLS").color(COLOR_PRIMARY));
+    ui.add_space(10.0);
+    ui.separator();
+    ui.add_space(10.0);
+
+    let config = world.resource::<InputConfig>();
+
+    egui::Grid::new("controls_grid")
+        .num_columns(2)
+        .spacing([40.0, 10.0])
+        .striped(true)
+        .show(ui, |ui| {
+            ui.label(RichText::new("ACTION").strong());
+            ui.label(RichText::new("KEYS").strong());
+            ui.end_row();
+
+            // Group by Action
+            let mut actions: std::collections::HashMap<crate::input::InputAction, Vec<String>> = std::collections::HashMap::new();
+            for (key, action) in &config.keyboard_map {
+                actions.entry(*action).or_default().push(format!("{:?}", key));
+            }
+
+            for (action, keys) in actions {
+                ui.label(format!("{:?}", action));
+                ui.label(keys.join(", "));
+                ui.end_row();
+            }
+        });
+
+    ui.add_space(20.0);
+    ui.label(RichText::new("TIP: You can edit these in engine/src/input/mod.rs (for now).").italics().color(Color32::GRAY));
 }
 
 fn draw_grid(ui: &mut egui::Ui, world: &mut World) {
@@ -685,9 +725,25 @@ fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
     
     let rect = ui.available_rect_before_wrap();
     
-    // Darker background
-    painter.rect_filled(rect, 0.0, Color32::from_rgb(10, 10, 15));
-    
+    // 1. Draw Background & Grid
+    painter.rect_filled(rect, 0.0, Color32::from_rgb(15, 15, 20));
+    for i in 0..25 {
+        let x = rect.min.x + (i as f32 * 80.0);
+        painter.line_segment([egui::pos2(x, rect.min.y), egui::pos2(x, rect.max.y)], (1.0, Color32::from_rgba_unmultiplied(60, 60, 80, 40)));
+        let y = rect.min.y + (i as f32 * 80.0);
+        painter.line_segment([egui::pos2(rect.min.x, y), egui::pos2(rect.max.x, y)], (1.0, Color32::from_rgba_unmultiplied(60, 60, 80, 40)));
+    }
+
+    // Auto-init for empty graph
+    world.resource_scope::<ActiveStoryGraph, _>(|_, mut graph| {
+        if graph.0.nodes.is_empty() {
+             let mut start = StoryNodeData::start("start", None::<String>);
+             start.position = Vec3Data::new(100.0, 100.0, 0.0);
+             graph.0.root_node_id = "start".to_string();
+             graph.0.add_node(start);
+        }
+    });
+
     // Context Menu
     let mut add_node_cmd = None;
     
@@ -696,11 +752,11 @@ fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
     let response = ui.allocate_rect(rect, egui::Sense::click());
     
     response.context_menu(|ui| {
-        ui.label("Add Node");
+        ui.label(RichText::new("ADD STORY ELEMENT").strong().color(COLOR_PRIMARY));
         ui.separator();
-        if ui.button("Start Node").clicked() { add_node_cmd = Some("Start"); ui.close_menu(); }
-        if ui.button("Dialogue Node").clicked() { add_node_cmd = Some("Dialogue"); ui.close_menu(); }
-        if ui.button("End Node").clicked() { add_node_cmd = Some("End"); ui.close_menu(); }
+        if ui.button("🎬 Start").clicked() { add_node_cmd = Some("Start"); ui.close_menu(); }
+        if ui.button("💬 Dialogue").clicked() { add_node_cmd = Some("Dialogue"); ui.close_menu(); }
+        if ui.button("🔚 End").clicked() { add_node_cmd = Some("End"); ui.close_menu(); }
     });
 
     if let Some(cmd) = add_node_cmd {
@@ -766,20 +822,18 @@ fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
                 egui::vec2(150.0, 80.0)
             );
             
-            // Background
-            let color = match node.node_type() {
-                crate::data::story::StoryNodeType::Start => Color32::from_rgb(50, 200, 100),
-                crate::data::story::StoryNodeType::End => Color32::from_rgb(200, 50, 50),
-                crate::data::story::StoryNodeType::Dialogue => Color32::from_rgb(50, 100, 200),
-                _ => Color32::from_rgb(100, 100, 100),
+            let (bg, stroke) = match node.node_type() {
+                crate::data::story::StoryNodeType::Start => (Color32::from_rgb(0, 80, 40), Color32::GREEN),
+                crate::data::story::StoryNodeType::End => (Color32::from_rgb(80, 0, 0), Color32::RED),
+                crate::data::story::StoryNodeType::Dialogue => (Color32::from_rgb(0, 40, 100), COLOR_PRIMARY),
+                _ => (Color32::from_rgb(40, 40, 40), Color32::GRAY),
             };
             
-            painter.rect_filled(node_rect, 5.0, color);
-            painter.rect_stroke(node_rect, 5.0, (1.0, Color32::WHITE));
+            painter.rect_filled(node_rect, 6.0, bg);
+            painter.rect_stroke(node_rect, 6.0, (1.5, stroke));
             
-            // Content
             painter.text(node_rect.min + egui::vec2(10.0, 10.0), egui::Align2::LEFT_TOP, &node.id, egui::FontId::proportional(14.0), Color32::WHITE);
-            painter.text(node_rect.min + egui::vec2(10.0, 30.0), egui::Align2::LEFT_TOP, format!("{:?}", node.node_type()), egui::FontId::proportional(12.0), Color32::BLACK);
+            painter.text(node_rect.min + egui::vec2(10.0, 30.0), egui::Align2::LEFT_TOP, format!("{:?}", node.node_type()), egui::FontId::proportional(11.0), Color32::LIGHT_GRAY);
 
             // Interaction
             let response = ui.allocate_rect(node_rect, egui::Sense::drag());
