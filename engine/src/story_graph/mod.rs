@@ -218,7 +218,7 @@ impl GraphExecutor {
             graph.nodes.insert(runtime_id, node);
         }
 
-        if let Ok(start_id) = data.root_node_id.parse::<usize>() {
+        if let Ok(_start_id) = data.root_node_id.parse::<usize>() {
              // If root_node_id happens to be numerical? unlikely. 
              // We need to look up root node from map.
         }
@@ -380,7 +380,6 @@ fn advance_node(executor: &mut GraphExecutor) {
                     StoryNode::Audio { next, .. } => *next,
                     StoryNode::Scene { next, .. } => *next,
                     StoryNode::Wait { next, .. } => *next,
-                    StoryNode::SetFlag { next, .. } => *next,
                     StoryNode::SetFlag { next, .. } => *next,
                     StoryNode::Event { next, .. } => *next,
                     StoryNode::Start { next, .. } => *next,

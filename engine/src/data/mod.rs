@@ -17,6 +17,7 @@ pub mod components;
 pub mod story;
 pub mod database;
 pub mod assets;
+pub mod campaign;
 pub mod loader;
 pub mod spawner;
 
@@ -25,6 +26,7 @@ pub use project::{Project, ProjectSettings, EditorPreferences};
 pub use scene::{Scene, Layer, Entity, SceneType, EntityType};
 pub use components::*;
 pub use story::{StoryGraphData, StoryNodeData, StoryNodeType};
+pub use campaign::{CampaignData, CampaignNodeData, CampaignNodeType};
 pub use database::{Database, ItemRow, NpcRow, TowerRow, EnemyRow, LootTableRow, QuestRow};
 pub use assets::{AssetIndex, Prefab};
 pub use loader::{load_project, load_scene, load_database, load_story_graph, DataError};
@@ -85,6 +87,9 @@ impl Plugin for DataPlugin {
            .register_type::<scene::PathfindingGrid>()
            .register_type::<scene::ScenePathfinding>()
            .register_type::<scene::Entity>()
-           .register_type::<scene::Scene>();
+           .register_type::<scene::Scene>()
+           .register_type::<campaign::CampaignData>()
+           .register_type::<campaign::CampaignNodeData>()
+           .register_type::<campaign::CampaignNodeType>();
     }
 }

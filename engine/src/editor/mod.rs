@@ -3,6 +3,9 @@
 //! Provides a professional game development environment using Egui.
 
 pub mod validation;
+mod campaign;
+
+use campaign::CampaignEditorState;
 
 use bevy::prelude::*;
 use bevy_egui::{egui::{self, RichText, Color32}, EguiPlugin};
@@ -31,6 +34,7 @@ pub enum EditorView {
     #[default]
     Level,
     StoryGraph,
+    Campaign,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -121,6 +125,7 @@ impl Plugin for EditorPlugin {
                 ..default()
             })
             .init_resource::<ActiveStoryGraph>()
+            .init_resource::<CampaignEditorState>()
             .add_systems(Update, configure_visuals_system)
             .add_systems(Update, editor_ui_system)
             .add_systems(OnEnter(EditorState::Playing), launch_project_system);
@@ -326,6 +331,7 @@ fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
         let mut ui_state = world.resource_mut::<EditorUiState>();
         ui.selectable_value(&mut ui_state.current_view, EditorView::Level, RichText::new("🌍 Level Editor").strong());
         ui.selectable_value(&mut ui_state.current_view, EditorView::StoryGraph, RichText::new("🕸 Story Graph").strong());
+        ui.selectable_value(&mut ui_state.current_view, EditorView::Campaign, RichText::new("🗺 Campaign").strong());
         
         ui.add_space(10.0);
         ui.separator();
@@ -569,6 +575,10 @@ fn draw_central_panel(ui: &mut egui::Ui, world: &mut World) {
         },
         EditorView::StoryGraph => {
             draw_story_graph(ui, world);
+        }
+        EditorView::Campaign => {
+            let mut state = world.resource_mut::<CampaignEditorState>();
+            campaign::draw_campaign_editor(ui, &mut state);
         }
     }
 }
@@ -882,7 +892,7 @@ fn world_to_scene(world: &mut World) -> Scene {
     // We need to collect first to avoid borrowing world inside loop if we needed mutable access,
     // though query iteration is fine. But constructing SceneEntity might need data types.
     let mut world_entities = Vec::new();
-    for (e, name, transform, sprite) in query.iter(world) {
+    for (_e, name, transform, sprite) in query.iter(world) {
         // Clone data out of world
         let pos = transform.translation;
         let scale = transform.scale;

@@ -28,8 +28,8 @@ SHIFT_ARGS="${@:2}"
 
 case $COMMAND in
     "e" | "editor")
-        echo "🚀 Starting DJ Engine Editor..."
-        cargo run -p dj_engine --bin dj_engine -- $SHIFT_ARGS
+        echo "🚀 Starting DJ Engine Editor (Project: DoomExe)..."
+        cargo run -p doomexe -- --editor $SHIFT_ARGS
         ;;
     "d" | "doomexe")
         echo "🎮 Starting DoomExe..."

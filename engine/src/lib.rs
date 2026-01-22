@@ -56,6 +56,7 @@ pub mod prelude {
         Database, ItemRow, NpcRow, TowerRow, EnemyRow, LootTableRow, QuestRow,
         AssetIndex, Prefab,
         StoryGraphData, StoryNodeData, StoryNodeType,
+        CampaignData, CampaignNodeData, CampaignNodeType,
         load_project, load_scene, load_database, load_story_graph, DataError,
     };
     pub use crate::data::spawner::{LoadedScene, SceneDataPlugin};
