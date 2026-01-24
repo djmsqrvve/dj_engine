@@ -4,6 +4,7 @@ use crate::diagnostics::console::ConsoleLogStore;
 use crate::data::{loader, project::Project};
 use crate::data::scene::{Scene, Entity as SceneEntity};
 use crate::data::components::{EntityComponents, TransformComponent, SpriteComponent, ColorData, Vec3Data};
+use crate::data::project::EngineSettings;
 
 use super::state::*;
 

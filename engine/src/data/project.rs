@@ -6,6 +6,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
+use bevy::prelude::*;
 
 /// Input profile for the game (determines default control schemes).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -407,6 +408,73 @@ impl Project {
     /// Find a story graph reference by ID.
     pub fn find_story_graph(&self, id: &str) -> Option<&StoryGraphRef> {
         self.story_graphs.iter().find(|s| s.id == id)
+    }
+}
+
+
+/// Global engine settings (persisted per-user).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Resource)]
+pub struct EngineSettings {
+    pub draw_grid: bool,
+    pub show_bounds: bool,
+    pub log_scripts: bool,
+    pub master_volume: f32,
+    pub window_width: f32,
+    pub window_height: f32,
+    pub monitor_index: usize,
+    pub window_mode_index: usize, // 0: Windowed, 1: Borderless, 2: Fullscreen
+}
+
+impl Default for EngineSettings {
+    fn default() -> Self {
+        Self {
+            draw_grid: true,
+            show_bounds: false,
+            log_scripts: true,
+            master_volume: 1.0,
+            window_width: 1280.0,
+            window_height: 720.0,
+            monitor_index: 0,
+            window_mode_index: 0,
+        }
+    }
+}
+
+impl EngineSettings {
+    /// Get the default settings file path (~/.dj_engine/settings.json)
+    pub fn default_path() -> PathBuf {
+        dirs::home_dir()
+            .unwrap_or_else(|| PathBuf::from("."))
+            .join(".dj_engine")
+            .join("settings.json")
+    }
+
+    /// Load settings from disk, or return default if not found
+    pub fn load() -> Self {
+        let path = Self::default_path();
+        if path.exists() {
+            match std::fs::read_to_string(&path) {
+                Ok(contents) => {
+                    match serde_json::from_str(&contents) {
+                        Ok(settings) => return settings,
+                        Err(e) => eprintln!("Failed to parse settings: {}", e),
+                    }
+                }
+                Err(e) => eprintln!("Failed to read settings: {}", e),
+            }
+        }
+        Self::default()
+    }
+
+    /// Save settings to disk
+    pub fn save(&self) -> Result<(), std::io::Error> {
+        let path = Self::default_path();
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let json = serde_json::to_string_pretty(self)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        std::fs::write(&path, json)
     }
 }
 

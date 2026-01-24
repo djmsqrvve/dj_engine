@@ -25,7 +25,7 @@ pub mod mode;
 pub mod scenario;
 
 // Re-export commonly used types
-pub use project::{Project, ProjectSettings, EditorPreferences};
+pub use project::{Project, ProjectSettings, EditorPreferences, EngineSettings};
 pub use scene::{Scene, Layer, Entity, SceneType, EntityType};
 pub use components::*;
 pub use story::{StoryGraphData, StoryNodeData, StoryNodeType};

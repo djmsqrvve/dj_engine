@@ -485,6 +485,7 @@ pub fn draw_settings_view(ui: &mut egui::Ui, world: &mut World) {
             cols[0].add_space(10.0);
 
             let mut settings = world.resource_mut::<EngineSettings>();
+            let initial_settings = settings.clone();
 
             cols[0].group(|ui| {
                 ui.label(RichText::new("🔊 AUDIO").strong().color(COLOR_PRIMARY));
@@ -560,6 +561,13 @@ pub fn draw_settings_view(ui: &mut egui::Ui, world: &mut World) {
                     ui.add(egui::DragValue::new(&mut settings.monitor_index).range(0..=4));
                 });
             });
+
+            // Auto-save if settings changed
+            if *settings != initial_settings {
+                if let Err(e) = settings.save() {
+                    error!("Failed to save settings: {}", e);
+                }
+            }
         });
     });
 }
