@@ -10,78 +10,107 @@ use super::super::state::*;
 use super::super::systems::*;
 
 pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
-    ui.horizontal(|ui| {
-        // Logo with Cyberpunk colors
-        ui.spacing_mut().item_spacing.x = 2.0;
-        ui.label(RichText::new("DJ").color(COLOR_PRIMARY).strong().size(20.0).italics());
-        ui.label(RichText::new("ENGINE").color(COLOR_SECONDARY).strong().size(20.0));
-        
-        ui.add_space(10.0);
-        ui.separator();
-        ui.add_space(10.0);
+    ui.vertical(|ui| {
+        // ROW 1: APP MENU
+        ui.horizontal(|ui| {
+            // Logo with Cyberpunk colors
+            ui.spacing_mut().item_spacing.x = 2.0;
+            ui.label(RichText::new("DJ").color(COLOR_PRIMARY).strong().size(20.0).italics());
+            ui.label(RichText::new("ENGINE").color(COLOR_SECONDARY).strong().size(20.0));
+            
+            ui.add_space(10.0);
+            ui.separator();
+            ui.add_space(10.0);
 
-        // FILE MENU
-        ui.menu_button("File", |ui| {
-            if ui.button("💾 Save Project").clicked() {
-                 save_project_impl(world);
-                 ui.close_menu();
-            }
-            if ui.button("📂 Load Project").clicked() {
-                // For now, load default dev path
-                let path = PathBuf::from("games/dev/new_horizon");
-                let mut project_meta = world.resource_mut::<ProjectMetadata>();
-                project_meta.path = Some(path.clone());
-                
-                // Try load project.json
-                let project_file = path.join("project.json");
-                if project_file.exists() {
-                    match loader::load_project(&project_file) {
-                        Ok(project) => {
-                            project_meta.name = project.name;
-                            info!("Loaded project: {}", project_meta.name);
-                        },
-                        Err(e) => error!("Failed to load project.json: {}", e),
+            // FILE MENU
+            ui.menu_button("File", |ui| {
+                if ui.button("💾 Save Project").clicked() {
+                     save_project_impl(world);
+                     ui.close_menu();
+                }
+                if ui.button("📂 Load Project").clicked() {
+                    let path = PathBuf::from("games/dev/new_horizon");
+                    let mut project_meta = world.resource_mut::<ProjectMetadata>();
+                    project_meta.path = Some(path.clone());
+                    
+                    let project_file = path.join("project.json");
+                    if project_file.exists() {
+                        match loader::load_project(&project_file) {
+                            Ok(project) => {
+                                project_meta.name = project.name;
+                                info!("Loaded project: {}", project_meta.name);
+                            },
+                            Err(e) => error!("Failed to load project.json: {}", e),
+                        }
+                    } else {
+                        project_meta.name = "New Horizon".into();
                     }
-                } else {
-                    project_meta.name = "New Horizon".into();
-                }
 
-                // Try load scene
-                let scene_path = path.join("scenes/intro_scene.json");
-                if scene_path.exists() {
-                     match loader::load_scene(&scene_path) {
-                         Ok(scene) => {
-                             load_scene_into_editor(world, scene);
-                             info!("Loaded scene: intro_scene");
-                         },
-                         Err(e) => error!("Failed to load scene: {}", e),
-                     }
-                } else {
-                     warn!("No scene found at {:?}", scene_path);
-                }
-                
-                // Try load story graph
-                let graph_path = path.join("story_graphs/intro.json");
-                if graph_path.exists() {
-                     match loader::load_story_graph(&graph_path) {
-                         Ok(graph) => {
-                             world.insert_resource(ActiveStoryGraph(graph));
-                             info!("Loaded story graph: intro");
+                    let scene_path = path.join("scenes/intro_scene.json");
+                    if scene_path.exists() {
+                         match loader::load_scene(&scene_path) {
+                             Ok(scene) => {
+                                 load_scene_into_editor(world, scene);
+                                 info!("Loaded scene: intro_scene");
+                             },
+                             Err(e) => error!("Failed to load scene: {}", e),
                          }
-                         Err(e) => error!("Failed to load story graph: {}", e),
-                     }
+                    }
+                    
+                    let graph_path = path.join("story_graphs/intro.json");
+                    if graph_path.exists() {
+                         match loader::load_story_graph(&graph_path) {
+                             Ok(graph) => {
+                                 world.insert_resource(ActiveStoryGraph(graph));
+                                 info!("Loaded story graph: intro");
+                             }
+                             Err(e) => error!("Failed to load story graph: {}", e),
+                         }
+                    }
+                    
+                    info!("Editor: Loaded project path 'games/dev/new_horizon'");
+                    ui.close_menu();
                 }
-                
-                info!("Editor: Loaded project path 'games/dev/new_horizon'");
-                ui.close_menu();
-            }
+            });
+
+            // EDIT MENU (Placeholder)
+            ui.menu_button("Edit", |ui| {
+                let _ = ui.button("Undo");
+                let _ = ui.button("Redo");
+                ui.separator();
+                let _ = ui.button("Cut");
+                let _ = ui.button("Copy");
+                let _ = ui.button("Paste");
+            });
+
+            // VIEW MENU (Placeholder)
+            ui.menu_button("View", |ui| {
+                let _ = ui.button("Zoom In");
+                let _ = ui.button("Zoom Out");
+                ui.separator();
+                let _ = ui.button("Show Grid");
+                let _ = ui.button("Show Bounds");
+            });
+
+            // TOOLS MENU (Placeholder)
+            ui.menu_button("Tools", |ui| {
+                let _ = ui.button("Asset Generator");
+                let _ = ui.button("Validation");
+            });
+
+            // HELP MENU (Placeholder)
+            ui.menu_button("Help", |ui| {
+                let _ = ui.button("Documentation");
+                let _ = ui.button("About DJ Engine");
+            });
         });
 
-        ui.add_space(10.0);
+        ui.add_space(2.0);
         ui.separator();
-        ui.add_space(10.0);
+        ui.add_space(2.0);
 
-        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        // ROW 2: NAVIGATION TABS
+        ui.horizontal(|ui| {
             let mut switch_branch_idx = None;
             let mut add_branch = false;
             let mut close_branch_idx = None;
@@ -93,7 +122,7 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
             let active_view = active_branch.active_view.clone();
 
             // 1. CORE / BRANCHES DROPDOWN
-            ui.menu_button(RichText::new("📦 CORE").color(COLOR_PRIMARY).strong(), |ui| {
+            ui.menu_button(RichText::new("📦 CORE").color(COLOR_PRIMARY).strong().size(14.0), |ui| {
                 ui.label("Branches");
                 ui.separator();
                 for (idx, branch) in branches.iter().enumerate() {
@@ -118,9 +147,9 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                 }
             });
 
-            ui.add_space(10.0);
+            ui.add_space(5.0);
             ui.separator();
-            ui.add_space(10.0);
+            ui.add_space(5.0);
 
             // 2. EDITOR VIEW TABS
             let views = [
