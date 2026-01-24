@@ -57,12 +57,13 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                          }
                     }
                     
-                    let graph_path = path.join("story_graphs/intro.json");
+                    // Try load story graph
+                    let graph_path = path.join("story_graphs/test_game.json");
                     if graph_path.exists() {
                          match loader::load_story_graph(&graph_path) {
                              Ok(graph) => {
                                  world.insert_resource(ActiveStoryGraph(graph));
-                                 info!("Loaded story graph: intro");
+                                 info!("Loaded story graph: test_game");
                              }
                              Err(e) => error!("Failed to load story graph: {}", e),
                          }
@@ -109,7 +110,12 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
         ui.separator();
         ui.add_space(2.0);
 
-        // ROW 2: NAVIGATION TABS
+        // ROW 2: NAVIGATION & CONTEXT (The "Pro Tool" Dashboard)
+        // Vision: This row manages the *context* of what is being edited.
+        // - CORE: Global project state and version control (Git-like).
+        // - DASHBOARD: High-level visualization of all branches and their health.
+        // - FEATURE GRID: Modular system toggles (Sphere Grid style).
+        // - VIEWS: Specific domain editors (Spatial, Narrative, Logic).
         ui.horizontal(|ui| {
             let mut switch_branch_idx = None;
             let mut add_branch = false;
@@ -168,6 +174,17 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                     state.global_view = EditorView::FeatureGrid;
                     if let Some(branch) = state.active_branches.get_mut(active_idx) {
                         branch.active_view = EditorView::FeatureGrid;
+                    }
+                }
+            }
+            ui.add_space(5.0);
+
+            let is_timeline = active_view == EditorView::Timeline;
+            if ui.selectable_label(is_timeline, "🎹 Timeline").clicked() {
+                if let Some(mut state) = world.get_resource_mut::<EditorUiState>() {
+                    state.global_view = EditorView::Timeline;
+                    if let Some(branch) = state.active_branches.get_mut(active_idx) {
+                        branch.active_view = EditorView::Timeline;
                     }
                 }
             }

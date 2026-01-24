@@ -28,6 +28,7 @@ pub enum EditorView {
     #[default]
     Core,           // Workspace Dashboard
     FeatureGrid,    // Ecosystem toggle grid
+    Timeline,       // DAW-style Logic Timeline
     MapEditor,      // Edit static geometry (MapAsset)
     ScenarioEditor, // Edit dynamic entities (ScenarioData)
     StoryGraph,

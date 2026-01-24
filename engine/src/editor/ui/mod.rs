@@ -7,6 +7,7 @@ pub mod views;
 pub mod campaign;
 pub mod phases_view;
 pub mod feature_grid;
+pub mod timeline;
 
 pub fn editor_ui_system(world: &mut World) {
     let ctx = world
@@ -76,6 +77,9 @@ fn draw_central_panel(ui: &mut egui::Ui, world: &mut World) {
         }
         EditorView::FeatureGrid => {
             feature_grid::draw_feature_grid(ui, world);
+        }
+        EditorView::Timeline => {
+            timeline::draw_timeline_view(ui, world);
         }
 
         EditorView::MapEditor | EditorView::ScenarioEditor => {
