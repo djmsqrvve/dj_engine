@@ -26,6 +26,7 @@ pub enum SidePanelTab {
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum EditorView {
     #[default]
+    Core,           // Workspace Dashboard
     MapEditor,      // Edit static geometry (MapAsset)
     ScenarioEditor, // Edit dynamic entities (ScenarioData)
     StoryGraph,
@@ -36,6 +37,21 @@ pub enum EditorView {
     Play,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Commit {
+    pub id: String,
+    pub message: String,
+    pub status: CommitStatus,
+    pub position: bevy::math::Vec2,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CommitStatus {
+    Passed,
+    Failed,
+    Pending,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Branch {
     pub id: String,
@@ -43,7 +59,7 @@ pub struct Branch {
     pub color: Color32,
     pub active_view: EditorView,
     pub active_tab: SidePanelTab,
-    // We will expand this with specific context later (like active scenario ID)
+    pub history: Vec<Commit>,
 }
 
 #[derive(Resource, Default)]
@@ -64,6 +80,7 @@ pub struct ActiveScenario(pub ScenarioData);
 
 #[derive(Resource, Default)]
 pub struct EditorUiState {
+    pub global_view: EditorView,
     pub active_branches: Vec<Branch>,
     pub active_branch_idx: usize,
     pub selected_entities: bevy_inspector_egui::bevy_inspector::hierarchy::SelectedEntities,
@@ -79,12 +96,21 @@ pub struct EditorUiState {
 impl EditorUiState {
     pub fn new() -> Self {
         Self {
+            global_view: EditorView::Core,
             active_branches: vec![Branch {
                 id: "main".to_string(),
                 name: "Main Branch".to_string(),
                 color: COLOR_PRIMARY,
-                active_view: EditorView::default(),
+                active_view: EditorView::MapEditor,
                 active_tab: SidePanelTab::Hierarchy,
+                history: vec![
+                    Commit {
+                        id: "initial".to_string(),
+                        message: "Initial Commit".to_string(),
+                        status: CommitStatus::Passed,
+                        position: Vec2::new(0.0, 0.0),
+                    }
+                ],
             }],
             active_branch_idx: 0,
             ..Default::default()

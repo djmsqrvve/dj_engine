@@ -5,6 +5,92 @@ use crate::data::components::Vec3Data;
 
 use super::super::state::*;
 
+pub fn draw_core_dashboard(ui: &mut egui::Ui, world: &mut World) {
+    let rect = ui.available_rect_before_wrap();
+    
+    // 1. Background
+    ui.painter().rect_filled(rect, 0.0, Color32::from_rgb(10, 10, 15));
+    
+    // 2. Center Hub (CORE)
+    let center = rect.center();
+    let core_size = egui::vec2(120.0, 60.0);
+    let core_rect = egui::Rect::from_center_size(center, core_size);
+    
+    ui.painter().rect_filled(core_rect, 10.0, Color32::BLACK);
+    ui.painter().rect_stroke(core_rect, 10.0, (2.0, Color32::WHITE));
+    ui.painter().text(center, egui::Align2::CENTER_CENTER, "CORE", egui::FontId::proportional(24.0), Color32::WHITE);
+    
+    // 3. Branches
+    let ui_state = world.resource::<EditorUiState>();
+    let branches = &ui_state.active_branches;
+    let active_idx = ui_state.active_branch_idx;
+    
+    let mut switch_branch = None;
+
+    for (idx, branch) in branches.iter().enumerate() {
+        let is_active = idx == active_idx;
+        
+        // Calculate branch position (radiate out)
+        let angle = (idx as f32 / branches.len() as f32) * std::f32::consts::TAU;
+        let dist = 250.0;
+        let branch_center = center + egui::vec2(angle.cos(), angle.sin()) * dist;
+        
+        // Draw connection line (wires style)
+        let stroke = (2.0, branch.color.linear_multiply(0.6));
+        ui.painter().line_segment([center, branch_center], stroke);
+        ui.painter().circle_filled(branch_center, 5.0, branch.color);
+        
+        // Branch Box
+        let box_size = egui::vec2(200.0, 120.0);
+        let box_rect = egui::Rect::from_center_size(branch_center, box_size);
+        
+        // Interaction
+        let response = ui.allocate_rect(box_rect, egui::Sense::click());
+        if response.clicked() {
+            switch_branch = Some(idx);
+        }
+        
+        let painter = ui.painter(); // Now we can safely get the painter for the box details
+        let bg = if is_active { branch.color.linear_multiply(0.1) } else { Color32::from_black_alpha(150) };
+        painter.rect_filled(box_rect, 8.0, bg);
+        let stroke_color = if is_active { branch.color } else { branch.color.linear_multiply(0.3) };
+        painter.rect_stroke(box_rect, 8.0, (1.5, stroke_color));
+        
+        // Label
+        painter.text(box_rect.left_top() + egui::vec2(10.0, 10.0), egui::Align2::LEFT_TOP, &branch.name, egui::FontId::proportional(16.0), Color32::WHITE);
+        
+        // Sub-nodes (History)
+        let mut node_pos = box_rect.left_top() + egui::vec2(10.0, 40.0);
+        for commit in &branch.history {
+            let node_rect = egui::Rect::from_min_size(node_pos, egui::vec2(180.0, 30.0));
+            let node_bg = match commit.status {
+                CommitStatus::Passed => Color32::from_rgb(0, 60, 20),
+                CommitStatus::Failed => Color32::from_rgb(60, 0, 0),
+                _ => Color32::from_rgb(40, 40, 40),
+            };
+            
+            painter.rect_filled(node_rect, 4.0, node_bg);
+            painter.text(node_rect.left_center() + egui::vec2(10.0, 0.0), egui::Align2::LEFT_CENTER, &commit.id, egui::FontId::monospace(12.0), Color32::WHITE);
+            
+            // Status Dot
+            let dot_color = match commit.status {
+                CommitStatus::Passed => Color32::GREEN,
+                CommitStatus::Failed => Color32::RED,
+                _ => Color32::YELLOW,
+            };
+            painter.circle_filled(node_rect.right_center() - egui::vec2(15.0, 0.0), 4.0, dot_color);
+            
+            node_pos.y += 35.0;
+        }
+    }
+
+    if let Some(idx) = switch_branch {
+        if let Some(mut state) = world.get_resource_mut::<EditorUiState>() {
+            state.active_branch_idx = idx;
+        }
+    }
+}
+
 pub fn draw_grid(ui: &mut egui::Ui, world: &mut World) {
     let rect = ui.available_rect_before_wrap();
     

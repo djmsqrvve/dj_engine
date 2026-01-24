@@ -57,10 +57,12 @@ pub fn editor_ui_system(world: &mut World) {
 }
 
 fn draw_central_panel(ui: &mut egui::Ui, world: &mut World) {
-    // Clone view to avoid borrow conflicts
+    // Determine which view to show
     let current_view = {
         let ui_state = world.resource::<EditorUiState>();
-        if let Some(branch) = ui_state.current_branch() {
+        if ui_state.global_view == EditorView::Core {
+            EditorView::Core
+        } else if let Some(branch) = ui_state.current_branch() {
             branch.active_view.clone()
         } else {
             EditorView::default()
@@ -68,6 +70,9 @@ fn draw_central_panel(ui: &mut egui::Ui, world: &mut World) {
     };
     
     match current_view {
+        EditorView::Core => {
+            views::draw_core_dashboard(ui, world);
+        }
 
         EditorView::MapEditor | EditorView::ScenarioEditor => {
             let state = world.resource::<State<EditorState>>().get();

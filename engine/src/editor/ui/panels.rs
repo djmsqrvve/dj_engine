@@ -115,11 +115,14 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
             let mut add_branch = false;
             let mut close_branch_idx = None;
 
-            let ui_state = world.resource::<EditorUiState>();
-            let active_idx = ui_state.active_branch_idx;
-            let branches = &ui_state.active_branches;
+            let (active_idx, is_core_global) = {
+                let ui_state = world.resource::<EditorUiState>();
+                (ui_state.active_branch_idx, ui_state.global_view == EditorView::Core)
+            };
+            
+            let branches = &world.resource::<EditorUiState>().active_branches;
             let active_branch = &branches[active_idx];
-            let active_view = active_branch.active_view.clone();
+            let active_view = if is_core_global { EditorView::Core } else { active_branch.active_view.clone() };
 
             // 1. CORE / BRANCHES DROPDOWN
             ui.menu_button(RichText::new("📦 CORE").color(COLOR_PRIMARY).strong().size(14.0), |ui| {
@@ -151,7 +154,14 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
             ui.separator();
             ui.add_space(5.0);
 
-            // 2. EDITOR VIEW TABS
+            // 2. NAVIGATION TABS
+            if ui.selectable_label(is_core_global, "📋 Core Dashboard").clicked() {
+                if let Some(mut state) = world.get_resource_mut::<EditorUiState>() {
+                    state.global_view = EditorView::Core;
+                }
+            }
+            ui.add_space(10.0);
+
             let views = [
                 (EditorView::MapEditor, "🗺 Map"),
                 (EditorView::ScenarioEditor, "🎭 Scenario"),
@@ -162,10 +172,10 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
             ];
 
             for (view, label) in views {
-                let is_selected = active_view == view;
+                let is_selected = !is_core_global && active_view == view;
                 if ui.selectable_label(is_selected, label).clicked() {
-                    // Update current branch view
                     if let Some(mut state) = world.get_resource_mut::<EditorUiState>() {
+                        state.global_view = view.clone(); // Any non-Core view disables dashboard
                         if let Some(branch) = state.active_branches.get_mut(active_idx) {
                             branch.active_view = view;
                         }
@@ -194,6 +204,7 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                     color,
                     active_view: EditorView::MapEditor,
                     active_tab: SidePanelTab::Hierarchy,
+                    history: vec![],
                 });
                 let new_idx = world.resource::<EditorUiState>().active_branches.len() - 1;
                 world.resource_mut::<EditorUiState>().active_branch_idx = new_idx;
