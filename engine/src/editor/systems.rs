@@ -241,25 +241,49 @@ pub fn apply_window_settings_system(
 ) {
     if settings.is_changed() {
         if let Ok(mut window) = windows.get_single_mut() {
-            // Update Resolution
-            window.resolution.set(settings.window_width, settings.window_height);
+            // Check if resolution actually changed (epsilon check)
+            let current_width = window.resolution.width();
+            let current_height = window.resolution.height();
+            
+            let res_changed = (current_width - settings.window_width).abs() > 0.1 || 
+                              (current_height - settings.window_height).abs() > 0.1;
 
-            let monitor = if settings.monitor_index == 0 {
+            // Check if mode changed
+            let target_monitor = if settings.monitor_index == 0 {
                 MonitorSelection::Primary
             } else {
                 MonitorSelection::Index(settings.monitor_index - 1)
             };
 
-            // Update Mode
-            window.mode = match settings.window_mode_index {
-                1 => bevy::window::WindowMode::BorderlessFullscreen(monitor),
-                2 => bevy::window::WindowMode::SizedFullscreen(monitor),
+            let target_mode = match settings.window_mode_index {
+                1 => bevy::window::WindowMode::BorderlessFullscreen(target_monitor),
+                2 => bevy::window::WindowMode::SizedFullscreen(target_monitor),
                 _ => bevy::window::WindowMode::Windowed,
             };
+            
+            // Note: WindowMode PartialEq might not align perfectly with our index logic if monitor varies, 
+            // but checking index change is safer against spam if the user keeps clicking same button.
+            // However, here we check the actual window state.
+            // Let's rely on calculating target mode and comparing.
+
+            // If nothing changed, return
+            if !res_changed && window.mode == target_mode {
+                return;
+            }
+
+            // Update Resolution
+            if res_changed {
+                window.resolution.set(settings.window_width, settings.window_height);
+            }
+
+            // Update Mode
+            if window.mode != target_mode {
+                window.mode = target_mode;
+            }
 
             // Update Position (if windowed, re-center on selected monitor)
-            if window.mode == bevy::window::WindowMode::Windowed {
-                window.position = WindowPosition::Centered(monitor);
+            if window.mode == bevy::window::WindowMode::Windowed && target_mode == bevy::window::WindowMode::Windowed {
+                window.position = WindowPosition::Centered(target_monitor);
             }
             
             info!("Applied Window Settings: {}x{} (ModeIndex={}, MonitorIndex={})", 

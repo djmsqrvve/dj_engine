@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_egui::egui::{self, RichText, Color32};
 use crate::data::story::{StoryNodeData, StoryNodeVariant};
 use crate::data::components::Vec3Data;
+use crate::data::loader;
 
 use super::super::state::*;
 
@@ -193,9 +194,25 @@ pub fn draw_grid(ui: &mut egui::Ui, world: &mut World) {
 }
 
 pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
-    let painter = ui.painter().clone(); // Clone painter to avoid borrow issues? No, ui.painter() returns reference. 
-    // We need to be careful with borrowing world and ui.
+    let painter = ui.painter().clone(); 
     
+    // Toolbar
+    ui.horizontal(|ui| {
+        if ui.button("📂 Load Test Game").clicked() {
+            let path = std::path::PathBuf::from("games/dev/new_horizon/story_graphs/test_game.json");
+            match loader::load_story_graph(&path) {
+                Ok(loaded_graph) => {
+                     world.resource_scope::<ActiveStoryGraph, _>(|_, mut graph| {
+                         graph.0 = loaded_graph;
+                         info!("Loaded test game successfully!");
+                     });
+                },
+                Err(e) => error!("Failed to load test game: {}", e),
+            }
+        }
+        ui.label(RichText::new("Use middle-click to pan, scroll to zoom").italics().color(Color32::GRAY));
+    });
+
     let rect = ui.available_rect_before_wrap();
     
     // 1. Draw Background & Grid
