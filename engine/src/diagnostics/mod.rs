@@ -7,6 +7,7 @@ use bevy::{
 use crate::{
     story_graph::GraphExecutor,
     types::DiagnosticConfig,
+    editor::state::EditorState,
 };
 
 pub mod inspector;
@@ -92,6 +93,8 @@ fn update_diagnostics_system(
     entities: Query<Entity>,
     executor: Option<Res<GraphExecutor>>,
     windows: Query<&Window>,
+    editor_state: Option<Res<State<EditorState>>>,
+    mut overlay_query: Query<&mut Visibility, With<DiagnosticOverlay>>,
 ) {
     if !config.enabled {
         return;
@@ -100,6 +103,21 @@ fn update_diagnostics_system(
     config.update_timer.tick(time.delta());
     if !config.update_timer.just_finished() {
         return;
+    }
+
+    // Enforce visibility based on EditorState
+    if let Some(state) = editor_state {
+        if let Ok(mut overlay_vis) = overlay_query.get_single_mut() {
+            if **state == EditorState::Editor {
+                if *overlay_vis != Visibility::Hidden {
+                    *overlay_vis = Visibility::Hidden;
+                }
+                return; // Stop updating text
+            } else if config.enabled && *overlay_vis == Visibility::Hidden {
+                // Restore visibility if Playing and enabled
+                *overlay_vis = Visibility::Inherited;
+            }
+        }
     }
 
     let fps = diagnostics
@@ -125,6 +143,7 @@ fn update_diagnostics_system(
     };
 
     if let Ok((mut text, mut color)) = query.get_single_mut() {
+
         let fps_text = fps.map_or("N/A".to_string(), |v| format!("{:.1}", v));
         let ms_text = frame_time.map_or("N/A".to_string(), |v| format!("{:.2}", v));
 

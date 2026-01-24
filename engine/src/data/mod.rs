@@ -20,6 +20,9 @@ pub mod assets;
 pub mod campaign;
 pub mod loader;
 pub mod spawner;
+pub mod map;
+pub mod mode;
+pub mod scenario;
 
 // Re-export commonly used types
 pub use project::{Project, ProjectSettings, EditorPreferences};
@@ -30,6 +33,9 @@ pub use campaign::{CampaignData, CampaignNodeData, CampaignNodeType};
 pub use database::{Database, ItemRow, NpcRow, TowerRow, EnemyRow, LootTableRow, QuestRow};
 pub use assets::{AssetIndex, Prefab};
 pub use loader::{load_project, load_scene, load_database, load_story_graph, DataError};
+pub use map::{MapAsset, MapLayer, NavGrid, MapPhysics};
+pub use mode::{GameMode, PlayerCountRange};
+pub use scenario::{ScenarioData, ScenarioEntity};
 
 use bevy::prelude::*;
 
@@ -90,6 +96,14 @@ impl Plugin for DataPlugin {
            .register_type::<scene::Scene>()
            .register_type::<campaign::CampaignData>()
            .register_type::<campaign::CampaignNodeData>()
-           .register_type::<campaign::CampaignNodeType>();
+           .register_type::<campaign::CampaignNodeType>()
+           .register_type::<map::MapAsset>()
+           .register_type::<map::MapLayer>()
+           .register_type::<map::NavGrid>()
+           .register_type::<map::MapPhysics>()
+           .register_type::<mode::GameMode>()
+           .register_type::<mode::PlayerCountRange>()
+           .register_type::<scenario::ScenarioData>()
+           .register_type::<scenario::ScenarioEntity>();
     }
 }

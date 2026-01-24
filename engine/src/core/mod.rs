@@ -4,6 +4,10 @@
 
 use bevy::prelude::*;
 
+pub mod phases;
+
+pub use phases::{GamePhase, PhaseManager, GamePhasePlugin};
+
 use crate::animation::DJAnimationPlugin;
 use crate::assets::DJAssetPlugin;
 use crate::audio::DJAudioPlugin;
@@ -58,6 +62,7 @@ impl Plugin for DJEnginePlugin {
         app.add_plugins(DJScriptingPlugin);
         app.add_plugins(crate::midi::MidiPlugin);
         app.add_plugins(crate::data::DataPlugin);
+        app.add_plugins(phases::GamePhasePlugin);
 
         // Conditionally add diagnostics
         if self.with_diagnostics {

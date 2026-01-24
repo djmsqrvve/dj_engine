@@ -1,0 +1,9 @@
+{
+  "id": "intro_scene",
+  "name": "Intro Scene",
+  "scene_type": "shared",
+  "layers": [
+    { "id": "background", "name": "Background", "order": -10 }
+  ],
+  "entities": []
+}

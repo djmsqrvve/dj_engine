@@ -5,6 +5,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 /// Input profile for the game (determines default control schemes).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -85,7 +86,20 @@ pub struct ProjectPaths {
     pub database: String,
     /// Path to assets directory
     pub assets: String,
+    /// Path to maps directory
+    #[serde(default = "default_maps_path")]
+    pub maps: String,
+    /// Path to modes directory
+    #[serde(default = "default_modes_path")]
+    pub modes: String,
+    /// Path to scenarios directory
+    #[serde(default = "default_scenarios_path")]
+    pub scenarios: String,
 }
+
+fn default_maps_path() -> String { "maps".to_string() }
+fn default_modes_path() -> String { "modes".to_string() }
+fn default_scenarios_path() -> String { "scenarios".to_string() }
 
 impl Default for ProjectPaths {
     fn default() -> Self {
@@ -94,6 +108,9 @@ impl Default for ProjectPaths {
             story_graphs: "story_graphs".to_string(),
             database: "database".to_string(),
             assets: "assets".to_string(),
+            maps: "maps".to_string(),
+            modes: "modes".to_string(),
+            scenarios: "scenarios".to_string(),
         }
     }
 }
@@ -186,6 +203,7 @@ impl Default for ProjectSettings {
 }
 
 /// Per-user editor preferences (not stored in project).
+/// These are persisted to a user config file, NOT in the project.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EditorPreferences {
     /// Editor color theme
@@ -204,6 +222,16 @@ pub struct EditorPreferences {
     pub keybindings: HashMap<String, String>,
     /// Layout preset
     pub layout_preset: LayoutPreset,
+    /// Whether to automatically load the last opened project on startup
+    #[serde(default = "default_load_last_project")]
+    pub load_last_project: bool,
+    /// List of recently opened project paths (most recent first)
+    #[serde(default)]
+    pub recent_projects: Vec<String>,
+}
+
+fn default_load_last_project() -> bool {
+    true
 }
 
 impl Default for EditorPreferences {
@@ -217,7 +245,63 @@ impl Default for EditorPreferences {
             default_gizmo_mode: GizmoMode::Move,
             keybindings: HashMap::new(),
             layout_preset: LayoutPreset::JrpgMapping,
+            load_last_project: true,
+            recent_projects: Vec::new(),
         }
+    }
+}
+
+impl EditorPreferences {
+    /// Get the default preferences file path (~/.dj_engine/preferences.json)
+    pub fn default_path() -> PathBuf {
+        dirs::home_dir()
+            .unwrap_or_else(|| PathBuf::from("."))
+            .join(".dj_engine")
+            .join("preferences.json")
+    }
+
+    /// Load preferences from disk, or return default if not found
+    pub fn load() -> Self {
+        let path = Self::default_path();
+        if path.exists() {
+            match std::fs::read_to_string(&path) {
+                Ok(contents) => {
+                    match serde_json::from_str(&contents) {
+                        Ok(prefs) => return prefs,
+                        Err(e) => eprintln!("Failed to parse preferences: {}", e),
+                    }
+                }
+                Err(e) => eprintln!("Failed to read preferences: {}", e),
+            }
+        }
+        Self::default()
+    }
+
+    /// Save preferences to disk
+    pub fn save(&self) -> Result<(), std::io::Error> {
+        let path = Self::default_path();
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let json = serde_json::to_string_pretty(self)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        std::fs::write(&path, json)
+    }
+
+    /// Add a project to the recent projects list (moves to front if exists)
+    pub fn add_recent_project(&mut self, path: impl Into<String>) {
+        let path = path.into();
+        // Remove if already exists
+        self.recent_projects.retain(|p| p != &path);
+        // Add to front
+        self.recent_projects.insert(0, path);
+        // Keep only last 10
+        self.recent_projects.truncate(10);
+    }
+
+    /// Get the last opened project path, if any
+    pub fn last_project(&self) -> Option<&str> {
+        self.recent_projects.first().map(|s| s.as_str())
     }
 }
 
@@ -262,6 +346,15 @@ pub struct Project {
     /// List of story graph references
     #[serde(default)]
     pub story_graphs: Vec<StoryGraphRef>,
+    /// Registry of maps (ID -> Path)
+    #[serde(default)]
+    pub maps: HashMap<String, String>,
+    /// Registry of game modes (ID -> Path)
+    #[serde(default)]
+    pub modes: HashMap<String, String>,
+    /// Registry of scenarios (ID -> Path)
+    #[serde(default)]
+    pub scenarios: HashMap<String, String>,
 }
 
 impl Default for Project {
@@ -274,6 +367,9 @@ impl Default for Project {
             editor_preferences: EditorPreferences::default(),
             scenes: Vec::new(),
             story_graphs: Vec::new(),
+            maps: HashMap::new(),
+            modes: HashMap::new(),
+            scenarios: HashMap::new(),
         }
     }
 }

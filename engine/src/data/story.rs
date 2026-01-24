@@ -40,6 +40,8 @@ pub enum StoryNodeType {
     Camera,
     /// Time/pause control
     TimeControl,
+    /// Sub-graph container (Scene)
+    SubGraph,
     /// End of branch
     End,
 }
@@ -304,6 +306,15 @@ pub struct StartNodeData {
     pub next_node_id: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
+pub struct SubGraphNodeData {
+    /// ID of the sub-graph to execute (Scene)
+    pub graph_id: String,
+    /// Next node ID after sub-graph returns
+    #[serde(default)]
+    pub next_node_id: Option<String>,
+}
+
 /// Story node variant data (tagged union).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -315,6 +326,7 @@ pub enum StoryNodeVariant {
     Conditional(ConditionalNodeData),
     Camera(CameraNodeData),
     TimeControl(TimeControlNodeData),
+    SubGraph(SubGraphNodeData),
     End(EndNodeData),
 }
 
@@ -389,6 +401,7 @@ impl StoryNodeData {
             StoryNodeVariant::Conditional(_) => StoryNodeType::Conditional,
             StoryNodeVariant::Camera(_) => StoryNodeType::Camera,
             StoryNodeVariant::TimeControl(_) => StoryNodeType::TimeControl,
+            StoryNodeVariant::SubGraph(_) => StoryNodeType::SubGraph,
             StoryNodeVariant::End(_) => StoryNodeType::End,
         }
     }
@@ -403,6 +416,7 @@ impl StoryNodeData {
             StoryNodeVariant::Conditional(c) => vec![c.true_target_node_id.as_str(), c.false_target_node_id.as_str()],
             StoryNodeVariant::Camera(c) => c.next_node_id.as_deref().into_iter().collect(),
             StoryNodeVariant::TimeControl(t) => t.next_node_id.as_deref().into_iter().collect(),
+            StoryNodeVariant::SubGraph(s) => s.next_node_id.as_deref().into_iter().collect(),
             StoryNodeVariant::End(_) => vec![],
         }
     }

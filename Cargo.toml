@@ -2,10 +2,9 @@
 resolver = "2"
 members = [
     "engine",
-    "games/dev/doomexe",
     "tools/asset_generator"
 ]
-default-members = ["games/dev/doomexe"]
+default-members = ["engine"]
 
 [workspace.dependencies]
 bevy = { version = "0.15", features = ["dynamic_linking"] }

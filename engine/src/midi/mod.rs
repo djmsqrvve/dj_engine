@@ -101,7 +101,7 @@ fn setup_midi_assets(mut commands: Commands, mut assets: ResMut<Assets<AudioSour
 fn load_overworld_midi(mut commands: Commands) {
     // Read file from assets folder using std::fs for now (blocking!) because we don't have a binary loader yet.
     // Assuming workspace structure.
-    let path = "games/dev/doomexe/assets/music/overworld_theme.mid";
+    let path = "games/dev/helix_before_the_fracture/assets/music/overworld_theme.mid";
     if let Ok(bytes) = std::fs::read(path) {
         if let Ok(smf) = Smf::parse(&bytes) {
             info!("Loaded MIDI: tracks={}", smf.tracks.len());

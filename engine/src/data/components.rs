@@ -7,6 +7,14 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use bevy::prelude::*;
 
+/// Runtime metadata for entities.
+#[derive(Component, Reflect, Default, Debug, Clone)]
+#[reflect(Component)]
+pub struct EntityMetadata {
+    pub creator_id: String,
+    pub creation_timestamp: f64,
+}
+
 /// 3D vector (used for positions, rotations, scales).
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct Vec3Data {

@@ -109,3 +109,41 @@ pub fn register_generic_state_api(lua: &Lua, state: SharedGenericState) -> LuaRe
 
     Ok(())
 }
+    
+
+    
+use std::sync::atomic::{AtomicBool, Ordering};
+    
+
+    
+pub static STORY_ADVANCE_PENDING: AtomicBool = AtomicBool::new(false);
+    
+
+    
+/// Register Story Graph control APIs.
+    
+pub fn register_story_api(lua: &Lua) -> LuaResult<()> {
+    
+    let globals = lua.globals();
+    
+
+    
+    // next_node() -> Advance the story graph
+    
+    let next_node = lua.create_function(|_, ()| {
+    
+        STORY_ADVANCE_PENDING.store(true, Ordering::SeqCst);
+    
+        Ok(())
+    
+    })?;
+    
+    globals.set("story_next", next_node)?;
+    
+
+    
+    Ok(())
+    
+}
+    
+    

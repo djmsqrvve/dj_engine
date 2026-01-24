@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use dj_engine::editor::{EditorPlugin, EditorUiState, EditorView, BrowserTab, ProjectMetadata, EditorState};
+use dj_engine::editor::{EditorPlugin, EditorUiState, EditorView, SidePanelTab, ProjectMetadata, EditorState};
 
 #[test]
 fn test_editor_initialization_and_state() {
@@ -7,20 +7,9 @@ fn test_editor_initialization_and_state() {
     let mut app = App::new();
     
     // Minimal plugins required for the editor resources and states to be registered
-    // We don't add the full DefaultPlugins because we don't want a window/renderer in tests
     app.add_plugins(MinimalPlugins);
-    app.add_plugins(HierarchyPlugin);
+    app.add_plugins(bevy::hierarchy::HierarchyPlugin);
     app.add_plugins(bevy::state::app::StatesPlugin); 
-    
-    // We can't easily add EguiPlugin in headless without Winit/Window, 
-    // but EditorPlugin adds it. EguiPlugin might panic if no window.
-    // So we manually add the resources/states we want to test, 
-    // OR we modify EditorPlugin to be test-friendly (not adding EguiPlugin if already present or in test mode).
-    // For this integrity test, let's just test the RESOURCES and logic, avoiding the actual EguiPlugin if possible,
-    // or use a mock.
-    
-    // Actually, let's just register the resources manually to verify our data structures work,
-    // since we can't spin up a full UI context in a headless CI environment easily.
     
     app.init_state::<EditorState>()
        .init_resource::<ProjectMetadata>()
@@ -28,8 +17,9 @@ fn test_editor_initialization_and_state() {
 
     // 2. Verify Initial State
     let ui_state = app.world().resource::<EditorUiState>();
-    assert_eq!(ui_state.current_view, EditorView::Level);
-    assert_eq!(ui_state.browser_tab, BrowserTab::Hierarchy);
+    let main_branch = ui_state.current_branch().unwrap();
+    assert_eq!(main_branch.active_view, EditorView::MapEditor);
+    assert_eq!(main_branch.active_tab, SidePanelTab::Hierarchy);
     assert_eq!(ui_state.selected_palette_item, None);
 
     // 3. Simulate User Actions
@@ -39,19 +29,24 @@ fn test_editor_initialization_and_state() {
     project.name = "Test Project".into();
     project.path = Some("test/path".into());
     
-    // "Select Palette Item"
+    // "Select Palette Item on Current Branch"
     let mut ui_state = app.world_mut().resource_mut::<EditorUiState>();
-    ui_state.browser_tab = BrowserTab::Palette;
+    if let Some(branch) = ui_state.current_branch_mut() {
+        branch.active_tab = SidePanelTab::Palette;
+    }
     ui_state.selected_palette_item = Some("Hamster".into());
     
     // "Switch View"
-    ui_state.current_view = EditorView::StoryGraph;
+    if let Some(branch) = ui_state.current_branch_mut() {
+        branch.active_view = EditorView::StoryGraph;
+    }
 
     // 4. Verify Changes
     let ui_state_after = app.world().resource::<EditorUiState>();
-    assert_eq!(ui_state_after.browser_tab, BrowserTab::Palette);
+    let branch_after = ui_state_after.current_branch().unwrap();
+    assert_eq!(branch_after.active_tab, SidePanelTab::Palette);
     assert_eq!(ui_state_after.selected_palette_item, Some("Hamster".into()));
-    assert_eq!(ui_state_after.current_view, EditorView::StoryGraph);
+    assert_eq!(branch_after.active_view, EditorView::StoryGraph);
     
     let project_after = app.world().resource::<ProjectMetadata>();
     assert_eq!(project_after.name, "Test Project");

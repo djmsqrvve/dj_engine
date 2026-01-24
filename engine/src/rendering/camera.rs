@@ -12,6 +12,10 @@ pub struct MainCamera;
 pub const GAME_WIDTH: f32 = 320.0;
 pub const GAME_HEIGHT: f32 = 240.0;
 
+/// Resource to track the available rendering area (from UI).
+#[derive(Resource, Default)]
+pub struct ViewportRect(pub Option<Rect>);
+
 /// Sets up the main camera for 2D rendering.
 pub fn setup_camera(mut commands: Commands) {
     commands.spawn((
@@ -27,4 +31,34 @@ pub fn setup_camera(mut commands: Commands) {
         MainCamera,
         Transform::from_xyz(0.0, 0.0, 1000.0),
     ));
+}
+
+/// System to update the camera viewport based on the UI layout.
+pub fn update_camera_viewport(
+    viewport_rect: Res<ViewportRect>,
+    mut camera_query: Query<&mut Camera, With<MainCamera>>,
+    windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
+) {
+    let Ok(window) = windows.get_single() else { return };
+    let Some(rect) = viewport_rect.0 else { return };
+    let mut camera = camera_query.single_mut();
+
+    // Bevy Viewport expects physical pixels or logical scaled? 
+    // Usually logical pixels if we use with_scale_factor_override(1.0) in main.rs
+    // Egui rect is in logical pixels.
+    
+    let _physical_width = window.width();
+    let _physical_height = window.height();
+
+    camera.viewport = Some(bevy::render::camera::Viewport {
+        physical_position: UVec2::new(
+            rect.min.x as u32,
+            rect.min.y as u32,
+        ),
+        physical_size: UVec2::new(
+            (rect.max.x - rect.min.x) as u32,
+            (rect.max.y - rect.min.y) as u32,
+        ),
+        depth: 0.0..1.0,
+    });
 }

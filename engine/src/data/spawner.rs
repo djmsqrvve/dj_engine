@@ -6,7 +6,7 @@
 use bevy::prelude::*;
 
 use super::scene::{Scene, Entity as SceneEntity, EntityType};
-use super::components::Vec3Data;
+use super::components::{Vec3Data, EntityMetadata};
 
 /// Resource holding the currently loaded scene data.
 #[derive(Resource, Default)]
@@ -117,6 +117,10 @@ fn spawn_entity(commands: &mut Commands, entity: &SceneEntity, asset_server: &As
             scene_entity_id: entity.id.clone(),
             entity_type: entity.entity_type,
         },
+        EntityMetadata {
+            creator_id: entity.creator_id.clone(),
+            creation_timestamp: entity.creation_timestamp,
+        },
     ));
 
     // Add sprite if present
@@ -203,8 +207,7 @@ impl Plugin for SceneDataPlugin {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::data::scene::{Scene, Entity as SceneEntity};
-    use crate::data::components::{TransformComponent, Vec3Data};
+    use crate::data::components::Vec3Data;
 
     #[test]
     fn test_vec3_conversion() {

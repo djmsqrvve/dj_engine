@@ -81,7 +81,7 @@ fn handle_console_commands(
     mut events: EventReader<ConsoleCommandEvent>,
     mut app_exit: EventWriter<AppExit>,
     windows: Query<(Entity, &Window)>,
-    entities: Query<Entity>,
+    entities: Query<(Entity, Option<&Name>)>,
     executor: Option<Res<GraphExecutor>>,
     diagnostics: Res<DiagnosticsStore>,
 ) {
@@ -117,8 +117,21 @@ fn handle_console_commands(
                 println!("----------------------\n");
             }
             "entities" => {
-                let count = entities.iter().count();
-                println!("\nTotal Entities: {}\n", count);
+                println!("\n--- Entity Breakdown ---");
+                let mut count = 0;
+                let mut high_gen_count = 0;
+                for (entity, name) in entities.iter() {
+                    count += 1;
+                    let gen = entity.generation();
+                    let name_str = name.map(|n| n.as_str()).unwrap_or("<unnamed>");
+                    if gen > 10 {
+                        high_gen_count += 1;
+                        println!("⚠️  HIGH GEN: {:?} | Name: \"{}\"", entity, name_str);
+                    }
+                }
+                println!("\nTotal Entities: {}", count);
+                println!("Entities with high generation (>10): {}", high_gen_count);
+                println!("------------------------\n");
             }
             "story" => {
                 println!("\n--- Story Graph Status ---");

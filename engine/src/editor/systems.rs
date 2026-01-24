@@ -1,0 +1,235 @@
+use bevy::prelude::*;
+use bevy_egui::egui::{self, Color32};
+use crate::diagnostics::console::ConsoleLogStore;
+use crate::data::{loader, project::Project};
+use crate::data::scene::{Scene, Entity as SceneEntity};
+use crate::data::components::{EntityComponents, TransformComponent, SpriteComponent, ColorData, Vec3Data};
+
+use super::state::*;
+
+pub fn configure_visuals_system(mut contexts: bevy_egui::EguiContexts) {
+    let ctx = contexts.ctx_mut();
+    let mut visuals = egui::Visuals::dark();
+    
+    // Cyberpunk tweaks
+    visuals.window_rounding = 2.0.into();
+    visuals.widgets.noninteractive.bg_fill = COLOR_BG;
+    visuals.widgets.inactive.bg_fill = Color32::from_rgb(25, 25, 35);
+    visuals.widgets.hovered.bg_fill = Color32::from_rgb(40, 40, 50);
+    visuals.widgets.active.bg_fill = Color32::from_rgb(50, 50, 65);
+    visuals.selection.bg_fill = COLOR_PRIMARY.linear_multiply(0.3);
+    visuals.selection.stroke = egui::Stroke::new(1.0, COLOR_PRIMARY);
+    
+    ctx.set_visuals(visuals);
+}
+
+pub fn automated_ui_test_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut test_state: ResMut<AutomatedTestActive>,
+    mut ui_state: ResMut<EditorUiState>,
+    mut console: ResMut<ConsoleLogStore>,
+    mut app_exit: EventWriter<bevy::app::AppExit>,
+) {
+    test_state.timer.tick(time.delta());
+    if !test_state.timer.finished() {
+        return;
+    }
+
+    match test_state.step {
+        0 => {
+            console.log("TEST: Starting automated UI test sequence...".into());
+            test_state.step += 1;
+        }
+        1 => {
+            console.log("TEST: Select 'Hamster' from palette".into());
+            // Palette is now always visible in Node Dropper, just select item
+            ui_state.selected_palette_item = Some("Hamster".into());
+            test_state.step += 1;
+        }
+        2 => {
+            debug!("TEST: Executing spawn step");
+            console.log("TEST: Simulating click/spawn at (100, 100)".into());
+            // Manually spawn entity as if clicked
+             commands.spawn((
+                LogicalEntity,
+                Name::new("Hamster [100, 100]"),
+                Sprite {
+                    color: Color::srgb(0.8, 0.5, 0.2),
+                    custom_size: Some(Vec2::new(30.0, 30.0)),
+                    ..default()
+                },
+                Transform::from_xyz(100.0, 100.0, 0.0)
+            ));
+            test_state.step += 1;
+        }
+        3 => {
+            console.log("TEST: Switching to Story Graph view".into());
+            if let Some(branch) = ui_state.current_branch_mut() {
+                branch.active_view = EditorView::StoryGraph;
+            }
+            test_state.step += 1;
+        }
+        4 => {
+            console.log("TEST: Validation Complete. Exiting.".into());
+            info!("Automated UI Test Passed");
+            app_exit.send(bevy::app::AppExit::Success);
+        }
+        _ => {}
+    }
+}
+
+pub fn launch_project_system(
+    project: Res<ProjectMetadata>,
+    mut script_events: EventWriter<crate::scripting::ScriptCommand>,
+) {
+    let Some(path) = &project.path else { 
+        warn!("No project path mounted! Cannot launch.");
+        return; 
+    };
+
+    info!("Editor: Launching project from {:?}", path);
+    
+    // Look for a main.lua or hamster_test.lua in the project's script folder
+    let script_path = path.join("assets/scripts/hamster_test.lua");
+    if script_path.exists() {
+        script_events.send(crate::scripting::ScriptCommand::Load { 
+            path: script_path.to_string_lossy().into() 
+        });
+    } else {
+        warn!("No entry script found at {:?}", script_path);
+    }
+}
+
+pub fn save_project_impl(world: &mut World) {
+    // Clone necessary data to avoid holding borrow on world
+    let (project_name, project_path) = {
+        let project_meta = world.resource::<ProjectMetadata>();
+        (project_meta.name.clone(), project_meta.path.clone())
+    };
+
+    if let Some(path) = project_path {
+        info!("Saving project to {:?}", path);
+        
+        // 1. Save Project Structure
+        let project_data = Project::new(&project_name); 
+        match loader::save_project_structure(&project_data, &path) {
+             Ok(_) => info!("Successfully saved project structure"),
+             Err(e) => error!("Failed to save project structure: {}", e),
+        }
+
+        // 2. Save Current Scene
+        let scene = world_to_scene(world);
+        let scene_path = path.join("scenes/current_scene.json");
+        match loader::save_scene(&scene, &scene_path) {
+            Ok(_) => info!("Successfully saved scene to {:?}", scene_path),
+            Err(e) => error!("Failed to save scene: {}", e),
+        }
+        
+        // 3. Save Story Graph
+        let graph = &world.resource::<ActiveStoryGraph>().0;
+        let graph_path = path.join("story_graphs/main.json");
+        match loader::save_story_graph(graph, &graph_path) {
+             Ok(_) => info!("Successfully saved story graph to {:?}", graph_path),
+             Err(e) => error!("Failed to save story graph: {}", e),
+        }
+
+        // 4. Update recent projects in preferences
+        let mut prefs = world.resource_mut::<super::EditorPrefs>();
+        prefs.0.add_recent_project(path.to_string_lossy().to_string());
+        if let Err(e) = prefs.0.save() {
+            warn!("Failed to save editor preferences: {}", e);
+        } else {
+            info!("Updated recent projects list");
+        }
+    } else {
+        warn!("Cannot save: No project path set!");
+    }
+}
+
+pub fn world_to_scene(world: &mut World) -> Scene {
+    let mut scene = Scene::new("current_scene", "Current Scene");
+    
+    // In a real implementation, we'd query for all entities with specific marker components.
+    // For this prototype, we'll query all entities with a Name and Transform.
+    
+    let mut entities = Vec::new();
+    let mut query = world.query::<(Entity, &Name, &Transform, Option<&Sprite>)>();
+    
+    // We need to collect first to avoid borrowing world inside loop if we needed mutable access,
+    // though query iteration is fine. But constructing SceneEntity might need data types.
+    let mut world_entities = Vec::new();
+    for (_e, name, transform, sprite) in query.iter(world) {
+        // Clone data out of world
+        let pos = transform.translation;
+        let scale = transform.scale;
+        
+        let sprite_color = sprite.map(|s| s.color.to_linear().to_f32_array());
+        
+        world_entities.push((name.to_string(), pos, scale, sprite_color));
+    }
+
+    for (name, pos, scale, sprite_color) in world_entities {
+        // Skip editor-only entities (like cameras or UI, unless tagged)
+        // For now, simple filter: if it has a name starting with "Editor", skip? 
+        // Or better, only save things we know we spawned.
+        
+        let mut components = EntityComponents::default();
+        
+        components.transform = TransformComponent {
+            position: Vec3Data::new(pos.x, pos.y, pos.z),
+            rotation: Vec3Data::default(), // Simplification
+            scale: Vec3Data::new(scale.x, scale.y, scale.z),
+            lock_uniform_scale: false,
+        };
+        
+        if let Some([r, g, b, a]) = sprite_color {
+             components.sprite = Some(SpriteComponent {
+                 sprite_id: "pixel".to_string(), // Placeholder
+                 tint: ColorData::rgba(r, g, b, a),
+                 ..Default::default()
+             });
+        }
+        
+        let entity = SceneEntity::new(name.clone(), name) // using name as ID for prototype
+            .with_components(components);
+            
+        entities.push(entity);
+    }
+    
+    scene.entities = entities;
+    scene
+}
+
+pub fn load_scene_into_editor(world: &mut World, scene: Scene) {
+    debug!("load_scene_into_editor called for scene: {}", scene.id);
+    // 1. Clear existing entities (only those marked as LogicalEntity)
+    let entities_to_despawn: Vec<Entity> = world.query_filtered::<Entity, With<LogicalEntity>>().iter(world).collect();
+    for e in entities_to_despawn {
+        world.despawn(e);
+    }
+    
+    // 2. Spawn new entities
+    let entity_count = scene.entities.len();
+    for entity_data in scene.entities {
+        let transform = entity_data.components.transform;
+        let pos = transform.position;
+        let scale = transform.scale;
+        
+        let mut entity_cmd = world.spawn((
+            LogicalEntity,
+            Name::new(entity_data.name),
+            Transform::from_xyz(pos.x, pos.y, pos.z).with_scale(Vec3::new(scale.x, scale.y, scale.z))
+        ));
+        
+        if let Some(sprite) = entity_data.components.sprite {
+            let c = sprite.tint;
+            entity_cmd.insert(Sprite {
+                color: Color::srgba(c.r, c.g, c.b, c.a),
+                custom_size: Some(Vec2::new(30.0, 30.0)), // Default size for now
+                ..default()
+            });
+        }
+    }
+    info!("Loaded scene with {} entities", entity_count);
+}

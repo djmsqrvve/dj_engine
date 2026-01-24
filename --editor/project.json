@@ -1,0 +1,57 @@
+{
+  "id": "ce39e6b5-3184-46df-bb55-d6c29419bb45",
+  "name": "--editor",
+  "version": "0.1.0",
+  "settings": {
+    "platforms": [
+      "pc"
+    ],
+    "default_resolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "target_fps": 60,
+    "vsync": true,
+    "pixel_perfect": true,
+    "input_profile": "jrpg",
+    "localization": {
+      "languages": [
+        "en"
+      ],
+      "default_language": "en"
+    },
+    "paths": {
+      "scenes": "scenes",
+      "story_graphs": "story_graphs",
+      "database": "database",
+      "assets": "assets"
+    },
+    "autosave": {
+      "enabled": true,
+      "interval_seconds": 300,
+      "max_backups": 10
+    }
+  },
+  "editor_preferences": {
+    "theme": "dark",
+    "ui_scale": 1.0,
+    "font_size": 14,
+    "grid_size": {
+      "width": 32,
+      "height": 32
+    },
+    "snap": {
+      "position": 16.0,
+      "rotation": 15.0,
+      "scale": 0.25,
+      "enabled": true
+    },
+    "default_gizmo_mode": "move",
+    "keybindings": {},
+    "layout_preset": "jrpg_mapping",
+    "load_last_project": true,
+    "recent_projects": []
+  },
+  "scenes": [],
+  "story_graphs": []
+}

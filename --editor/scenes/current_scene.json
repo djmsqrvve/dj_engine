@@ -1,0 +1,86 @@
+{
+  "id": "current_scene",
+  "name": "Current Scene",
+  "scene_type": "jrpg",
+  "size_tiles": {
+    "width": 20,
+    "height": 15
+  },
+  "tile_size": {
+    "width": 32,
+    "height": 32
+  },
+  "background_color": {
+    "r": 0.0,
+    "g": 0.0,
+    "b": 0.0,
+    "a": 1.0
+  },
+  "default_spawn": {
+    "player": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "camera": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  "audio": {
+    "music_track_id": null,
+    "loop_music": false
+  },
+  "scripts": {
+    "on_enter": null,
+    "on_exit": null
+  },
+  "layers": [
+    {
+      "id": "background",
+      "name": "Background",
+      "order": -10,
+      "visible": true,
+      "locked": false,
+      "parallax": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      }
+    },
+    {
+      "id": "main",
+      "name": "Main",
+      "order": 0,
+      "visible": true,
+      "locked": false,
+      "parallax": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      }
+    },
+    {
+      "id": "foreground",
+      "name": "Foreground",
+      "order": 10,
+      "visible": true,
+      "locked": false,
+      "parallax": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      }
+    }
+  ],
+  "entities": [],
+  "pathfinding": {
+    "enabled": false,
+    "grid": {
+      "width": 0,
+      "height": 0,
+      "cells": []
+    }
+  }
+}

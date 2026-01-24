@@ -201,6 +201,12 @@ pub struct Entity {
     /// Prefab ID if this is a prefab instance
     #[serde(default)]
     pub prefab_id: Option<String>,
+    /// ID of the creator (system/user)
+    #[serde(default)]
+    pub creator_id: String,
+    /// Unix timestamp of creation
+    #[serde(default)]
+    pub creation_timestamp: f64,
     /// Entity components
     pub components: EntityComponents,
 }
@@ -214,6 +220,8 @@ impl Default for Entity {
             layer_id: String::new(),
             parent_id: None,
             prefab_id: None,
+            creator_id: "System".to_string(),
+            creation_timestamp: 0.0,
             components: EntityComponents::default(),
         }
     }
@@ -222,9 +230,16 @@ impl Default for Entity {
 impl Entity {
     /// Create a new entity with the given ID and name.
     pub fn new(id: impl Into<String>, name: impl Into<String>) -> Self {
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs_f64();
+            
         Self {
             id: id.into(),
             name: name.into(),
+            creation_timestamp: now,
+            creator_id: "Editor".to_string(),
             ..Default::default()
         }
     }

@@ -12,6 +12,9 @@ use super::scene::Scene;
 use super::database::Database;
 use super::story::StoryGraphData;
 use super::assets::AssetIndex;
+use super::map::MapAsset;
+use super::mode::GameMode;
+use super::scenario::ScenarioData;
 
 /// Error type for data loading operations.
 #[derive(Debug, Error)]
@@ -114,6 +117,39 @@ pub fn load_asset_index(path: &Path) -> Result<AssetIndex, DataError> {
     Ok(index)
 }
 
+/// Load a map from a JSON file.
+pub fn load_map(path: &Path) -> Result<MapAsset, DataError> {
+    if !path.exists() {
+        return Err(DataError::NotFound(path.display().to_string()));
+    }
+
+    let content = fs::read_to_string(path)?;
+    let map: MapAsset = serde_json::from_str(&content)?;
+    Ok(map)
+}
+
+/// Load a game mode from a JSON file.
+pub fn load_mode(path: &Path) -> Result<GameMode, DataError> {
+    if !path.exists() {
+        return Err(DataError::NotFound(path.display().to_string()));
+    }
+
+    let content = fs::read_to_string(path)?;
+    let mode: GameMode = serde_json::from_str(&content)?;
+    Ok(mode)
+}
+
+/// Load a scenario from a JSON file.
+pub fn load_scenario(path: &Path) -> Result<ScenarioData, DataError> {
+    if !path.exists() {
+        return Err(DataError::NotFound(path.display().to_string()));
+    }
+
+    let content = fs::read_to_string(path)?;
+    let scenario: ScenarioData = serde_json::from_str(&content)?;
+    Ok(scenario)
+}
+
 /// Save a project to a JSON file.
 pub fn save_project(project: &Project, path: &Path) -> Result<(), DataError> {
     let content = serde_json::to_string_pretty(project)?;
@@ -142,6 +178,27 @@ pub fn save_story_graph(graph: &StoryGraphData, path: &Path) -> Result<(), DataE
     Ok(())
 }
 
+/// Save a map to a JSON file.
+pub fn save_map(map: &MapAsset, path: &Path) -> Result<(), DataError> {
+    let content = serde_json::to_string_pretty(map)?;
+    fs::write(path, content)?;
+    Ok(())
+}
+
+/// Save a game mode to a JSON file.
+pub fn save_mode(mode: &GameMode, path: &Path) -> Result<(), DataError> {
+    let content = serde_json::to_string_pretty(mode)?;
+    fs::write(path, content)?;
+    Ok(())
+}
+
+/// Save a scenario to a JSON file.
+pub fn save_scenario(scenario: &ScenarioData, path: &Path) -> Result<(), DataError> {
+    let content = serde_json::to_string_pretty(scenario)?;
+    fs::write(path, content)?;
+    Ok(())
+}
+
 /// Save the entire project structure to a directory.
 ///
 /// This creates the necessary subdirectories (scenes, assets, etc.) and saves the `project.json` file.
@@ -161,6 +218,9 @@ pub fn save_project_structure(project: &Project, root_path: &Path) -> Result<(),
     fs::create_dir_all(root_path.join(&paths.story_graphs))?;
     fs::create_dir_all(root_path.join(&paths.database))?;
     fs::create_dir_all(root_path.join(&paths.assets))?;
+    fs::create_dir_all(root_path.join(&paths.maps))?;
+    fs::create_dir_all(root_path.join(&paths.modes))?;
+    fs::create_dir_all(root_path.join(&paths.scenarios))?;
 
     // Save project.json
     let project_file = root_path.join("project.json");
