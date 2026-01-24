@@ -243,16 +243,22 @@ pub fn apply_window_settings_system(
             // Update Resolution
             window.resolution.set(settings.window_width, settings.window_height);
 
+            let monitor = if settings.monitor_index == 0 {
+                MonitorSelection::Primary
+            } else {
+                MonitorSelection::Index(settings.monitor_index - 1)
+            };
+
             // Update Mode
             window.mode = match settings.window_mode_index {
-                1 => bevy::window::WindowMode::BorderlessFullscreen(MonitorSelection::Index(settings.monitor_index)),
-                2 => bevy::window::WindowMode::SizedFullscreen(MonitorSelection::Index(settings.monitor_index)),
+                1 => bevy::window::WindowMode::BorderlessFullscreen(monitor),
+                2 => bevy::window::WindowMode::SizedFullscreen(monitor),
                 _ => bevy::window::WindowMode::Windowed,
             };
 
             // Update Position (if windowed, re-center on selected monitor)
             if window.mode == bevy::window::WindowMode::Windowed {
-                window.position = WindowPosition::Centered(MonitorSelection::Index(settings.monitor_index));
+                window.position = WindowPosition::Centered(monitor);
             }
             
             info!("Applied Window Settings: {}x{} (ModeIndex={}, MonitorIndex={})", 

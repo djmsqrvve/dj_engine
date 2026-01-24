@@ -82,83 +82,72 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
         ui.add_space(10.0);
 
         ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-            let mut close_branch_idx = None;
             let mut switch_branch_idx = None;
             let mut add_branch = false;
-            let mut add_view = None;
+            let mut close_branch_idx = None;
 
-            let active_idx = world.resource::<EditorUiState>().active_branch_idx;
-            let branches = &world.resource::<EditorUiState>().active_branches;
+            let ui_state = world.resource::<EditorUiState>();
+            let active_idx = ui_state.active_branch_idx;
+            let branches = &ui_state.active_branches;
+            let active_branch = &branches[active_idx];
+            let active_view = active_branch.active_view.clone();
 
-            for (idx, branch) in branches.iter().enumerate() {
-                let is_active = idx == active_idx;
-                let bg_color = if is_active { branch.color } else { branch.color.linear_multiply(0.3) };
-                
-                let btn = ui.add(egui::Button::new(
-                    RichText::new(&branch.name).color(Color32::WHITE).strong()
-                ).fill(bg_color));
-
-                btn.context_menu(|ui| {
-                    ui.label("Switch View");
-                    ui.separator();
-                    if ui.button("🗺 Map Editor").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::MapEditor); ui.close_menu(); }
-                    if ui.button("🎭 Scenario Editor").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::ScenarioEditor); ui.close_menu(); }
-                    if ui.button("📽 Story Graph").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::StoryGraph); ui.close_menu(); }
-                    if ui.button("📅 Campaign").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Campaign); ui.close_menu(); }
-                    if ui.button("🎮 Play View").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Play); ui.close_menu(); }
-                    if ui.button("⚙ Settings").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Settings); ui.close_menu(); }
-                });
-
-                if btn.clicked() {
-                    switch_branch_idx = Some(idx);
-                }
-
-                if is_active {
-                    ui.add_space(5.0);
-                    let view_name = match branch.active_view {
-                        EditorView::MapEditor => "🗺 Map",
-                        EditorView::ScenarioEditor => "🎭 Scenario",
-                        EditorView::StoryGraph => "📽 Storyboard",
-                        EditorView::Campaign => "📅 Campaign",
-                        EditorView::Settings => "⚙ Settings",
-                        EditorView::Play => "🎮 Play",
-                        _ => "View",
-                    };
+            // 1. CORE / BRANCHES DROPDOWN
+            ui.menu_button(RichText::new("📦 CORE").color(COLOR_PRIMARY).strong(), |ui| {
+                ui.label("Branches");
+                ui.separator();
+                for (idx, branch) in branches.iter().enumerate() {
+                    let is_active = idx == active_idx;
+                    let text = if is_active { format!("● {}", branch.name) } else { branch.name.clone() };
                     
-                    ui.menu_button(RichText::new(view_name).color(COLOR_PRIMARY).small(), |ui| {
-                        if ui.button("🗺 Map Editor").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::MapEditor); ui.close_menu(); }
-                        if ui.button("🎭 Scenario Editor").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::ScenarioEditor); ui.close_menu(); }
-                        if ui.button("📽 Storyboard").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::StoryGraph); ui.close_menu(); }
-                        if ui.button("📅 Campaign").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Campaign); ui.close_menu(); }
-                        if ui.button("🎮 Play View").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Play); ui.close_menu(); }
-                        if ui.button("⚙ Settings").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Settings); ui.close_menu(); }
-                    });
-                } else {
-                     // Close button (x) for inactive branches
-                    if branches.len() > 1 {
-                        if ui.small_button("x").clicked() {
+                    ui.horizontal(|ui| {
+                        if ui.selectable_label(is_active, text).clicked() {
+                            switch_branch_idx = Some(idx);
+                            ui.close_menu();
+                        }
+                        if branches.len() > 1 && ui.small_button("x").clicked() {
                             close_branch_idx = Some(idx);
+                            ui.close_menu();
+                        }
+                    });
+                }
+                ui.separator();
+                if ui.button("+ New Branch").clicked() {
+                    add_branch = true;
+                    ui.close_menu();
+                }
+            });
+
+            ui.add_space(10.0);
+            ui.separator();
+            ui.add_space(10.0);
+
+            // 2. EDITOR VIEW TABS
+            let views = [
+                (EditorView::MapEditor, "🗺 Map"),
+                (EditorView::ScenarioEditor, "🎭 Scenario"),
+                (EditorView::StoryGraph, "📽 Storyboard"),
+                (EditorView::Campaign, "📅 Campaign"),
+                (EditorView::Play, "🎮 Play"),
+                (EditorView::Settings, "⚙ Settings"),
+            ];
+
+            for (view, label) in views {
+                let is_selected = active_view == view;
+                if ui.selectable_label(is_selected, label).clicked() {
+                    // Update current branch view
+                    if let Some(mut state) = world.get_resource_mut::<EditorUiState>() {
+                        if let Some(branch) = state.active_branches.get_mut(active_idx) {
+                            branch.active_view = view;
                         }
                     }
                 }
-                
                 ui.add_space(5.0);
             }
 
-            // New Branch Button
-            if ui.button(RichText::new("+").strong()).clicked() {
-                add_branch = true;
-            }
-
-            // Handle state mutations
+            // Handle branch mutations
             if let Some(idx) = switch_branch_idx {
-                let mut ui_state = world.resource_mut::<EditorUiState>();
-                ui_state.active_branch_idx = idx;
-                if let Some(view) = add_view {
-                    if let Some(branch) = ui_state.active_branches.get_mut(idx) {
-                        branch.active_view = view;
-                    }
-                }
+                world.resource_mut::<EditorUiState>().active_branch_idx = idx;
             }
             
             if add_branch {
@@ -177,7 +166,6 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                     active_view: EditorView::MapEditor,
                     active_tab: SidePanelTab::Hierarchy,
                 });
-                // Auto-switch to new branch
                 let new_idx = world.resource::<EditorUiState>().active_branches.len() - 1;
                 world.resource_mut::<EditorUiState>().active_branch_idx = new_idx;
             }
