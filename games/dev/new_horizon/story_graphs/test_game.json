@@ -1,115 +1,124 @@
 {
   "id": "test_game",
   "name": "DJ Engine Test Game",
+  "root_node_id": "1",
   "nodes": [
     {
       "id": "1",
       "position": {"x": 0.0, "y": 0.0},
-      "node_type": "Start",
-      "data": { "Start": {} },
-      "outputs": ["2"]
+      "data": {
+        "type": "start",
+        "next_node_id": "2"
+      }
     },
     {
       "id": "2",
       "position": {"x": 200.0, "y": 0.0},
-      "node_type": "Event",
-      "data": { "Event": { "event_id": "first_event", "payload": {} } },
-      "outputs": ["3"]
+      "data": {
+        "type": "sub_graph",
+        "graph_id": "first_event",
+        "next_node_id": "3"
+      }
     },
     {
       "id": "3",
       "position": {"x": 400.0, "y": 0.0},
-      "node_type": "Choice",
-      "data": { 
-        "Choice": { 
-          "text": {"en": "Yo hi is are you DJ"}, 
-          "choices": [
-            { "id": "y", "text": {"en": "Yes"}, "target_id": "4" },
-            { "id": "n", "text": {"en": "No"}, "target_id": "game_over_1" }
-          ]
-        } 
-      },
-      "outputs": []
+      "data": {
+        "type": "choice",
+        "prompt": {"en": "Yo hi is are you DJ"},
+        "options": [
+          { "id": "y", "text": {"en": "Yes"}, "target_node_id": "4" },
+          { "id": "n", "text": {"en": "No"}, "target_node_id": "game_over_1" }
+        ]
+      }
     },
     {
       "id": "4",
       "position": {"x": 600.0, "y": -100.0},
-      "node_type": "Dialogue",
-      "data": { "Dialogue": { "speaker_id": "System", "text": {"en": "Okay let's keep going on."} } },
-      "outputs": ["5"]
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "System",
+        "text": {"en": "Okay let's keep going on."},
+        "next_node_id": "5"
+      }
     },
     {
       "id": "game_over_1",
       "position": {"x": 600.0, "y": 100.0},
-      "node_type": "End",
-      "data": { "End": { "end_type": "GameOver", "target_scene_id": null } },
-      "outputs": []
+      "data": {
+        "type": "end",
+        "end_type": "quit"
+      }
     },
     {
       "id": "5",
       "position": {"x": 800.0, "y": -100.0},
-      "node_type": "Choice",
-      "data": { 
-        "Choice": { 
-          "text": {"en": "Thanks for testing this DJ: Do you like girls or boys or both or anything else?"}, 
-          "choices": [
-            { "id": "yes", "text": {"en": "Yes"}, "target_id": "6_yes" },
-            { "id": "other", "text": {"en": "Other"}, "target_id": "6_other" }
-          ]
-        } 
-      },
-      "outputs": []
+      "data": {
+        "type": "choice",
+        "prompt": {"en": "Thanks for testing this DJ: Do you like girls or boys or both or anything else?"},
+        "options": [
+          { "id": "yes", "text": {"en": "Yes"}, "target_node_id": "6_yes" },
+          { "id": "other", "text": {"en": "Other"}, "target_node_id": "6_other" }
+        ]
+      }
     },
     {
       "id": "6_yes",
       "position": {"x": 1000.0, "y": -150.0},
-      "node_type": "Dialogue",
-      "data": { "Dialogue": { "speaker_id": "System", "text": {"en": "See guys DJ isn't gay after all!"} } },
-      "outputs": ["7"]
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "System",
+        "text": {"en": "See guys DJ isn't gay after all!"},
+        "next_node_id": "7"
+      }
     },
     {
       "id": "6_other",
       "position": {"x": 1000.0, "y": -50.0},
-      "node_type": "Dialogue",
-      "data": { "Dialogue": { "speaker_id": "System", "text": {"en": "..................huh"} } },
-      "outputs": ["7"]
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "System",
+        "text": {"en": "..................huh"},
+        "next_node_id": "7"
+      }
     },
     {
       "id": "7",
       "position": {"x": 1200.0, "y": -100.0},
-      "node_type": "Choice",
-      "data": { 
-        "Choice": { 
-          "text": {"en": "Do you want to beat the game?"}, 
-          "choices": [
-            { "id": "y", "text": {"en": "Yes"}, "target_id": "8_win" },
-            { "id": "n", "text": {"en": "No"}, "target_id": "9_pre_loss" }
-          ]
-        } 
-      },
-      "outputs": []
+      "data": {
+        "type": "choice",
+        "prompt": {"en": "Do you want to beat the game?"},
+        "options": [
+          { "id": "y", "text": {"en": "Yes"}, "target_node_id": "8_win" },
+          { "id": "n", "text": {"en": "No"}, "target_node_id": "9_pre_loss" }
+        ]
+      }
     },
     {
       "id": "8_win",
       "position": {"x": 1400.0, "y": -200.0},
-      "node_type": "End",
-      "data": { "End": { "end_type": "Win", "target_scene_id": null } },
-      "outputs": []
+      "data": {
+        "type": "end",
+        "end_type": "return_to_gameplay"
+      }
     },
     {
       "id": "9_pre_loss",
       "position": {"x": 1400.0, "y": 0.0},
-      "node_type": "Dialogue",
-      "data": { "Dialogue": { "speaker_id": "System", "text": {"en": "Okay, one more round..."} } },
-      "outputs": ["10_loss"]
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "System",
+        "text": {"en": "Okay, one more round..."},
+        "next_node_id": "10_loss"
+      }
     },
     {
       "id": "10_loss",
       "position": {"x": 1600.0, "y": 0.0},
-      "node_type": "End",
-      "data": { "End": { "end_type": "GameOver", "target_scene_id": null } },
-      "outputs": []
+      "data": {
+        "type": "end",
+        "end_type": "quit"
+      }
     }
-  ],
-  "start_node_id": "1"
+  ]
 }
