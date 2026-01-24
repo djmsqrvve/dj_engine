@@ -3,8 +3,8 @@
 //! A Campaign organizes the game into Acts and Chapters, linking
 //! individual Story Graphs and Scenes into a cohesive progression.
 
-use serde::{Deserialize, Serialize};
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use super::components::Vec3Data;
 

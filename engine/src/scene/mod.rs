@@ -85,7 +85,7 @@ fn handle_scene_change(
         }
 
         info!("Starting scene transition to: {}", event.background_path);
-        
+
         // Start fade out to black
         manager.state = TransitionState::FadingOut;
         manager.alpha = 0.0;
@@ -112,7 +112,7 @@ fn update_transition(
     match manager.state {
         TransitionState::FadingOut => {
             manager.alpha = (manager.alpha + manager.speed * dt).min(1.0);
-            
+
             if manager.alpha >= 1.0 {
                 // Screen is black, swap backgrounds
                 for entity in bg_query.iter() {
@@ -138,7 +138,7 @@ fn update_transition(
         }
         TransitionState::FadingIn => {
             manager.alpha = (manager.alpha - manager.speed * dt).max(0.0);
-            
+
             if manager.alpha <= 0.0 {
                 // Transition complete
                 manager.state = TransitionState::Idle;

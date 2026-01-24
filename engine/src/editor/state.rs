@@ -1,22 +1,28 @@
+use crate::data::map::MapAsset;
+pub use crate::data::project::EngineSettings;
+use crate::data::scenario::ScenarioData;
+use crate::data::story::StoryGraphData;
 use bevy::prelude::*;
 use bevy_egui::egui::Color32;
-use crate::data::story::StoryGraphData;
-use crate::data::map::MapAsset;
-use crate::data::scenario::ScenarioData;
-pub use crate::data::project::EngineSettings;
+use egui_dock::DockState;
+use serde::{Deserialize, Serialize};
 
 pub const COLOR_PRIMARY: Color32 = Color32::from_rgb(0, 255, 204); // Cyberpunk Mint
 pub const COLOR_SECONDARY: Color32 = Color32::from_rgb(255, 175, 200); // Pale Rose
 pub const COLOR_BG: Color32 = Color32::from_rgb(15, 15, 20);
 
+/// Global state machine for the editor.
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub enum EditorState {
+    /// Editor is active and editing.
     #[default]
     Editor,
+    /// Game is currently playing within the editor context.
     Playing,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+/// Enumeration of tabs available in the side panel.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum SidePanelTab {
     #[default]
     Hierarchy,
@@ -24,22 +30,46 @@ pub enum SidePanelTab {
     Assets,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+/// Enumeration of all possible views/windows in the editor.
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum EditorView {
     #[default]
-    Core,           // Workspace Dashboard
-    FeatureGrid,    // Ecosystem toggle grid
-    Timeline,       // DAW-style Logic Timeline
-    MapEditor,      // Edit static geometry (MapAsset)
-    ScenarioEditor, // Edit dynamic entities (ScenarioData)
+    /// Main dashboard with project overview.
+    Core,
+    /// Feature toggles and ecosystem management.
+    FeatureGrid,
+    /// Timeline view for sequencing logic.
+    Timeline,
+    /// Map editor for static geometry.
+    MapEditor,
+    /// Scenario editor for dynamic entities.
+    ScenarioEditor,
+    /// Narrative flow editor.
     StoryGraph,
+    /// Campaign progression editor.
     Campaign,
+    /// Input controls configuration.
     Controls,
+    /// Global engine settings.
     Settings,
+    /// Development phases view.
     Phases,
+    /// Play mode view.
     Play,
+    // Panels as Tabs
+    /// Scene hierarchy panel.
+    Hierarchy,
+    /// Asset palette panel.
+    Palette,
+    /// Asset browser panel.
+    Assets,
+    /// Entity inspector panel.
+    Inspector,
+    /// Debug console panel.
+    Console,
 }
 
+/// Represents a single commit in the project history.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Commit {
     pub id: String,
@@ -48,6 +78,7 @@ pub struct Commit {
     pub position: bevy::math::Vec2,
 }
 
+/// Status of a commit in the history graph.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CommitStatus {
     Passed,
@@ -55,6 +86,7 @@ pub enum CommitStatus {
     Pending,
 }
 
+/// Represents a branch in the version control visualization.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Branch {
     pub id: String,
@@ -102,9 +134,24 @@ impl Default for FeatureGrid {
                     color: Color32::from_rgb(255, 100, 100),
                     position: Vec2::new(-200.0, -100.0),
                     nodes: vec![
-                        FeatureNode { id: "fireball".into(), name: "Fireball".into(), icon: "🔥".into(), description: "Launch a ball of fire".into() },
-                        FeatureNode { id: "ice_spear".into(), name: "Ice Spear".into(), icon: "❄️".into(), description: "Throw a frozen spear".into() },
-                        FeatureNode { id: "lightning".into(), name: "Lightning".into(), icon: "⚡".into(), description: "Call down lightning".into() },
+                        FeatureNode {
+                            id: "fireball".into(),
+                            name: "Fireball".into(),
+                            icon: "🔥".into(),
+                            description: "Launch a ball of fire".into(),
+                        },
+                        FeatureNode {
+                            id: "ice_spear".into(),
+                            name: "Ice Spear".into(),
+                            icon: "❄️".into(),
+                            description: "Throw a frozen spear".into(),
+                        },
+                        FeatureNode {
+                            id: "lightning".into(),
+                            name: "Lightning".into(),
+                            icon: "⚡".into(),
+                            description: "Call down lightning".into(),
+                        },
                     ],
                 },
                 Ecosystem {
@@ -114,8 +161,18 @@ impl Default for FeatureGrid {
                     color: Color32::from_rgb(100, 200, 100),
                     position: Vec2::new(200.0, -100.0),
                     nodes: vec![
-                        FeatureNode { id: "potion_hp".into(), name: "Health Potion".into(), icon: "❤️".into(), description: "Restores HP".into() },
-                        FeatureNode { id: "potion_mp".into(), name: "Mana Potion".into(), icon: "💙".into(), description: "Restores MP".into() },
+                        FeatureNode {
+                            id: "potion_hp".into(),
+                            name: "Health Potion".into(),
+                            icon: "❤️".into(),
+                            description: "Restores HP".into(),
+                        },
+                        FeatureNode {
+                            id: "potion_mp".into(),
+                            name: "Mana Potion".into(),
+                            icon: "💙".into(),
+                            description: "Restores MP".into(),
+                        },
                     ],
                 },
                 Ecosystem {
@@ -125,8 +182,18 @@ impl Default for FeatureGrid {
                     color: Color32::from_rgb(100, 150, 255),
                     position: Vec2::new(0.0, 150.0),
                     nodes: vec![
-                        FeatureNode { id: "gravity".into(), name: "Gravity".into(), icon: "🌍".into(), description: "World gravity".into() },
-                        FeatureNode { id: "collision".into(), name: "Collision".into(), icon: "💥".into(), description: "Collision detection".into() },
+                        FeatureNode {
+                            id: "gravity".into(),
+                            name: "Gravity".into(),
+                            icon: "🌍".into(),
+                            description: "World gravity".into(),
+                        },
+                        FeatureNode {
+                            id: "collision".into(),
+                            name: "Collision".into(),
+                            icon: "💥".into(),
+                            description: "Collision detection".into(),
+                        },
                     ],
                 },
             ],
@@ -149,8 +216,10 @@ pub struct ActiveMap(pub MapAsset);
 #[derive(Resource, Default)]
 pub struct ActiveScenario(pub ScenarioData);
 
+#[derive(Resource)]
+pub struct EditorDockState(pub DockState<EditorView>);
 
-#[derive(Resource, Default)]
+#[derive(Resource)]
 pub struct EditorUiState {
     pub global_view: EditorView,
     pub active_branches: Vec<Branch>,
@@ -165,8 +234,8 @@ pub struct EditorUiState {
     pub selected_node_id: Option<String>,
 }
 
-impl EditorUiState {
-    pub fn new() -> Self {
+impl Default for EditorUiState {
+    fn default() -> Self {
         Self {
             global_view: EditorView::Core,
             active_branches: vec![Branch {
@@ -175,19 +244,30 @@ impl EditorUiState {
                 color: COLOR_PRIMARY,
                 active_view: EditorView::MapEditor,
                 active_tab: SidePanelTab::Hierarchy,
-                history: vec![
-                    Commit {
-                        id: "initial".to_string(),
-                        message: "Initial Commit".to_string(),
-                        status: CommitStatus::Passed,
-                        position: Vec2::new(0.0, 0.0),
-                    }
-                ],
+                history: vec![Commit {
+                    id: "initial".to_string(),
+                    message: "Initial Commit".to_string(),
+                    status: CommitStatus::Passed,
+                    position: bevy::math::Vec2::new(0.0, 0.0),
+                }],
                 node_overrides: std::collections::HashMap::new(),
             }],
             active_branch_idx: 0,
-            ..Default::default()
+            selected_entities: Default::default(),
+            asset_search_query: Default::default(),
+            selected_palette_item: Default::default(),
+            console_open: Default::default(),
+            console_input: Default::default(),
+            dragged_node_id: Default::default(),
+            connection_start_id: Default::default(),
+            selected_node_id: Default::default(),
         }
+    }
+}
+
+impl EditorUiState {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn current_branch(&self) -> Option<&Branch> {
@@ -199,7 +279,6 @@ impl EditorUiState {
     }
 }
 
-
 #[derive(Resource)]
 pub struct AutomatedTestActive {
     pub timer: Timer,
@@ -209,3 +288,6 @@ pub struct AutomatedTestActive {
 /// Marker component for entities that should show up in the game scene hierarchy.
 #[derive(Component, Default)]
 pub struct LogicalEntity;
+
+#[derive(Resource, Default, Debug)]
+pub struct EditorPrefs(pub crate::data::project::EditorPreferences);

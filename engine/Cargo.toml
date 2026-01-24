@@ -21,6 +21,7 @@ mlua = { workspace = true }
 midly = { version = "0.5", features = ["std"] }
 rodio = "0.19"
 bevy_egui = { workspace = true }
+egui_dock = { version = "0.14", features = ["serde"] }
 bevy-inspector-egui = "0.28"
 chrono = "0.4"
 uuid = { workspace = true }

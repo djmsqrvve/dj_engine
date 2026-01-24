@@ -7,14 +7,14 @@ use std::fs;
 use std::path::Path;
 use thiserror::Error;
 
-use super::project::Project;
-use super::scene::Scene;
-use super::database::Database;
-use super::story::StoryGraphData;
 use super::assets::AssetIndex;
+use super::database::Database;
 use super::map::MapAsset;
 use super::mode::GameMode;
+use super::project::Project;
 use super::scenario::ScenarioData;
+use super::scene::Scene;
+use super::story::StoryGraphData;
 
 /// Error type for data loading operations.
 #[derive(Debug, Error)]
@@ -28,8 +28,25 @@ pub enum DataError {
     #[error("File not found: {0}")]
     NotFound(String),
 
+    #[error("File too large: {0} bytes (max {1})")]
+    FileTooLarge(u64, u64),
+
     #[error("Invalid project structure: {0}")]
     InvalidProject(String),
+}
+
+const MAX_FILE_SIZE: u64 = 50 * 1024 * 1024; // 50 MB
+
+fn read_file_safe(path: &Path) -> Result<String, DataError> {
+    let mut file = fs::File::open(path)?;
+    let len = file.metadata()?.len();
+    if len > MAX_FILE_SIZE {
+        return Err(DataError::FileTooLarge(len, MAX_FILE_SIZE));
+    }
+    let mut content = String::new();
+    use std::io::Read;
+    file.read_to_string(&mut content)?;
+    Ok(content)
 }
 
 /// Load a project from a JSON file.
@@ -44,7 +61,7 @@ pub fn load_project(path: &Path) -> Result<Project, DataError> {
         return Err(DataError::NotFound(path.display().to_string()));
     }
 
-    let content = fs::read_to_string(path)?;
+    let content = read_file_safe(path)?;
     let project: Project = serde_json::from_str(&content)?;
     Ok(project)
 }
@@ -61,7 +78,7 @@ pub fn load_scene(path: &Path) -> Result<Scene, DataError> {
         return Err(DataError::NotFound(path.display().to_string()));
     }
 
-    let content = fs::read_to_string(path)?;
+    let content = read_file_safe(path)?;
     let scene: Scene = serde_json::from_str(&content)?;
     Ok(scene)
 }
@@ -78,7 +95,7 @@ pub fn load_database(path: &Path) -> Result<Database, DataError> {
         return Err(DataError::NotFound(path.display().to_string()));
     }
 
-    let content = fs::read_to_string(path)?;
+    let content = read_file_safe(path)?;
     let database: Database = serde_json::from_str(&content)?;
     Ok(database)
 }
@@ -95,7 +112,7 @@ pub fn load_story_graph(path: &Path) -> Result<StoryGraphData, DataError> {
         return Err(DataError::NotFound(path.display().to_string()));
     }
 
-    let content = fs::read_to_string(path)?;
+    let content = read_file_safe(path)?;
     let graph: StoryGraphData = serde_json::from_str(&content)?;
     Ok(graph)
 }
@@ -112,7 +129,7 @@ pub fn load_asset_index(path: &Path) -> Result<AssetIndex, DataError> {
         return Err(DataError::NotFound(path.display().to_string()));
     }
 
-    let content = fs::read_to_string(path)?;
+    let content = read_file_safe(path)?;
     let index: AssetIndex = serde_json::from_str(&content)?;
     Ok(index)
 }
@@ -123,7 +140,7 @@ pub fn load_map(path: &Path) -> Result<MapAsset, DataError> {
         return Err(DataError::NotFound(path.display().to_string()));
     }
 
-    let content = fs::read_to_string(path)?;
+    let content = read_file_safe(path)?;
     let map: MapAsset = serde_json::from_str(&content)?;
     Ok(map)
 }
@@ -134,7 +151,7 @@ pub fn load_mode(path: &Path) -> Result<GameMode, DataError> {
         return Err(DataError::NotFound(path.display().to_string()));
     }
 
-    let content = fs::read_to_string(path)?;
+    let content = read_file_safe(path)?;
     let mode: GameMode = serde_json::from_str(&content)?;
     Ok(mode)
 }
@@ -145,7 +162,7 @@ pub fn load_scenario(path: &Path) -> Result<ScenarioData, DataError> {
         return Err(DataError::NotFound(path.display().to_string()));
     }
 
-    let content = fs::read_to_string(path)?;
+    let content = read_file_safe(path)?;
     let scenario: ScenarioData = serde_json::from_str(&content)?;
     Ok(scenario)
 }
@@ -238,11 +255,11 @@ mod tests {
     #[test]
     fn test_load_save_project() {
         let project = Project::new("Test Project");
-        
+
         let mut file = NamedTempFile::new().unwrap();
         let json = serde_json::to_string_pretty(&project).unwrap();
         file.write_all(json.as_bytes()).unwrap();
-        
+
         let loaded = load_project(file.path()).unwrap();
         assert_eq!(project.name, loaded.name);
     }

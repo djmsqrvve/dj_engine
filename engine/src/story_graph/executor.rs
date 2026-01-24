@@ -1,8 +1,8 @@
-use bevy::prelude::*;
+use super::events::*;
+use super::types::*;
 use crate::audio::AudioCommand;
 use crate::scene::ChangeSceneEvent;
-use super::types::*;
-use super::events::*;
+use bevy::prelude::*;
 
 /// Event sent to scripting layer to trigger an action
 #[derive(Event, Debug, Clone)]
@@ -56,8 +56,12 @@ pub fn execute_graph(
         let node_to_process = if let Some(graph) = &executor.active_graph {
             if let Some(node_id) = executor.current_node {
                 graph.nodes.get(&node_id).cloned()
-            } else { None }
-        } else { None };
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
         if let Some(node) = node_to_process {
             let action = process_node(
@@ -69,7 +73,7 @@ pub fn execute_graph(
                 &mut flow_events,
                 &mut audio_events,
                 &mut scene_events,
-                &mut action_events
+                &mut action_events,
             );
 
             match action {
@@ -117,7 +121,7 @@ fn advance_node(executor: &mut GraphExecutor) {
     let next_id = if let Some(graph) = &executor.active_graph {
         if let Some(node_id) = executor.current_node {
             if let Some(node) = graph.nodes.get(&node_id) {
-                 match node {
+                match node {
                     StoryNode::Dialogue { next, .. } => *next,
                     StoryNode::Audio { next, .. } => *next,
                     StoryNode::Background { next, .. } => *next,
@@ -128,21 +132,33 @@ fn advance_node(executor: &mut GraphExecutor) {
                     StoryNode::SubGraph { next, .. } => *next, // Fallback if not processed as jump
                     _ => None,
                 }
-            } else { None }
-        } else { None }
-    } else { None };
-    
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
     executor.current_node = next_id;
 }
 
 fn handle_choice_selection(executor: &mut GraphExecutor, index: usize) {
     let next_id = if let Some(graph) = &executor.active_graph {
         if let Some(node_id) = executor.current_node {
-             if let Some(StoryNode::Choice { options, .. }) = graph.nodes.get(&node_id) {
-                 options.get(index).and_then(|opt| opt.next)
-             } else { None }
-        } else { None }
-    } else { None };
+            if let Some(StoryNode::Choice { options, .. }) = graph.nodes.get(&node_id) {
+                options.get(index).and_then(|opt| opt.next)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    } else {
+        None
+    };
 
     executor.current_node = next_id;
     executor.status = ExecutionStatus::Running;
@@ -153,26 +169,33 @@ fn process_node(
     library: &Option<Res<StoryGraphLibrary>>,
     stack: &mut Vec<(StoryGraph, Option<NodeId>)>,
     active_graph: &mut Option<StoryGraph>,
-    flags: &mut StoryFlags, 
+    flags: &mut StoryFlags,
     flow: &mut EventWriter<StoryFlowEvent>,
     audio: &mut EventWriter<AudioCommand>,
     scene: &mut EventWriter<ChangeSceneEvent>,
     action_events: &mut EventWriter<StoryActionEvent>,
 ) -> NodeAction {
     match node {
-        StoryNode::Dialogue { speaker, text, portrait, .. } => {
-            flow.send(StoryFlowEvent::ShowDialogue { 
-                speaker: speaker.clone(), 
-                text: text.clone(), 
-                portrait: portrait.clone() 
+        StoryNode::Dialogue {
+            speaker,
+            text,
+            portrait,
+            ..
+        } => {
+            flow.send(StoryFlowEvent::ShowDialogue {
+                speaker: speaker.clone(),
+                text: text.clone(),
+                portrait: portrait.clone(),
             });
             NodeAction::WaitInput
         }
-        StoryNode::Choice { prompt, options, .. } => {
+        StoryNode::Choice {
+            prompt, options, ..
+        } => {
             let option_texts = options.iter().map(|o| o.text.clone()).collect();
-            flow.send(StoryFlowEvent::ShowChoices { 
-                prompt: prompt.clone(), 
-                options: option_texts 
+            flow.send(StoryFlowEvent::ShowChoices {
+                prompt: prompt.clone(),
+                options: option_texts,
             });
             NodeAction::WaitInput
         }
@@ -181,20 +204,28 @@ fn process_node(
             NodeAction::Advance
         }
         StoryNode::Background { path, duration, .. } => {
-            scene.send(ChangeSceneEvent { 
-                background_path: path.clone(), 
-                duration: *duration 
+            scene.send(ChangeSceneEvent {
+                background_path: path.clone(),
+                duration: *duration,
             });
             NodeAction::Advance
         }
-        StoryNode::Wait { duration, .. } => {
-            NodeAction::WaitTimer(*duration)
-        }
-        StoryNode::Branch { flag, if_true, if_false } => {
+        StoryNode::Wait { duration, .. } => NodeAction::WaitTimer(*duration),
+        StoryNode::Branch {
+            flag,
+            if_true,
+            if_false,
+        } => {
             if flags.get(flag) {
-                if let Some(id) = if_true { NodeAction::Jump(*id) } else { NodeAction::Advance }
+                if let Some(id) = if_true {
+                    NodeAction::Jump(*id)
+                } else {
+                    NodeAction::Advance
+                }
+            } else if let Some(id) = if_false {
+                NodeAction::Jump(*id)
             } else {
-                if let Some(id) = if_false { NodeAction::Jump(*id) } else { NodeAction::Advance }
+                NodeAction::Advance
             }
         }
         StoryNode::SetFlag { flag, value, .. } => {
@@ -209,7 +240,7 @@ fn process_node(
             // 4. Set active_graph = new graph
             // 5. Set current_node = new graph.start_node
             // 6. Return Jump(start_node)
-            
+
             if let Some(lib) = library {
                 if let Some(sub_graph) = lib.graphs.get(graph_id) {
                     if let Some(parent) = active_graph.take() {
@@ -234,7 +265,9 @@ fn process_node(
             }
             NodeAction::Advance
         }
-        StoryNode::Event { event_id, payload, .. } => {
+        StoryNode::Event {
+            event_id, payload, ..
+        } => {
             // Bridge to StoryAction
             action_events.send(StoryActionEvent {
                 script_id: event_id.clone(),
@@ -242,11 +275,7 @@ fn process_node(
             });
             NodeAction::Advance
         }
-        StoryNode::End => {
-            NodeAction::End
-        }
-        StoryNode::Start { .. } => {
-            NodeAction::Advance
-        }
+        StoryNode::End => NodeAction::End,
+        StoryNode::Start { .. } => NodeAction::Advance,
     }
 }

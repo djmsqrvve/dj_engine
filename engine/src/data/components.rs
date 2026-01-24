@@ -3,9 +3,9 @@
 //! These are serializable data structures that describe entity components.
 //! They map to Bevy ECS components at runtime via the spawner system.
 
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use bevy::prelude::*;
 
 /// Runtime metadata for entities.
 #[derive(Component, Reflect, Default, Debug, Clone)]
@@ -44,11 +44,18 @@ pub struct ColorData {
     pub a: f32,
 }
 
-fn default_alpha() -> f32 { 1.0 }
+fn default_alpha() -> f32 {
+    1.0
+}
 
 impl Default for ColorData {
     fn default() -> Self {
-        Self { r: 1.0, g: 1.0, b: 1.0, a: 1.0 }
+        Self {
+            r: 1.0,
+            g: 1.0,
+            b: 1.0,
+            a: 1.0,
+        }
     }
 }
 
@@ -133,8 +140,12 @@ pub struct AnimationData {
     pub loop_anim: bool,
 }
 
-fn default_speed() -> f32 { 1.0 }
-fn default_true() -> bool { true }
+fn default_speed() -> f32 {
+    1.0
+}
+fn default_true() -> bool {
+    true
+}
 
 /// Transform component data.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Component, Reflect)]
@@ -356,8 +367,12 @@ pub struct CombatStatsComponent {
     pub loot_table_id: Option<String>,
 }
 
-fn default_attack_speed() -> f32 { 1.0 }
-fn default_move_speed() -> f32 { 100.0 }
+fn default_attack_speed() -> f32 {
+    1.0
+}
+fn default_move_speed() -> f32 {
+    100.0
+}
 
 impl Default for CombatStatsComponent {
     fn default() -> Self {
@@ -410,8 +425,12 @@ pub struct TowerComponent {
     pub effect_id: Option<String>,
 }
 
-fn default_tower_range() -> f32 { 200.0 }
-fn default_tower_cooldown() -> f32 { 1.0 }
+fn default_tower_range() -> f32 {
+    200.0
+}
+fn default_tower_cooldown() -> f32 {
+    1.0
+}
 
 impl Default for TowerComponent {
     fn default() -> Self {
@@ -442,7 +461,9 @@ pub struct SpawnerWave {
     pub interval: f32,
 }
 
-fn default_spawn_interval() -> f32 { 1.0 }
+fn default_spawn_interval() -> f32 {
+    1.0
+}
 
 /// Spawner component data (TD and JRPG).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Component, Reflect)]
@@ -497,7 +518,9 @@ pub struct AudioSourceComponent {
     pub spatial: bool,
 }
 
-fn default_volume() -> f32 { 1.0 }
+fn default_volume() -> f32 {
+    1.0
+}
 
 impl Default for AudioSourceComponent {
     fn default() -> Self {

@@ -1,17 +1,20 @@
+use crate::editor::EditorPrefs;
+use crate::data::components::{
+    ColorData, EntityComponents, SpriteComponent, TransformComponent, Vec3Data,
+};
+use crate::data::project::EngineSettings;
+use crate::data::scene::{Entity as SceneEntity, Scene};
+use crate::data::{loader, project::Project};
+use crate::diagnostics::console::ConsoleLogStore;
 use bevy::prelude::*;
 use bevy_egui::egui::{self, Color32};
-use crate::diagnostics::console::ConsoleLogStore;
-use crate::data::{loader, project::Project};
-use crate::data::scene::{Scene, Entity as SceneEntity};
-use crate::data::components::{EntityComponents, TransformComponent, SpriteComponent, ColorData, Vec3Data};
-use crate::data::project::EngineSettings;
 
 use super::state::*;
 
 pub fn configure_visuals_system(mut contexts: bevy_egui::EguiContexts) {
     let ctx = contexts.ctx_mut();
     let mut visuals = egui::Visuals::dark();
-    
+
     // Cyberpunk tweaks
     visuals.window_rounding = 2.0.into();
     visuals.widgets.noninteractive.bg_fill = COLOR_BG;
@@ -20,7 +23,7 @@ pub fn configure_visuals_system(mut contexts: bevy_egui::EguiContexts) {
     visuals.widgets.active.bg_fill = Color32::from_rgb(50, 50, 65);
     visuals.selection.bg_fill = COLOR_PRIMARY.linear_multiply(0.3);
     visuals.selection.stroke = egui::Stroke::new(1.0, COLOR_PRIMARY);
-    
+
     ctx.set_visuals(visuals);
 }
 
@@ -52,7 +55,7 @@ pub fn automated_ui_test_system(
             debug!("TEST: Executing spawn step");
             console.log("TEST: Simulating click/spawn at (100, 100)".into());
             // Manually spawn entity as if clicked
-             commands.spawn((
+            commands.spawn((
                 LogicalEntity,
                 Name::new("Hamster [100, 100]"),
                 Sprite {
@@ -60,7 +63,7 @@ pub fn automated_ui_test_system(
                     custom_size: Some(Vec2::new(30.0, 30.0)),
                     ..default()
                 },
-                Transform::from_xyz(100.0, 100.0, 0.0)
+                Transform::from_xyz(100.0, 100.0, 0.0),
             ));
             test_state.step += 1;
         }
@@ -84,18 +87,18 @@ pub fn launch_project_system(
     project: Res<ProjectMetadata>,
     mut script_events: EventWriter<crate::scripting::ScriptCommand>,
 ) {
-    let Some(path) = &project.path else { 
+    let Some(path) = &project.path else {
         warn!("No project path mounted! Cannot launch.");
-        return; 
+        return;
     };
 
     info!("Editor: Launching project from {:?}", path);
-    
+
     // Look for a main.lua or hamster_test.lua in the project's script folder
     let script_path = path.join("assets/scripts/hamster_test.lua");
     if script_path.exists() {
-        script_events.send(crate::scripting::ScriptCommand::Load { 
-            path: script_path.to_string_lossy().into() 
+        script_events.send(crate::scripting::ScriptCommand::Load {
+            path: script_path.to_string_lossy().into(),
         });
     } else {
         warn!("No entry script found at {:?}", script_path);
@@ -111,12 +114,12 @@ pub fn save_project_impl(world: &mut World) {
 
     if let Some(path) = project_path {
         info!("Saving project to {:?}", path);
-        
+
         // 1. Save Project Structure
-        let project_data = Project::new(&project_name); 
+        let project_data = Project::new(&project_name);
         match loader::save_project_structure(&project_data, &path) {
-             Ok(_) => info!("Successfully saved project structure"),
-             Err(e) => error!("Failed to save project structure: {}", e),
+            Ok(_) => info!("Successfully saved project structure"),
+            Err(e) => error!("Failed to save project structure: {}", e),
         }
 
         // 2. Save Current Scene
@@ -126,18 +129,20 @@ pub fn save_project_impl(world: &mut World) {
             Ok(_) => info!("Successfully saved scene to {:?}", scene_path),
             Err(e) => error!("Failed to save scene: {}", e),
         }
-        
+
         // 3. Save Story Graph
         let graph = &world.resource::<ActiveStoryGraph>().0;
         let graph_path = path.join("story_graphs/main.json");
         match loader::save_story_graph(graph, &graph_path) {
-             Ok(_) => info!("Successfully saved story graph to {:?}", graph_path),
-             Err(e) => error!("Failed to save story graph: {}", e),
+            Ok(_) => info!("Successfully saved story graph to {:?}", graph_path),
+            Err(e) => error!("Failed to save story graph: {}", e),
         }
 
         // 4. Update recent projects in preferences
         let mut prefs = world.resource_mut::<super::EditorPrefs>();
-        prefs.0.add_recent_project(path.to_string_lossy().to_string());
+        prefs
+            .0
+            .add_recent_project(path.to_string_lossy().to_string());
         if let Err(e) = prefs.0.save() {
             warn!("Failed to save editor preferences: {}", e);
         } else {
@@ -150,13 +155,13 @@ pub fn save_project_impl(world: &mut World) {
 
 pub fn world_to_scene(world: &mut World) -> Scene {
     let mut scene = Scene::new("current_scene", "Current Scene");
-    
+
     // In a real implementation, we'd query for all entities with specific marker components.
     // For this prototype, we'll query all entities with a Name and Transform.
-    
+
     let mut entities = Vec::new();
     let mut query = world.query::<(Entity, &Name, &Transform, Option<&Sprite>)>();
-    
+
     // We need to collect first to avoid borrowing world inside loop if we needed mutable access,
     // though query iteration is fine. But constructing SceneEntity might need data types.
     let mut world_entities = Vec::new();
@@ -164,40 +169,40 @@ pub fn world_to_scene(world: &mut World) -> Scene {
         // Clone data out of world
         let pos = transform.translation;
         let scale = transform.scale;
-        
+
         let sprite_color = sprite.map(|s| s.color.to_linear().to_f32_array());
-        
+
         world_entities.push((name.to_string(), pos, scale, sprite_color));
     }
 
     for (name, pos, scale, sprite_color) in world_entities {
         // Skip editor-only entities (like cameras or UI, unless tagged)
-        // For now, simple filter: if it has a name starting with "Editor", skip? 
+        // For now, simple filter: if it has a name starting with "Editor", skip?
         // Or better, only save things we know we spawned.
-        
+
         let mut components = EntityComponents::default();
-        
+
         components.transform = TransformComponent {
             position: Vec3Data::new(pos.x, pos.y, pos.z),
             rotation: Vec3Data::default(), // Simplification
             scale: Vec3Data::new(scale.x, scale.y, scale.z),
             lock_uniform_scale: false,
         };
-        
+
         if let Some([r, g, b, a]) = sprite_color {
-             components.sprite = Some(SpriteComponent {
-                 sprite_id: "pixel".to_string(), // Placeholder
-                 tint: ColorData::rgba(r, g, b, a),
-                 ..Default::default()
-             });
+            components.sprite = Some(SpriteComponent {
+                sprite_id: "pixel".to_string(), // Placeholder
+                tint: ColorData::rgba(r, g, b, a),
+                ..Default::default()
+            });
         }
-        
+
         let entity = SceneEntity::new(name.clone(), name) // using name as ID for prototype
             .with_components(components);
-            
+
         entities.push(entity);
     }
-    
+
     scene.entities = entities;
     scene
 }
@@ -205,24 +210,28 @@ pub fn world_to_scene(world: &mut World) -> Scene {
 pub fn load_scene_into_editor(world: &mut World, scene: Scene) {
     debug!("load_scene_into_editor called for scene: {}", scene.id);
     // 1. Clear existing entities (only those marked as LogicalEntity)
-    let entities_to_despawn: Vec<Entity> = world.query_filtered::<Entity, With<LogicalEntity>>().iter(world).collect();
+    let entities_to_despawn: Vec<Entity> = world
+        .query_filtered::<Entity, With<LogicalEntity>>()
+        .iter(world)
+        .collect();
     for e in entities_to_despawn {
         world.despawn(e);
     }
-    
+
     // 2. Spawn new entities
     let entity_count = scene.entities.len();
     for entity_data in scene.entities {
         let transform = entity_data.components.transform;
         let pos = transform.position;
         let scale = transform.scale;
-        
+
         let mut entity_cmd = world.spawn((
             LogicalEntity,
             Name::new(entity_data.name),
-            Transform::from_xyz(pos.x, pos.y, pos.z).with_scale(Vec3::new(scale.x, scale.y, scale.z))
+            Transform::from_xyz(pos.x, pos.y, pos.z)
+                .with_scale(Vec3::new(scale.x, scale.y, scale.z)),
         ));
-        
+
         if let Some(sprite) = entity_data.components.sprite {
             let c = sprite.tint;
             entity_cmd.insert(Sprite {
@@ -244,9 +253,9 @@ pub fn apply_window_settings_system(
             // Check if resolution actually changed (epsilon check)
             let current_width = window.resolution.width();
             let current_height = window.resolution.height();
-            
-            let res_changed = (current_width - settings.window_width).abs() > 0.1 || 
-                              (current_height - settings.window_height).abs() > 0.1;
+
+            let res_changed = (current_width - settings.window_width).abs() > 0.1
+                || (current_height - settings.window_height).abs() > 0.1;
 
             // Check if mode changed
             let target_monitor = if settings.monitor_index == 0 {
@@ -260,8 +269,8 @@ pub fn apply_window_settings_system(
                 2 => bevy::window::WindowMode::SizedFullscreen(target_monitor),
                 _ => bevy::window::WindowMode::Windowed,
             };
-            
-            // Note: WindowMode PartialEq might not align perfectly with our index logic if monitor varies, 
+
+            // Note: WindowMode PartialEq might not align perfectly with our index logic if monitor varies,
             // but checking index change is safer against spam if the user keeps clicking same button.
             // However, here we check the actual window state.
             // Let's rely on calculating target mode and comparing.
@@ -273,7 +282,9 @@ pub fn apply_window_settings_system(
 
             // Update Resolution
             if res_changed {
-                window.resolution.set(settings.window_width, settings.window_height);
+                window
+                    .resolution
+                    .set(settings.window_width, settings.window_height);
             }
 
             // Update Mode
@@ -282,12 +293,51 @@ pub fn apply_window_settings_system(
             }
 
             // Update Position (if windowed, re-center on selected monitor)
-            if window.mode == bevy::window::WindowMode::Windowed && target_mode == bevy::window::WindowMode::Windowed {
+            if window.mode == bevy::window::WindowMode::Windowed
+                && target_mode == bevy::window::WindowMode::Windowed
+            {
                 window.position = WindowPosition::Centered(target_monitor);
             }
-            
-            info!("Applied Window Settings: {}x{} (ModeIndex={}, MonitorIndex={})", 
-                settings.window_width, settings.window_height, settings.window_mode_index, settings.monitor_index);
+
+            info!(
+                "Applied Window Settings: {}x{} (ModeIndex={}, MonitorIndex={})",
+                settings.window_width,
+                settings.window_height,
+                settings.window_mode_index,
+                settings.monitor_index
+            );
+        }
+    }
+}
+
+pub fn sync_dock_layout_system(
+    dock_state: Res<EditorDockState>,
+    mut prefs: ResMut<EditorPrefs>,
+    time: Res<Time>,
+    mut timer: Local<Option<Timer>>,
+) {
+    if timer.is_none() {
+        *timer = Some(Timer::from_seconds(2.0, TimerMode::Repeating));
+    }
+    let timer = timer.as_mut().unwrap();
+    timer.tick(time.delta());
+
+    if timer.just_finished() {
+        if let Ok(json) = serde_json::to_value(&dock_state.0) {
+            if prefs.0.dock_state.as_ref() != Some(&json) {
+                prefs.0.dock_state = Some(json);
+                // Trigger change detection for auto-save handled by resource mutation
+            }
+        }
+    }
+}
+
+pub fn auto_save_prefs_system(prefs: Res<EditorPrefs>) {
+    if prefs.is_changed() {
+        if let Err(e) = prefs.0.save() {
+            warn!("Failed to auto-save editor preferences: {}", e);
+        } else {
+            debug!("Auto-saved editor preferences");
         }
     }
 }

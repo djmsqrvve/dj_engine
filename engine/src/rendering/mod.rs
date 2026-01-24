@@ -6,7 +6,7 @@ use bevy::prelude::*;
 
 pub mod camera;
 
-pub use camera::{MainCamera, GAME_HEIGHT, GAME_WIDTH, ViewportRect};
+pub use camera::{MainCamera, ViewportRect, GAME_HEIGHT, GAME_WIDTH};
 
 /// Rendering plugin that sets up the visual pipeline.
 pub struct RenderingPlugin;
@@ -16,9 +16,8 @@ impl Plugin for RenderingPlugin {
         app.init_resource::<ViewportRect>()
             .add_systems(Startup, camera::setup_camera)
             .add_systems(Update, camera::update_camera_viewport);
-        
+
         // TODO: Setup offscreen render target (320×240)
         // TODO: Register CRT post-processing pass
     }
 }
-

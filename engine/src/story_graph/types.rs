@@ -1,7 +1,7 @@
-use bevy::prelude::*;
-use std::collections::HashMap;
 use crate::audio::AudioCommand;
 use crate::data::story::{StoryGraphData, StoryNodeVariant};
+use bevy::prelude::*;
+use std::collections::HashMap;
 
 /// Unique identifier for a node in the graph.
 pub type NodeId = usize;
@@ -51,10 +51,7 @@ pub enum StoryNode {
         next: Option<NodeId>,
     },
     /// Wait for a specified duration in seconds.
-    Wait {
-        duration: f32,
-        next: Option<NodeId>,
-    },
+    Wait { duration: f32, next: Option<NodeId> },
     /// A generic event trigger for game-specific logic.
     Event {
         event_id: String,
@@ -62,9 +59,7 @@ pub enum StoryNode {
         next: Option<NodeId>,
     },
     /// Start execution of the graph.
-    Start {
-        next: Option<NodeId>,
-    },
+    Start { next: Option<NodeId> },
     /// End execution of the current graph.
     End,
 }
@@ -136,7 +131,7 @@ pub enum ExecutionStatus {
 #[reflect(Resource)]
 pub struct GraphExecutor {
     // For prototype simplicity, we store the struct directly.
-    pub active_graph: Option<StoryGraph>,     
+    pub active_graph: Option<StoryGraph>,
     pub current_node: Option<NodeId>,
     pub status: ExecutionStatus,
     pub wait_timer: Timer,
@@ -168,19 +163,19 @@ impl GraphExecutor {
         // Pass 1: Allocate IDs
         for node_data in &data.nodes {
             let next_id = graph.next_id; // Peek next ID
-            // We insert a placeholder to reserve the ID
-            graph.add(StoryNode::End); 
+                                         // We insert a placeholder to reserve the ID
+            graph.add(StoryNode::End);
             id_map.insert(node_data.id.clone(), next_id);
         }
 
         // Pass 2: Overwrite with actual data
         for node_data in &data.nodes {
             let runtime_id = id_map[&node_data.id];
-            
+
             let resolve = |opt_id: &Option<String>| -> Option<NodeId> {
                 opt_id.as_ref().and_then(|id| id_map.get(id).cloned())
             };
-            
+
             let node = match &node_data.data {
                 StoryNodeVariant::Start(d) => StoryNode::Start {
                     next: resolve(&d.next_node_id),
@@ -194,35 +189,35 @@ impl GraphExecutor {
                 StoryNodeVariant::Choice(c) => StoryNode::Choice {
                     speaker: "Player".into(), // Default?
                     prompt: c.prompt.get("en").cloned().unwrap_or_default(),
-                    options: c.options.iter().map(|o| GraphChoice {
-                        text: o.text.get("en").cloned().unwrap_or_default(),
-                        next: Some(id_map[&o.target_node_id]), // Choices must have targets?
-                        flag_required: None,
-                    }).collect(),
+                    options: c
+                        .options
+                        .iter()
+                        .map(|o| GraphChoice {
+                            text: o.text.get("en").cloned().unwrap_or_default(),
+                            next: Some(id_map[&o.target_node_id]), // Choices must have targets?
+                            flag_required: None,
+                        })
+                        .collect(),
                 },
-                StoryNodeVariant::Action(a) => {
-                     StoryNode::Event {
-                         event_id: "lua_script".into(),
-                         payload: a.lua_script_id.clone(),
-                         next: resolve(&a.next_node_id),
-                     }
+                StoryNodeVariant::Action(a) => StoryNode::Event {
+                    event_id: "lua_script".into(),
+                    payload: a.lua_script_id.clone(),
+                    next: resolve(&a.next_node_id),
                 },
                 StoryNodeVariant::End(e) => {
                     if let Some(scene) = &e.target_scene_id {
                         StoryNode::Background {
                             path: scene.clone(),
                             duration: 1.0,
-                            next: None, 
+                            next: None,
                         }
                     } else {
                         StoryNode::End
                     }
-                },
-                StoryNodeVariant::SubGraph(s) => {
-                    StoryNode::SubGraph {
-                        graph_id: s.graph_id.clone(),
-                        next: resolve(&s.next_node_id),
-                    }
+                }
+                StoryNodeVariant::SubGraph(s) => StoryNode::SubGraph {
+                    graph_id: s.graph_id.clone(),
+                    next: resolve(&s.next_node_id),
                 },
                 _ => StoryNode::End, // Unimplemented variants
             };

@@ -39,26 +39,28 @@ pub fn update_camera_viewport(
     mut camera_query: Query<&mut Camera, With<MainCamera>>,
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
 ) {
-    let Ok(window) = windows.get_single() else { return };
+    let Ok(window) = windows.get_single() else {
+        return;
+    };
     let Some(rect) = viewport_rect.0 else { return };
     let mut camera = camera_query.single_mut();
 
-    // Bevy Viewport expects physical pixels or logical scaled? 
+    // Bevy Viewport expects physical pixels or logical scaled?
     // Usually logical pixels if we use with_scale_factor_override(1.0) in main.rs
     // Egui rect is in logical pixels.
-    
+
     let _physical_width = window.width();
     let _physical_height = window.height();
 
     // Ensure the rect is within window bounds to avoid wgpu panics
     let win_w = window.width();
     let win_h = window.height();
-    
+
     let min_x = rect.min.x.clamp(0.0, win_w);
     let min_y = rect.min.y.clamp(0.0, win_h);
     let max_x = rect.max.x.clamp(0.0, win_w);
     let max_y = rect.max.y.clamp(0.0, win_h);
-    
+
     let width = (max_x - min_x).max(1.0);
     let height = (max_y - min_y).max(1.0);
 

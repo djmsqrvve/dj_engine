@@ -5,8 +5,8 @@
 
 use bevy::prelude::*;
 
-use super::scene::{Scene, Entity as SceneEntity, EntityType};
-use super::components::{Vec3Data, EntityMetadata};
+use super::components::{EntityMetadata, Vec3Data};
+use super::scene::{Entity as SceneEntity, EntityType, Scene};
 
 /// Resource holding the currently loaded scene data.
 #[derive(Resource, Default)]
@@ -84,7 +84,11 @@ pub fn spawn_scene_entities(
         return;
     };
 
-    info!("Spawning {} entities from scene '{}'", scene.entities.len(), scene.name);
+    info!(
+        "Spawning {} entities from scene '{}'",
+        scene.entities.len(),
+        scene.name
+    );
 
     for entity in &scene.entities {
         spawn_entity(&mut commands, entity, &asset_server);
@@ -181,7 +185,10 @@ fn spawn_entity(commands: &mut Commands, entity: &SceneEntity, asset_server: &As
     // TODO: Add audio source components
     // TODO: Add interactivity components
 
-    debug!("Spawned entity '{}' ({:?})", entity.name, entity.entity_type);
+    debug!(
+        "Spawned entity '{}' ({:?})",
+        entity.name, entity.entity_type
+    );
 }
 
 /// System to despawn all scene entities.

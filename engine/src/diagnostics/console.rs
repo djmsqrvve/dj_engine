@@ -1,6 +1,16 @@
-use bevy::{prelude::*, app::AppExit, diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin}};
-use std::{io::{self, Write}, sync::{Arc, Mutex, mpsc::{self, Receiver}}};
 use crate::story_graph::GraphExecutor;
+use bevy::{
+    app::AppExit,
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+    prelude::*,
+};
+use std::{
+    io::{self, Write},
+    sync::{
+        mpsc::{self, Receiver},
+        Arc, Mutex,
+    },
+};
 
 /// Resource holding the receiver for console input.
 #[derive(Resource)]
@@ -32,7 +42,7 @@ pub struct ConsolePlugin;
 impl Plugin for ConsolePlugin {
     fn build(&self, app: &mut App) {
         let (tx, rx) = mpsc::channel();
-        
+
         // Spawn background thread for stdin
         std::thread::spawn(move || {
             let stdin = io::stdin();
@@ -41,15 +51,14 @@ impl Plugin for ConsolePlugin {
                 // Print prompt
                 print!("dj> ");
                 let _ = io::stdout().flush();
-                
+
                 input.clear();
                 if stdin.read_line(&mut input).is_ok() {
                     let cmd = input.trim().to_string();
-                    if !cmd.is_empty() {
-                        if tx.send(cmd).is_err() {
+                    if !cmd.is_empty()
+                        && tx.send(cmd).is_err() {
                             break;
                         }
-                    }
                 } else {
                     break;
                 }
@@ -61,7 +70,7 @@ impl Plugin for ConsolePlugin {
             .add_event::<ConsoleCommandEvent>()
             .add_systems(Update, listen_for_console_input)
             .add_systems(Update, handle_console_commands);
-        
+
         info!("Console CLI API initialized. Type 'help' in terminal for commands.");
     }
 }
@@ -88,9 +97,11 @@ fn handle_console_commands(
     for event in events.read() {
         let cmd = event.0.to_lowercase();
         let args: Vec<&str> = cmd.split_whitespace().collect();
-        
-        if args.is_empty() { continue; }
-        
+
+        if args.is_empty() {
+            continue;
+        }
+
         match args[0] {
             "help" => {
                 println!("\n--- DJ Engine CLI Help ---");
@@ -113,7 +124,9 @@ fn handle_console_commands(
                         window.scale_factor(), window.position, window.focused, window.visible
                     );
                 }
-                if !found { println!("No active windows detected (Headless mode?)"); }
+                if !found {
+                    println!("No active windows detected (Headless mode?)");
+                }
                 println!("----------------------\n");
             }
             "entities" => {
@@ -160,10 +173,13 @@ fn handle_console_commands(
                 app_exit.send(AppExit::Success);
             }
             _ => {
-                println!("Unknown command: '{}'. Type 'help' for available commands.", args[0]);
+                println!(
+                    "Unknown command: '{}'. Type 'help' for available commands.",
+                    args[0]
+                );
             }
         }
-        
+
         // Final prompt for the next input
         let _ = io::stdout().flush();
     }

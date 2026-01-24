@@ -3,9 +3,9 @@
 //! A [`ScenarioData`] binds a static [`MapAsset`] with a [`GameMode`] and dynamic entities.
 //! It represents a playable mission or level instance.
 
-use serde::{Deserialize, Serialize};
+use super::components::{EntityComponents, Vec3Data};
 use bevy::prelude::*;
-use super::components::{Vec3Data, EntityComponents};
+use serde::{Deserialize, Serialize};
 
 /// A playable scenario (Map + Mode + Entities).
 #[derive(Debug, Clone, Serialize, Deserialize, Reflect)]
@@ -14,22 +14,22 @@ pub struct ScenarioData {
     pub id: String,
     /// Display name
     pub name: String,
-    
+
     /// ID of the MapAsset to use
     pub map_id: String,
-    
+
     /// ID of the GameMode to use
     pub mode_id: String,
-    
+
     /// Dynamic entities (units, spawners) specific to this scenario
     #[serde(default)]
     pub entities: Vec<ScenarioEntity>,
-    
+
     /// Specific objective/logic script for this scenario
     /// (overrides or extends mode script)
     #[serde(default)]
     pub script_path: Option<String>,
-    
+
     /// Scenario-specific configuration overrides
     #[serde(default)]
     pub config_overrides: std::collections::HashMap<String, f32>,
@@ -57,18 +57,18 @@ pub struct ScenarioEntity {
     /// Optional Name for logic/debugging
     #[serde(default)]
     pub name: String,
-    
+
     /// Prefab ID if this spawns from a template
     #[serde(default)]
     pub prefab_id: Option<String>,
-    
+
     /// Initial spawn position
     pub position: Vec3Data,
-    
+
     /// Rotation (degrees)
     #[serde(default)]
     pub rotation: Vec3Data,
-    
+
     /// Component overrides (merged with prefab if exists)
     #[serde(default)]
     pub components: EntityComponents,

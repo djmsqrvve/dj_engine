@@ -4,6 +4,7 @@
 
 use bevy::prelude::*;
 use mlua::prelude::*;
+use mlua::{LuaOptions, StdLib};
 use std::sync::Mutex;
 
 /// Resource storing the Lua interpreter instance.
@@ -21,10 +22,15 @@ impl Default for LuaContext {
 }
 
 impl LuaContext {
-    /// Creates a new Lua context with standard libraries.
+    /// Creates a new sandboxed Lua context with restricted libraries.
     pub fn new() -> Self {
-        let lua = Lua::new();
-        // Sandbox controls could go here (e.g., restricting IO)
+        // Only load safe libraries. Exclude IO, OS, and Debug for security.
+        let lua = Lua::new_with(
+            StdLib::TABLE | StdLib::STRING | StdLib::MATH | StdLib::UTF8,
+            LuaOptions::default(),
+        )
+        .expect("Failed to initialize sandboxed Lua VM");
+
         Self {
             lua: Mutex::new(lua),
         }

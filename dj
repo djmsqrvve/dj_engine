@@ -4,20 +4,28 @@
 # Usage: ./dj [command] [args]
 
 VERBOSE=0
+LOG_FILE=""
 ARGS=()
 
-# Process arguments to detect verbose flag
+# Process arguments to detect verbose and log flags
 for arg in "$@"; do
     if [[ "$arg" == "-v" || "$arg" == "--verbose" ]]; then
         VERBOSE=1
+    elif [[ "$arg" == "-verbose.log" ]]; then
+        VERBOSE=1
+        LOG_FILE="verbose.log"
     else
         ARGS+=("$arg")
     fi
 done
 
 if [ $VERBOSE -eq 1 ]; then
-    export RUST_LOG=debug
-    echo "🔍 Verbose mode enabled (RUST_LOG=debug)"
+    export RUST_LOG=${RUST_LOG:-debug}
+    echo "🔍 Verbose mode enabled (RUST_LOG=$RUST_LOG)"
+fi
+
+if [ -n "$LOG_FILE" ]; then
+    echo "📄 Logging output to $LOG_FILE"
 fi
 
 # Reset positional parameters to the filtered arguments
@@ -26,59 +34,77 @@ set -- "${ARGS[@]}"
 COMMAND=$1
 SHIFT_ARGS="${@:2}"
 
+# Helper function to run commands with optional logging
+run_cmd() {
+    if [ -n "$LOG_FILE" ]; then
+        "$@" 2>&1 | tee "$LOG_FILE"
+    else
+        "$@"
+    fi
+}
+
 case $COMMAND in
     "e" | "editor")
         echo "🚀 Starting DJ Engine Editor..."
-        # Run the engine's main binary (editor mode)
-        cargo run -p dj_engine --bin dj_engine -- --editor $SHIFT_ARGS
+        run_cmd cargo run -p dj_engine --bin dj_engine -- --editor $SHIFT_ARGS
         ;;
     "d" | "game")
-        # Check if a game package is specified
         if [ -n "$2" ]; then
             echo "🎮 Starting game: $2..."
-            cargo run -p "$2" -- ${@:3}
+            run_cmd cargo run -p "$2" -- ${@:3}
         else
             echo "❌ No game specified. Usage: ./dj d <game_name>"
-            echo "   Available games (check games/dev/):"
             ls -1 games/dev/ 2>/dev/null || echo "   No games found"
         fi
         ;;
     "t" | "test")
         echo "🧪 Running DJ Engine Tests..."
-        cargo test --workspace $SHIFT_ARGS
+        export RUST_LOG=${RUST_LOG:-info}
+        TEST_OPTS=""
+        if [ $VERBOSE -eq 1 ]; then
+            # Check if user already provided --
+            if [[ "$SHIFT_ARGS" == *"--"* ]]; then
+                TEST_OPTS="$SHIFT_ARGS --nocapture"
+            else
+                TEST_OPTS="$SHIFT_ARGS -- --nocapture"
+            fi
+        else
+            TEST_OPTS="$SHIFT_ARGS"
+        fi
+        run_cmd cargo test --workspace $TEST_OPTS
         ;;
     "m" | "minimal")
         echo "🟥 Starting Minimal Visibility Test..."
-        cargo run -p dj_engine --bin minimal
+        run_cmd cargo run -p dj_engine --bin minimal
         ;;
     "g" | "gen")
         echo "🛠 Running Asset Generator..."
-        cargo run -p asset_generator -- $SHIFT_ARGS
+        run_cmd cargo run -p asset_generator -- $SHIFT_ARGS
         ;;
     "fmt" | "format")
         echo "✨ Formatting code..."
-        cargo fmt --all
+        run_cmd cargo fmt --all
         ;;
     "lint" | "clippy")
         echo "🔎 Running Clippy linter..."
-        cargo clippy --workspace -- -W clippy::all
+        run_cmd cargo clippy --workspace -- -W clippy::all
         ;;
     "doc" | "docs")
         echo "📚 Generating documentation..."
-        cargo doc --workspace --no-deps $SHIFT_ARGS
+        run_cmd cargo doc --workspace --no-deps $SHIFT_ARGS
         echo "📖 Open: target/doc/dj_engine/index.html"
         ;;
     "check" | "c")
         echo "✅ Checking code..."
-        cargo check --workspace
+        run_cmd cargo check --workspace
         ;;
     "build" | "b")
         echo "🔨 Building release..."
-        cargo build --release --workspace
+        run_cmd cargo build --release --workspace
         ;;
     "clean")
         echo "🧹 Cleaning build artifacts..."
-        cargo clean
+        run_cmd cargo clean
         ;;
     *)
         echo "DJ Engine CLI"
@@ -86,13 +112,13 @@ case $COMMAND in
         echo ""
         echo "Development:"
         echo "  e, editor    - Launch the DJ Engine Editor"
-        echo "  d, helix     - Run the Helix Before The Fracture game"
+        echo "  d, game      - Run a game package"
         echo "  m, minimal   - Run minimal visibility test"
         echo ""
         echo "Testing & Quality:"
         echo "  t, test      - Run all workspace tests"
         echo "  c, check     - Check code compiles"
-        echo "  fmt, format  - Format code (cargo fmt)"
+        echo "  fmt, format  - Format code"
         echo "  lint, clippy - Run Clippy linter"
         echo ""
         echo "Build:"
@@ -104,7 +130,8 @@ case $COMMAND in
         echo "  g, gen       - Run asset generator"
         echo ""
         echo "Flags:"
-        echo "  -v, --verbose - Enable debug logging"
+        echo "  -v, --verbose - Enable debug logging + --nocapture for tests"
+        echo "  -verbose.log  - Enable verbose mode and save output to verbose.log"
         echo ""
         ;;
 esac

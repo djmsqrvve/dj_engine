@@ -1,0 +1,27 @@
+[package]
+name = "bevy-3d-renderer"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[lib]
+name = "bevy_3d_renderer"
+path = "src/lib.rs"
+
+[[bin]]
+name = "bevy-3d-renderer"
+path = "src/main.rs"
+
+[dependencies]
+bevy = { version = "0.14", features = ["wayland", "bevy_gltf"] }
+
+[dev-dependencies]
+bevy = { version = "0.14", features = ["bevy_gltf"] }
+
+# Enable max performance levels
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

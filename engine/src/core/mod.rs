@@ -6,7 +6,7 @@ use bevy::prelude::*;
 
 pub mod phases;
 
-pub use phases::{GamePhase, PhaseManager, GamePhasePlugin};
+pub use phases::{GamePhase, GamePhasePlugin, PhaseManager};
 
 use crate::animation::DJAnimationPlugin;
 use crate::assets::DJAssetPlugin;
@@ -15,8 +15,8 @@ use crate::diagnostics::DiagnosticsPlugin;
 use crate::input::DJInputPlugin;
 use crate::rendering::RenderingPlugin;
 use crate::scene::DJScenePlugin;
-use crate::story_graph::StoryGraphPlugin;
 use crate::scripting::DJScriptingPlugin;
+use crate::story_graph::StoryGraphPlugin;
 use crate::types::EngineConfig;
 
 /// Master plugin that bundles all DJ Engine systems.

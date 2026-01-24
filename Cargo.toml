@@ -2,7 +2,8 @@
 resolver = "2"
 members = [
     "engine",
-    "tools/asset_generator"
+    "tools/asset_generator",
+    "archive/games/bridge"
 ]
 default-members = ["engine"]
 

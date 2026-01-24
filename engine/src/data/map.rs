@@ -4,9 +4,9 @@
 //! It contains tile layers, navigation meshes, and static physical properties,
 //! but NO dynamic entities or game logic.
 
-use serde::{Deserialize, Serialize};
-use bevy::prelude::*;
 use super::components::ColorData;
+use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 /// A complete static map.
 #[derive(Debug, Clone, Serialize, Deserialize, Reflect)]
@@ -15,21 +15,21 @@ pub struct MapAsset {
     pub id: String,
     /// Human-readable map name
     pub name: String,
-    
+
     /// Map dimensions in tiles
     pub size: MapSize,
     /// Visual background color or texture
     #[serde(default)]
     pub background: ColorData,
-    
+
     /// Layers of static tiles (rendering order: 0=bottom)
     #[serde(default)]
     pub layers: Vec<MapLayer>,
-    
+
     /// Navigation mesh for pathfinding
     #[serde(default)]
     pub nav_mesh: NavGrid,
-    
+
     /// Physics collision data (static walls/colliders)
     #[serde(default)]
     pub physics: MapPhysics,
@@ -40,11 +40,12 @@ impl Default for MapAsset {
         Self {
             id: uuid::Uuid::new_v4().to_string(),
             name: "New Map".to_string(),
-            size: MapSize { width: 32, height: 32 },
+            size: MapSize {
+                width: 32,
+                height: 32,
+            },
             background: ColorData::black(),
-            layers: vec![
-                MapLayer::new("ground", "Ground").with_order(0),
-            ],
+            layers: vec![MapLayer::new("ground", "Ground").with_order(0)],
             nav_mesh: NavGrid::default(),
             physics: MapPhysics::default(),
         }
@@ -96,7 +97,9 @@ impl MapLayer {
     }
 }
 
-fn default_true() -> bool { true }
+fn default_true() -> bool {
+    true
+}
 
 /// Navigation grid data.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Reflect)]

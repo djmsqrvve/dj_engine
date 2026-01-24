@@ -1,7 +1,7 @@
 use image::io::Reader as ImageReader;
 use image::Rgba;
-use std::path::Path;
 use std::collections::HashMap;
+use std::path::Path;
 // I'll implement a simple recursive walker since I shouldn't assume 'walkdir' crate is available unless I check Cargo.toml.
 // Checking Cargo.toml first is safer, but I can write a 5-line recursive function easily.
 
@@ -18,17 +18,17 @@ fn main() {
     let midi_path = music_dir.join("overworld_theme.mid");
     std::fs::write(&midi_path, midi_bytes).expect("Failed to write MIDI file");
     println!("Generated MIDI: {:?}", midi_path);
-    
+
     // Scalable Processing Rules: Folder Name -> Target Size (Width, Height)
     let mut processing_rules = HashMap::new();
     processing_rules.insert("body", (64, 64));
     processing_rules.insert("head", (32, 32));
     processing_rules.insert("limbs", (16, 16)); // Assuming we organize limbs here
-    // Fallback for current flat structure if needed, but better to enforce folders.
-    // For the current structure in the user's snippet, 'paw_left' was in 'body/'.
-    // Let's refine the rules to match filenames if folder logic is ambiguous, 
-    // OR better: handle the specific existing layout dynamically.
-    
+                                                // Fallback for current flat structure if needed, but better to enforce folders.
+                                                // For the current structure in the user's snippet, 'paw_left' was in 'body/'.
+                                                // Let's refine the rules to match filenames if folder logic is ambiguous,
+                                                // OR better: handle the specific existing layout dynamically.
+
     // Let's iterate and match patterns.
     if assets_dir.exists() {
         process_directory_recursive(assets_dir, &processing_rules);
@@ -54,7 +54,11 @@ fn process_directory_recursive(dir: &Path, rules: &HashMap<&str, (u32, u32)>) {
 
 fn determine_target_size(path: &Path) -> (u32, u32) {
     // 1. Check parent folder name
-    if let Some(parent) = path.parent().and_then(|p| p.file_name()).and_then(|n| n.to_str()) {
+    if let Some(parent) = path
+        .parent()
+        .and_then(|p| p.file_name())
+        .and_then(|n| n.to_str())
+    {
         match parent {
             "head" => return (32, 32),
             "body" => {
@@ -67,11 +71,11 @@ fn determine_target_size(path: &Path) -> (u32, u32) {
                     return (16, 16);
                 }
                 return (64, 64); // Main body
-            },
+            }
             _ => {}
         }
     }
-    
+
     // Default fallback
     (32, 32)
 }
@@ -82,8 +86,13 @@ fn process_asset(path: std::path::PathBuf, w: u32, h: u32) {
         return;
     }
 
-    println!("Processing {:?} -> {}x{}", path.file_name().unwrap_or_default(), w, h);
-    
+    println!(
+        "Processing {:?} -> {}x{}",
+        path.file_name().unwrap_or_default(),
+        w,
+        h
+    );
+
     // Read file bytes
     let bytes = match std::fs::read(&path) {
         Ok(b) => b,
@@ -94,11 +103,15 @@ fn process_asset(path: std::path::PathBuf, w: u32, h: u32) {
     let img = match ImageReader::new(std::io::Cursor::new(bytes))
         .with_guessed_format()
         .expect("Failed to guess format")
-        .decode() 
+        .decode()
     {
         Ok(i) => i,
         Err(e) => {
-            println!("   Warn: Failed to decode image {:?}: {}", path.file_name(), e);
+            println!(
+                "   Warn: Failed to decode image {:?}: {}",
+                path.file_name(),
+                e
+            );
             return;
         }
     };

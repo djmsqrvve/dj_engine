@@ -1,13 +1,147 @@
-use bevy::prelude::*;
-use bevy_egui::egui::{self, RichText, Color32};
 use super::state::*;
+use bevy::prelude::*;
+use bevy_egui::egui::{self, RichText};
+use egui_dock::{DockArea, Style};
 
-pub mod panels;
-pub mod views;
 pub mod campaign;
-pub mod phases_view;
 pub mod feature_grid;
+pub mod panels;
+pub mod phases_view;
 pub mod timeline;
+pub mod views;
+
+pub struct EditorTabViewer<'a> {
+    pub world: &'a mut World,
+}
+
+impl<'a> egui_dock::TabViewer for EditorTabViewer<'a> {
+    type Tab = EditorView;
+
+    fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
+        match tab {
+            EditorView::Core => "📦 Core".into(),
+            EditorView::FeatureGrid => "🔷 Feature Grid".into(),
+            EditorView::Timeline => "🎹 Timeline".into(),
+            EditorView::MapEditor => "🗺 Map".into(),
+            EditorView::ScenarioEditor => "🎭 Scenario".into(),
+            EditorView::StoryGraph => "📽 Story Graph".into(),
+            EditorView::Campaign => "📅 Campaign".into(),
+            EditorView::Play => "🎮 Play".into(),
+            EditorView::Settings => "⚙ Settings".into(),
+            EditorView::Phases => "Phases".into(),
+            EditorView::Controls => "Controls".into(),
+            EditorView::Hierarchy => "Hierarchy".into(),
+            EditorView::Palette => "Palette".into(),
+            EditorView::Assets => "Assets".into(),
+            EditorView::Inspector => "Inspector".into(),
+            EditorView::Console => "💻 Console".into(),
+        }
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui, tab: &mut Self::Tab) {
+        match tab {
+            EditorView::Core => views::draw_core_dashboard(ui, self.world),
+            EditorView::FeatureGrid => feature_grid::draw_feature_grid(ui, self.world),
+            EditorView::Timeline => timeline::draw_timeline_view(ui, self.world),
+            EditorView::MapEditor => views::draw_grid(ui, self.world), // Assuming map editor needs grid
+            EditorView::ScenarioEditor => views::draw_grid(ui, self.world),
+            EditorView::StoryGraph => views::draw_story_graph(ui, self.world),
+            EditorView::Campaign => {
+                // Needs mutable borrow of CampaignEditorState
+                // We can fetch it from world
+                if let Some(mut state) = self
+                    .world
+                    .get_resource_mut::<campaign::CampaignEditorState>()
+                {
+                    campaign::draw_campaign_editor(ui, &mut state);
+                }
+            }
+            EditorView::Settings => views::draw_settings_view(ui, self.world),
+            EditorView::Controls => views::draw_controls_view(ui, self.world),
+            EditorView::Phases => phases_view::draw_phases_view(ui, self.world),
+            EditorView::Play => {
+                // Play view logic
+                ui.centered_and_justified(|ui| {
+                    if ui
+                        .button(
+                            RichText::new("▶ START GAME")
+                                .size(30.0)
+                                .color(COLOR_PRIMARY),
+                        )
+                        .clicked()
+                    {
+                        self.world
+                            .resource_scope::<ActiveStoryGraph, _>(|world, graph| {
+                                if let Some(mut executor) =
+                                    world.get_resource_mut::<crate::story_graph::GraphExecutor>()
+                                {
+                                    executor.load_from_data(&graph.0);
+                                    info!("Editor: Loaded Story Graph into Executor");
+                                }
+                            });
+                        self.world
+                            .resource_mut::<NextState<EditorState>>()
+                            .set(EditorState::Playing);
+                    }
+                });
+            }
+            EditorView::Hierarchy => {
+                // Hierarchy Logic
+                use bevy_inspector_egui::bevy_inspector;
+                // We need EditorUiState to get selected_entities.
+                // Use resource_scope to avoid double borrow of world
+                if self.world.contains_resource::<EditorUiState>() {
+                    self.world.resource_scope::<EditorUiState, _>(|world, mut ui_state| {
+                        egui::ScrollArea::vertical().show(ui, |ui| {
+                            bevy_inspector::hierarchy::hierarchy_ui(
+                                world,
+                                ui,
+                                &mut ui_state.selected_entities,
+                            );
+                        });
+                    });
+                }
+            }
+            EditorView::Palette => {
+                // Palette Logic (Stub from panels.rs)
+                panels::draw_palette_content(ui);
+            }
+            EditorView::Assets => {
+                ui.label("Asset Browser");
+            }
+            EditorView::Inspector => {
+                // Inspector Logic
+                // We need to call panels::draw_inspector_content or similar.
+                // Since draw_right_panel logic is complex, I should refactor panels.rs to expose the inner content
+                // OR I can just access panels::draw_right_panel_content if I verify/create it.
+                // For now, I will assume panels::draw_right_panel handles logic using World, but I need to adapt it.
+                // panels::draw_right_panel uses `ui` and `world`. It should work as is IF I strip the SidePanel wrapper in it?
+                // No, panels::draw_right_panel draws the HEADER ("INSPECTOR").
+                panels::draw_right_panel(ui, self.world);
+            }
+            EditorView::Console => {
+                panels::draw_console_panel(ui, self.world);
+            }
+        }
+    }
+
+    fn closeable(&mut self, tab: &mut Self::Tab) -> bool {
+        match tab {
+            EditorView::Core
+            | EditorView::FeatureGrid
+            | EditorView::Timeline
+            | EditorView::MapEditor
+            | EditorView::ScenarioEditor
+            | EditorView::StoryGraph
+            | EditorView::Campaign
+            | EditorView::Play
+            | EditorView::Settings
+            | EditorView::Controls
+            | EditorView::Phases => false,
+            _ => true,
+        }
+    }
+}
 
 pub fn editor_ui_system(world: &mut World) {
     let ctx = world
@@ -15,130 +149,18 @@ pub fn editor_ui_system(world: &mut World) {
         .get_single_mut(world)
         .map(|mut c| c.get_mut().clone())
         .expect("Missing primary window EguiContext");
-        
+
+    // Top Menu
     egui::TopBottomPanel::top("top_panel").show(&ctx, |ui| {
         panels::draw_top_menu(ui, world);
     });
 
-    // Bottom Console Panel (always docked)
-    egui::TopBottomPanel::bottom("console_panel")
-        .default_height(150.0)
-        .resizable(true)
-        .show(&ctx, |ui| {
-            panels::draw_console_panel(ui, world);
-        });
-
-    egui::SidePanel::left("left_panel")
-        .default_width(250.0)
-        .show(&ctx, |ui| {
-            panels::draw_left_panel(ui, world);
-        });
-
-    egui::SidePanel::right("right_panel")
-        .default_width(300.0)
-        .show(&ctx, |ui| {
-            panels::draw_right_panel(ui, world);
-        });
-
-    let current_state = world.resource::<State<EditorState>>().get();
-    let central_frame = if *current_state == EditorState::Playing {
-        egui::Frame::none()
-    } else {
-        egui::Frame::central_panel(&ctx.style())
-    };
-
-    egui::CentralPanel::default().frame(central_frame).show(&ctx, |ui| {
-        // Capture the actual rect for the camera viewport!
-        let rect = ui.max_rect();
-        if let Some(mut viewport) = world.get_resource_mut::<crate::rendering::ViewportRect>() {
-             viewport.0 = Some(bevy::math::Rect::new(rect.min.x, rect.min.y, rect.max.x, rect.max.y));
-        }
-        
-        draw_central_panel(ui, world);
+    // Dock Area (Rest of the screen)
+    // We must extract EditorDockState to avoid borrow conflicts if TabViewer uses World
+    world.resource_scope::<EditorDockState, _>(|world, mut dock_state| {
+        let mut tab_viewer = EditorTabViewer { world };
+        DockArea::new(&mut dock_state.0)
+            .style(Style::from_egui(ctx.style().as_ref()))
+            .show(&ctx, &mut tab_viewer);
     });
-}
-
-fn draw_central_panel(ui: &mut egui::Ui, world: &mut World) {
-    // Determine which view to show
-    let current_view = {
-        let ui_state = world.resource::<EditorUiState>();
-        if ui_state.global_view == EditorView::Core {
-            EditorView::Core
-        } else if let Some(branch) = ui_state.current_branch() {
-            branch.active_view.clone()
-        } else {
-            EditorView::default()
-        }
-    };
-    
-    match current_view {
-        EditorView::Core => {
-            views::draw_core_dashboard(ui, world);
-        }
-        EditorView::FeatureGrid => {
-            feature_grid::draw_feature_grid(ui, world);
-        }
-        EditorView::Timeline => {
-            timeline::draw_timeline_view(ui, world);
-        }
-
-        EditorView::MapEditor | EditorView::ScenarioEditor => {
-            let state = world.resource::<State<EditorState>>().get();
-            if *state == EditorState::Editor {
-                // Draw grid and handle interactions
-                views::draw_grid(ui, world);
-            } else {
-                 // Subtle overlay indicator
-                 ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
-                    ui.label(RichText::new("● LIVE").color(Color32::RED).small());
-                 });
-            }
-        },
-        EditorView::StoryGraph => {
-            views::draw_story_graph(ui, world);
-        }
-        EditorView::Campaign => {
-            let mut state = world.resource_mut::<campaign::CampaignEditorState>();
-            campaign::draw_campaign_editor(ui, &mut state);
-        }
-        EditorView::Controls => {
-            views::draw_controls_view(ui, world);
-        }
-        EditorView::Settings => {
-            views::draw_settings_view(ui, world);
-        }
-        EditorView::Phases => {
-            phases_view::draw_phases_view(ui, world);
-        }
-        EditorView::Play => {
-            let current_state = world.resource::<State<EditorState>>().get().clone();
-            
-            if current_state == EditorState::Editor {
-                ui.centered_and_justified(|ui| {
-                    if ui.button(RichText::new("▶ START GAME").size(30.0).color(COLOR_PRIMARY)).clicked() {
-                        // Launch logic
-                        world.resource_scope::<ActiveStoryGraph, _>(|world, graph| {
-                             if let Some(mut executor) = world.get_resource_mut::<crate::story_graph::GraphExecutor>() {
-                                 executor.load_from_data(&graph.0);
-                                 info!("Editor: Loaded Story Graph into Executor");
-                             }
-                        });
-                        world.resource_mut::<NextState<EditorState>>().set(EditorState::Playing);
-                    }
-                });
-            } else {
-                // In Playing state
-                // Draw a small overlay for Stop
-                ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
-                    ui.horizontal(|ui| {
-                        ui.label(RichText::new("● LIVE").color(Color32::RED).small());
-                        if ui.button(RichText::new("⏹ STOP").color(COLOR_SECONDARY)).clicked() {
-                            world.resource_mut::<NextState<EditorState>>().set(EditorState::Editor);
-                        }
-                    });
-                });
-                // The rest is transparent to show the game
-            }
-        }
-    }
 }

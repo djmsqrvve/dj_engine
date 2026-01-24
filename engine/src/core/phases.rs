@@ -57,14 +57,15 @@ impl PhaseManager {
             let msg = format!("Transition: {:?} -> {:?}", self.current_phase, phase);
             self.log(msg);
             self.current_phase = phase;
-            // Clear tasks on transition? Or keep history? 
+            // Clear tasks on transition? Or keep history?
             // For now, clear to track new phase requirements.
-            self.pending_tasks.clear(); 
+            self.pending_tasks.clear();
         }
     }
 
     pub fn register_task(&mut self, task_name: impl Into<String>) {
-        self.pending_tasks.insert(task_name.into(), TaskStatus::Pending);
+        self.pending_tasks
+            .insert(task_name.into(), TaskStatus::Pending);
     }
 
     pub fn update_task(&mut self, task_name: &str, status: TaskStatus) {
@@ -98,16 +99,19 @@ pub struct GamePhasePlugin;
 impl Plugin for GamePhasePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GamePhase>()
-           .insert_resource(PhaseManager::new())
-           .register_type::<GamePhase>()
-           .register_type::<TaskStatus>()
-           .register_type::<PhaseManager>()
-           .add_event::<PhaseChangeEvent>()
-           .add_systems(OnEnter(GamePhase::Loading), (
-               setup_loading_tasks,
-               validate_assets_system.after(setup_loading_tasks)
-           ))
-           .add_systems(Update, sync_bevy_state);
+            .insert_resource(PhaseManager::new())
+            .register_type::<GamePhase>()
+            .register_type::<TaskStatus>()
+            .register_type::<PhaseManager>()
+            .add_event::<PhaseChangeEvent>()
+            .add_systems(
+                OnEnter(GamePhase::Loading),
+                (
+                    setup_loading_tasks,
+                    validate_assets_system.after(setup_loading_tasks),
+                ),
+            )
+            .add_systems(Update, sync_bevy_state);
     }
 }
 
@@ -121,7 +125,7 @@ fn setup_loading_tasks(mut manager: ResMut<PhaseManager>) {
 fn validate_assets_system(mut manager: ResMut<PhaseManager>) {
     // simulate some work or check real paths
     let music_path = std::path::Path::new("assets/music/overworld_theme.mid");
-    
+
     if music_path.exists() {
         manager.update_task("Core Assets", TaskStatus::Completed);
         manager.log("Asset validation passed.");
@@ -133,7 +137,7 @@ fn validate_assets_system(mut manager: ResMut<PhaseManager>) {
     // Auto-complete others for prototype
     manager.update_task("Renderer Init", TaskStatus::Completed);
     manager.update_task("Audio System", TaskStatus::Completed);
-    
+
     // Auto-transition if all good
     // In a real game, this would wait for async asset loading
     // manager.set_phase(GamePhase::Initialization);

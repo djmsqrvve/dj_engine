@@ -3,9 +3,9 @@
 //! A [`GameMode`] defines the ruleset and logic for a game session.
 //! It contains script references and global constants.
 
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use bevy::prelude::*;
 
 /// A game mode configuration (e.g., "Survival", "Story", "PVP").
 #[derive(Debug, Clone, Serialize, Deserialize, Reflect)]
@@ -14,19 +14,19 @@ pub struct GameMode {
     pub id: String,
     /// Display name
     pub name: String,
-    
+
     /// Path to the main Lua script for this mode
     /// e.g. "scripts/modes/survival.lua"
     pub script_path: String,
-    
+
     /// Entry point function name in the script
     #[serde(default = "default_entry_point")]
     pub entry_point: String,
-    
+
     /// Global tuning constants exposed to Lua
     #[serde(default)]
     pub constants: HashMap<String, f32>,
-    
+
     /// Required player count (min/max)
     #[serde(default)]
     pub player_count: PlayerCountRange,

@@ -79,7 +79,10 @@ fn handle_audio_commands(
 ) {
     for cmd in audio_commands.read() {
         match cmd {
-            AudioCommand::PlayBgm { track, crossfade: _ } => {
+            AudioCommand::PlayBgm {
+                track,
+                crossfade: _,
+            } => {
                 // Stop existing BGM first
                 for entity in bgm_query.iter() {
                     commands.entity(entity).despawn();

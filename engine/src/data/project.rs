@@ -3,10 +3,10 @@
 //! The [`Project`] struct is the top-level container for an entire game project,
 //! referencing all scenes, story graphs, databases, and assets.
 
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use bevy::prelude::*;
 
 /// Input profile for the game (determines default control schemes).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -98,9 +98,15 @@ pub struct ProjectPaths {
     pub scenarios: String,
 }
 
-fn default_maps_path() -> String { "maps".to_string() }
-fn default_modes_path() -> String { "modes".to_string() }
-fn default_scenarios_path() -> String { "scenarios".to_string() }
+fn default_maps_path() -> String {
+    "maps".to_string()
+}
+fn default_modes_path() -> String {
+    "modes".to_string()
+}
+fn default_scenarios_path() -> String {
+    "scenarios".to_string()
+}
 
 impl Default for ProjectPaths {
     fn default() -> Self {
@@ -188,7 +194,10 @@ impl Default for ProjectSettings {
     fn default() -> Self {
         Self {
             platforms: vec!["pc".to_string()],
-            default_resolution: Size2i { width: 1280, height: 720 },
+            default_resolution: Size2i {
+                width: 1280,
+                height: 720,
+            },
             target_fps: 60,
             vsync: true,
             pixel_perfect: true,
@@ -229,6 +238,9 @@ pub struct EditorPreferences {
     /// List of recently opened project paths (most recent first)
     #[serde(default)]
     pub recent_projects: Vec<String>,
+    /// Serialized Dock Layout (egui_dock)
+    #[serde(default)]
+    pub dock_state: Option<serde_json::Value>,
 }
 
 fn default_load_last_project() -> bool {
@@ -241,13 +253,17 @@ impl Default for EditorPreferences {
             theme: EditorTheme::Dark,
             ui_scale: 1.0,
             font_size: 14,
-            grid_size: Size2i { width: 32, height: 32 },
+            grid_size: Size2i {
+                width: 32,
+                height: 32,
+            },
             snap: SnapSettings::default(),
             default_gizmo_mode: GizmoMode::Move,
             keybindings: HashMap::new(),
             layout_preset: LayoutPreset::JrpgMapping,
             load_last_project: true,
             recent_projects: Vec::new(),
+            dock_state: None,
         }
     }
 }
@@ -266,12 +282,10 @@ impl EditorPreferences {
         let path = Self::default_path();
         if path.exists() {
             match std::fs::read_to_string(&path) {
-                Ok(contents) => {
-                    match serde_json::from_str(&contents) {
-                        Ok(prefs) => return prefs,
-                        Err(e) => eprintln!("Failed to parse preferences: {}", e),
-                    }
-                }
+                Ok(contents) => match serde_json::from_str(&contents) {
+                    Ok(prefs) => return prefs,
+                    Err(e) => eprintln!("Failed to parse preferences: {}", e),
+                },
                 Err(e) => eprintln!("Failed to read preferences: {}", e),
             }
         }
@@ -285,7 +299,7 @@ impl EditorPreferences {
             std::fs::create_dir_all(parent)?;
         }
         let json = serde_json::to_string_pretty(self)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(|e| std::io::Error::other(e))?;
         std::fs::write(&path, json)
     }
 
@@ -411,7 +425,6 @@ impl Project {
     }
 }
 
-
 /// Global engine settings (persisted per-user).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Resource)]
 pub struct EngineSettings {
@@ -454,12 +467,10 @@ impl EngineSettings {
         let path = Self::default_path();
         if path.exists() {
             match std::fs::read_to_string(&path) {
-                Ok(contents) => {
-                    match serde_json::from_str(&contents) {
-                        Ok(settings) => return settings,
-                        Err(e) => eprintln!("Failed to parse settings: {}", e),
-                    }
-                }
+                Ok(contents) => match serde_json::from_str(&contents) {
+                    Ok(settings) => return settings,
+                    Err(e) => eprintln!("Failed to parse settings: {}", e),
+                },
                 Err(e) => eprintln!("Failed to read settings: {}", e),
             }
         }
@@ -473,7 +484,7 @@ impl EngineSettings {
             std::fs::create_dir_all(parent)?;
         }
         let json = serde_json::to_string_pretty(self)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(|e| std::io::Error::other(e))?;
         std::fs::write(&path, json)
     }
 }
