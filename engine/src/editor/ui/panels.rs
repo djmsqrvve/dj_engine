@@ -85,6 +85,7 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
             let mut close_branch_idx = None;
             let mut switch_branch_idx = None;
             let mut add_branch = false;
+            let mut add_view = None;
 
             let active_idx = world.resource::<EditorUiState>().active_branch_idx;
             let branches = &world.resource::<EditorUiState>().active_branches;
@@ -96,6 +97,17 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                 let btn = ui.add(egui::Button::new(
                     RichText::new(&branch.name).color(Color32::WHITE).strong()
                 ).fill(bg_color));
+
+                btn.context_menu(|ui| {
+                    ui.label("Switch View");
+                    ui.separator();
+                    if ui.button("🗺 Map Editor").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::MapEditor); ui.close_menu(); }
+                    if ui.button("🎭 Scenario Editor").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::ScenarioEditor); ui.close_menu(); }
+                    if ui.button("📽 Story Graph").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::StoryGraph); ui.close_menu(); }
+                    if ui.button("📅 Campaign").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Campaign); ui.close_menu(); }
+                    if ui.button("🎮 Play View").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Play); ui.close_menu(); }
+                    if ui.button("⚙ Settings").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Settings); ui.close_menu(); }
+                });
 
                 if btn.clicked() {
                     switch_branch_idx = Some(idx);
@@ -118,7 +130,13 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
 
             // Handle state mutations
             if let Some(idx) = switch_branch_idx {
-                world.resource_mut::<EditorUiState>().active_branch_idx = idx;
+                let mut ui_state = world.resource_mut::<EditorUiState>();
+                ui_state.active_branch_idx = idx;
+                if let Some(view) = add_view {
+                    if let Some(branch) = ui_state.active_branches.get_mut(idx) {
+                        branch.active_view = view;
+                    }
+                }
             }
             
             if add_branch {
