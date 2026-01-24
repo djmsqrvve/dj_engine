@@ -112,11 +112,33 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                 if btn.clicked() {
                     switch_branch_idx = Some(idx);
                 }
-                
-                // Close button (x) for inactive branches or if multiple exist
-                if branches.len() > 1 {
-                    if ui.small_button("x").clicked() {
-                        close_branch_idx = Some(idx);
+
+                if is_active {
+                    ui.add_space(5.0);
+                    let view_name = match branch.active_view {
+                        EditorView::MapEditor => "🗺 Map",
+                        EditorView::ScenarioEditor => "🎭 Scenario",
+                        EditorView::StoryGraph => "📽 Storyboard",
+                        EditorView::Campaign => "📅 Campaign",
+                        EditorView::Settings => "⚙ Settings",
+                        EditorView::Play => "🎮 Play",
+                        _ => "View",
+                    };
+                    
+                    ui.menu_button(RichText::new(view_name).color(COLOR_PRIMARY).small(), |ui| {
+                        if ui.button("🗺 Map Editor").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::MapEditor); ui.close_menu(); }
+                        if ui.button("🎭 Scenario Editor").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::ScenarioEditor); ui.close_menu(); }
+                        if ui.button("📽 Storyboard").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::StoryGraph); ui.close_menu(); }
+                        if ui.button("📅 Campaign").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Campaign); ui.close_menu(); }
+                        if ui.button("🎮 Play View").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Play); ui.close_menu(); }
+                        if ui.button("⚙ Settings").clicked() { switch_branch_idx = Some(idx); add_view = Some(EditorView::Settings); ui.close_menu(); }
+                    });
+                } else {
+                     // Close button (x) for inactive branches
+                    if branches.len() > 1 {
+                        if ui.small_button("x").clicked() {
+                            close_branch_idx = Some(idx);
+                        }
                     }
                 }
                 

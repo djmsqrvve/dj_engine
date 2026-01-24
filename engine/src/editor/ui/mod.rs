@@ -9,9 +9,9 @@ pub mod phases_view;
 
 pub fn editor_ui_system(world: &mut World) {
     let ctx = world
-        .query_filtered::<&bevy_egui::EguiContext, With<bevy::window::PrimaryWindow>>()
-        .get_single(world)
-        .map(|c| c.get_mut().clone())
+        .query_filtered::<&mut bevy_egui::EguiContext, With<bevy::window::PrimaryWindow>>()
+        .get_single_mut(world)
+        .map(|mut c| c.get_mut().clone())
         .expect("Missing primary window EguiContext");
         
     egui::TopBottomPanel::top("top_panel").show(&ctx, |ui| {
