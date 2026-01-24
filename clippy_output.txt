@@ -1,0 +1,4209 @@
+warning: empty line after doc comment
+   --> engine/src/scripting/ffi.rs:123:1
+    |
+123 | / /// Register Story Graph control APIs.
+124 | |     
+    | |____^
+125 |   pub fn register_story_api(lua: &Lua) -> LuaResult<()> {
+    |   ------------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#empty_line_after_doc_comments
+    = note: `-W clippy::empty-line-after-doc-comments` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::empty_line_after_doc_comments)]`
+    = help: if the empty line is unintentional, remove it
+
+warning: redundant else block
+   --> engine/src/story_graph/executor.rs:220:26
+    |
+220 |                           } else {
+    |  __________________________^
+221 | |                             warn!("SubGraph {} has no start node!", graph_id);
+222 | |                             // Restore
+223 | |                             if let Some((parent, _)) = stack.pop() {
+...   |
+226 | |                             return NodeAction::Advance;
+227 | |                         }
+    | |_________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#redundant_else
+    = note: `-W clippy::redundant-else` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::redundant_else)]`
+help: remove the `else` block and move the contents out
+    |
+220 ~                         }
+221 +                         warn!("SubGraph {} has no start node!", graph_id);
+222 +                         // Restore
+223 +                         if let Some((parent, _)) = stack.pop() {
+224 +                             *active_graph = Some(parent);
+225 +                         }
+226 +                         return NodeAction::Advance;
+    |
+
+warning: unused import: `RichText`
+ --> engine/src/editor/ui/timeline.rs:4:50
+  |
+4 | use bevy_egui::egui::{self, Color32, Pos2, Rect, RichText, Stroke, Vec2};
+  |                                                  ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `COLOR_PRIMARY` and `COLOR_SECONDARY`
+ --> engine/src/editor/ui/timeline.rs:6:27
+  |
+6 | use super::super::state::{COLOR_PRIMARY, COLOR_SECONDARY};
+  |                           ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/animation/components.rs:20:12
+   |
+20 |     pub fn new(amplitude: f32, frequency: f32) -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+   = note: `-W clippy::must-use-candidate` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::must_use_candidate)]`
+help: add the attribute
+   |
+20 ~     #[must_use] 
+21 ~     pub fn new(amplitude: f32, frequency: f32) -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/animation/components.rs:29:12
+   |
+29 |     pub fn hamster_default() -> Self {
+   |            ^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+29 ~     #[must_use] 
+30 ~     pub fn hamster_default() -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/animation/components.rs:51:12
+   |
+51 |     pub fn new(blink_duration: f32, interval_min: f32, interval_max: f32) -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+51 ~     #[must_use] 
+52 ~     pub fn new(blink_duration: f32, interval_min: f32, interval_max: f32) -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/animation/components.rs:62:12
+   |
+62 |     pub fn hamster_default() -> Self {
+   |            ^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+62 ~     #[must_use] 
+63 ~     pub fn hamster_default() -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/animation/components.rs:80:12
+   |
+80 |     pub fn new(noise_scale: f32, speed: f32) -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+80 ~     #[must_use] 
+81 ~     pub fn new(noise_scale: f32, speed: f32) -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/animation/components.rs:89:12
+   |
+89 |     pub fn hamster_default() -> Self {
+   |            ^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+89 ~     #[must_use] 
+90 ~     pub fn hamster_default() -> Self {
+   |
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/animation/systems.rs:14:11
+   |
+14 |     time: Res<Time>,
+   |           ^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+   = note: `-W clippy::needless-pass-by-value` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::needless_pass_by_value)]`
+help: consider taking a reference instead
+   |
+14 |     time: &Res<Time>,
+   |           +
+
+warning: it is more concise to loop over references to containers instead of using explicit iteration methods
+  --> engine/src/animation/systems.rs:17:39
+   |
+17 |     for (breathing, mut transform) in query.iter_mut() {
+   |                                       ^^^^^^^^^^^^^^^^ help: to write this more concisely, try: `&mut query`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#explicit_iter_loop
+   = note: `-W clippy::explicit-iter-loop` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::explicit_iter_loop)]`
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/animation/systems.rs:34:30
+   |
+34 | pub fn blinking_system(time: Res<Time>, mut query: Query<&mut BlinkingAnimation>) {
+   |                              ^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+34 | pub fn blinking_system(time: &Res<Time>, mut query: Query<&mut BlinkingAnimation>) {
+   |                              +
+
+warning: it is more concise to loop over references to containers instead of using explicit iteration methods
+  --> engine/src/animation/systems.rs:35:25
+   |
+35 |     for mut blinking in query.iter_mut() {
+   |                         ^^^^^^^^^^^^^^^^ help: to write this more concisely, try: `&mut query`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#explicit_iter_loop
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/animation/systems.rs:57:33
+   |
+57 | pub fn idle_motion_system(time: Res<Time>, mut query: Query<(&mut IdleMotion, &mut Transform)>) {
+   |                                 ^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+57 | pub fn idle_motion_system(time: &Res<Time>, mut query: Query<(&mut IdleMotion, &mut Transform)>) {
+   |                                 +
+
+warning: it is more concise to loop over references to containers instead of using explicit iteration methods
+  --> engine/src/animation/systems.rs:58:38
+   |
+58 |     for (mut idle, mut transform) in query.iter_mut() {
+   |                                      ^^^^^^^^^^^^^^^^ help: to write this more concisely, try: `&mut query`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#explicit_iter_loop
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/assets/definitions.rs:55:12
+   |
+55 |     pub fn to_rgba(&self) -> [u8; 4] {
+   |            ^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+55 ~     #[must_use] 
+56 ~     pub fn to_rgba(&self) -> [u8; 4] {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/assets/definitions.rs:60:12
+   |
+60 |     pub fn to_color(&self) -> Color {
+   |            ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+60 ~     #[must_use] 
+61 ~     pub fn to_color(&self) -> Color {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/assets/definitions.rs:92:12
+   |
+92 |     pub fn new() -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+92 ~     #[must_use] 
+93 ~     pub fn new() -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/assets/definitions.rs:107:12
+    |
+107 |     pub fn get(&self, name: &str) -> Option<&(HamsterPartDefinition, Handle<Image>)> {
+    |            ^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+107 ~     #[must_use] 
+108 ~     pub fn get(&self, name: &str) -> Option<&(HamsterPartDefinition, Handle<Image>)> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/assets/definitions.rs:112:12
+    |
+112 |     pub fn len(&self) -> usize {
+    |            ^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+112 ~     #[must_use] 
+113 ~     pub fn len(&self) -> usize {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/assets/definitions.rs:117:12
+    |
+117 |     pub fn is_empty(&self) -> bool {
+    |            ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+117 ~     #[must_use] 
+118 ~     pub fn is_empty(&self) -> bool {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/audio/mod.rs:22:12
+   |
+22 |     pub fn new() -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+22 ~     #[must_use] 
+23 ~     pub fn new() -> Self {
+   |
+
+warning: used underscore-prefixed binding
+  --> engine/src/audio/mod.rs:36:15
+   |
+36 |     PlayBgm { track: String, crossfade: f32 },
+   |               ^^^^^
+   |
+note: binding is defined here
+  --> engine/src/audio/mod.rs:36:15
+   |
+36 |     PlayBgm { track: String, crossfade: f32 },
+   |               ^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+   = note: `-W clippy::used-underscore-binding` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::used_underscore_binding)]`
+
+warning: used underscore-prefixed binding
+  --> engine/src/audio/mod.rs:36:30
+   |
+36 |     PlayBgm { track: String, crossfade: f32 },
+   |                              ^^^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/audio/mod.rs:36:30
+   |
+36 |     PlayBgm { track: String, crossfade: f32 },
+   |                              ^^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/audio/mod.rs:38:15
+   |
+38 |     StopBgm { fade_out: f32 },
+   |               ^^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/audio/mod.rs:38:15
+   |
+38 |     StopBgm { fade_out: f32 },
+   |               ^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/audio/mod.rs:40:15
+   |
+40 |     PlaySfx { sound: String },
+   |               ^^^^^
+   |
+note: binding is defined here
+  --> engine/src/audio/mod.rs:40:15
+   |
+40 |     PlaySfx { sound: String },
+   |               ^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/audio/mod.rs:36:15
+   |
+36 |     PlayBgm { track: String, crossfade: f32 },
+   |               ^^^^^
+   |
+note: binding is defined here
+  --> engine/src/audio/mod.rs:36:15
+   |
+36 |     PlayBgm { track: String, crossfade: f32 },
+   |               ^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/audio/mod.rs:77:19
+   |
+77 |     asset_server: Res<AssetServer>,
+   |                   ^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+77 |     asset_server: &Res<AssetServer>,
+   |                   +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/audio/mod.rs:78:16
+   |
+78 |     bgm_query: Query<Entity, With<BgmSource>>,
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+78 |     bgm_query: &Query<Entity, With<BgmSource>>,
+   |                +
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/core/phases.rs:39:12
+   |
+39 |     pub fn new() -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+39 ~     #[must_use] 
+40 ~     pub fn new() -> Self {
+   |
+
+warning: variables can be used directly in the `format!` string
+  --> engine/src/core/phases.rs:74:26
+   |
+74 |                 self.log(format!("Task Failed: {}", task_name));
+   |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+   = note: `-W clippy::uninlined-format-args` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+   |
+74 -                 self.log(format!("Task Failed: {}", task_name));
+74 +                 self.log(format!("Task Failed: {task_name}"));
+   |
+
+warning: variables can be used directly in the `format!` string
+  --> engine/src/core/phases.rs:76:26
+   |
+76 |                 self.log(format!("Task Completed: {}", task_name));
+   |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+   |
+76 -                 self.log(format!("Task Completed: {}", task_name));
+76 +                 self.log(format!("Task Completed: {task_name}"));
+   |
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/core/phases.rs:144:14
+    |
+144 |     manager: Res<PhaseManager>,
+    |              ^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+144 |     manager: &Res<PhaseManager>,
+    |              +
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/core/phases.rs:145:20
+    |
+145 |     current_state: Res<State<GamePhase>>,
+    |                    ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+145 |     current_state: &Res<State<GamePhase>>,
+    |                    +
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/core/mod.rs:84:12
+   |
+84 |     pub fn new(config: EngineConfig) -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+84 ~     #[must_use] 
+85 ~     pub fn new(config: EngineConfig) -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/core/mod.rs:92:12
+   |
+92 |     pub fn without_diagnostics(mut self) -> Self {
+   |            ^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+92 ~     #[must_use] 
+93 ~     pub fn without_diagnostics(mut self) -> Self {
+   |
+
+warning: missing `#[must_use]` attribute on a method returning `Self`
+  --> engine/src/core/mod.rs:92:5
+   |
+92 | /     pub fn without_diagnostics(mut self) -> Self {
+93 | |         self.with_diagnostics = false;
+94 | |         self
+95 | |     }
+   | |_____^
+   |
+   = help: consider adding the `#[must_use]` attribute to the method or directly to the `Self` type
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#return_self_not_must_use
+   = note: `-W clippy::return-self-not-must-use` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::return_self_not_must_use)]`
+
+warning: item in documentation is missing backticks
+ --> engine/src/data/mod.rs:1:26
+  |
+1 | //! Data model types for dj_engine editor and runtime.
+  |                          ^^^^^^^^^
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+  = note: `-W clippy::doc-markdown` implied by `-W clippy::pedantic`
+  = help: to override `-W clippy::pedantic` add `#[allow(clippy::doc_markdown)]`
+help: try
+  |
+1 - //! Data model types for dj_engine editor and runtime.
+1 + //! Data model types for `dj_engine` editor and runtime.
+  |
+
+warning: possible intra-doc link using quotes instead of backticks
+  --> engine/src/data/project.rs:73:37
+   |
+73 |     /// Available languages (e.g., ["en", "fr", "jp"])
+   |                                     ^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_link_with_quotes
+   = note: `-W clippy::doc-link-with-quotes` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::doc_link_with_quotes)]`
+
+warning: item in documentation is missing backticks
+   --> engine/src/data/project.rs:173:16
+    |
+173 |     /// Enable VSync
+    |                ^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+173 -     /// Enable VSync
+173 +     /// Enable `VSync`
+    |
+
+warning: item in documentation is missing backticks
+   --> engine/src/data/project.rs:256:51
+    |
+256 |     /// Get the default preferences file path (~/.dj_engine/preferences.json)
+    |                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+256 -     /// Get the default preferences file path (~/.dj_engine/preferences.json)
+256 +     /// Get the default preferences file path (~/.`dj_engine/preferences.json`)
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/project.rs:257:12
+    |
+257 |     pub fn default_path() -> PathBuf {
+    |            ^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+257 ~     #[must_use] 
+258 ~     pub fn default_path() -> PathBuf {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/project.rs:265:12
+    |
+265 |     pub fn load() -> Self {
+    |            ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+265 ~     #[must_use] 
+266 ~     pub fn load() -> Self {
+    |
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/data/project.rs:272:35
+    |
+272 |                         Err(e) => eprintln!("Failed to parse preferences: {}", e),
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+272 -                         Err(e) => eprintln!("Failed to parse preferences: {}", e),
+272 +                         Err(e) => eprintln!("Failed to parse preferences: {e}"),
+    |
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/data/project.rs:275:27
+    |
+275 |                 Err(e) => eprintln!("Failed to read preferences: {}", e),
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+275 -                 Err(e) => eprintln!("Failed to read preferences: {}", e),
+275 +                 Err(e) => eprintln!("Failed to read preferences: {e}"),
+    |
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/project.rs:282:5
+    |
+282 |     pub fn save(&self) -> Result<(), std::io::Error> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+    = note: `-W clippy::missing-errors-doc` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::missing_errors_doc)]`
+
+warning: this can be `std::io::Error::other(_)`
+   --> engine/src/data/project.rs:288:26
+    |
+288 |             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#io_other_error
+    = note: `-W clippy::io-other-error` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::io_other_error)]`
+help: use `std::io::Error::other`
+    |
+288 -             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+288 +             .map_err(|e| std::io::Error::other(e))?;
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/project.rs:304:12
+    |
+304 |     pub fn last_project(&self) -> Option<&str> {
+    |            ^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+304 ~     #[must_use] 
+305 ~     pub fn last_project(&self) -> Option<&str> {
+    |
+
+warning: redundant closure
+   --> engine/src/data/project.rs:305:42
+    |
+305 |         self.recent_projects.first().map(|s| s.as_str())
+    |                                          ^^^^^^^^^^^^^^ help: replace the closure with the method itself: `std::string::String::as_str`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#redundant_closure_for_method_calls
+    = note: `-W clippy::redundant-closure-for-method-calls` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::redundant_closure_for_method_calls)]`
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/project.rs:404:12
+    |
+404 |     pub fn find_scene(&self, id: &str) -> Option<&SceneRef> {
+    |            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+404 ~     #[must_use] 
+405 ~     pub fn find_scene(&self, id: &str) -> Option<&SceneRef> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/project.rs:409:12
+    |
+409 |     pub fn find_story_graph(&self, id: &str) -> Option<&StoryGraphRef> {
+    |            ^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+409 ~     #[must_use] 
+410 ~     pub fn find_story_graph(&self, id: &str) -> Option<&StoryGraphRef> {
+    |
+
+warning: item in documentation is missing backticks
+   --> engine/src/data/project.rs:444:48
+    |
+444 |     /// Get the default settings file path (~/.dj_engine/settings.json)
+    |                                                ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+444 -     /// Get the default settings file path (~/.dj_engine/settings.json)
+444 +     /// Get the default settings file path (~/.`dj_engine/settings.json`)
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/project.rs:445:12
+    |
+445 |     pub fn default_path() -> PathBuf {
+    |            ^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+445 ~     #[must_use] 
+446 ~     pub fn default_path() -> PathBuf {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/project.rs:453:12
+    |
+453 |     pub fn load() -> Self {
+    |            ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+453 ~     #[must_use] 
+454 ~     pub fn load() -> Self {
+    |
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/data/project.rs:460:35
+    |
+460 |                         Err(e) => eprintln!("Failed to parse settings: {}", e),
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+460 -                         Err(e) => eprintln!("Failed to parse settings: {}", e),
+460 +                         Err(e) => eprintln!("Failed to parse settings: {e}"),
+    |
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/data/project.rs:463:27
+    |
+463 |                 Err(e) => eprintln!("Failed to read settings: {}", e),
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+463 -                 Err(e) => eprintln!("Failed to read settings: {}", e),
+463 +                 Err(e) => eprintln!("Failed to read settings: {e}"),
+    |
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/project.rs:470:5
+    |
+470 |     pub fn save(&self) -> Result<(), std::io::Error> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: this can be `std::io::Error::other(_)`
+   --> engine/src/data/project.rs:476:26
+    |
+476 |             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#io_other_error
+help: use `std::io::Error::other`
+    |
+476 -             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+476 +             .map_err(|e| std::io::Error::other(e))?;
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/scene.rs:141:12
+    |
+141 |     pub fn with_order(mut self, order: i32) -> Self {
+    |            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+141 ~     #[must_use] 
+142 ~     pub fn with_order(mut self, order: i32) -> Self {
+    |
+
+warning: missing `#[must_use]` attribute on a method returning `Self`
+   --> engine/src/data/scene.rs:141:5
+    |
+141 | /     pub fn with_order(mut self, order: i32) -> Self {
+142 | |         self.order = order;
+143 | |         self
+144 | |     }
+    | |_____^
+    |
+    = help: consider adding the `#[must_use]` attribute to the method or directly to the `Self` type
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#return_self_not_must_use
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/scene.rs:248:12
+    |
+248 |     pub fn with_type(mut self, entity_type: EntityType) -> Self {
+    |            ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+248 ~     #[must_use] 
+249 ~     pub fn with_type(mut self, entity_type: EntityType) -> Self {
+    |
+
+warning: missing `#[must_use]` attribute on a method returning `Self`
+   --> engine/src/data/scene.rs:248:5
+    |
+248 | /     pub fn with_type(mut self, entity_type: EntityType) -> Self {
+249 | |         self.entity_type = entity_type;
+250 | |         self
+251 | |     }
+    | |_____^
+    |
+    = help: consider adding the `#[must_use]` attribute to the method or directly to the `Self` type
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#return_self_not_must_use
+
+warning: missing `#[must_use]` attribute on a method returning `Self`
+   --> engine/src/data/scene.rs:254:5
+    |
+254 | /     pub fn with_layer(mut self, layer_id: impl Into<String>) -> Self {
+255 | |         self.layer_id = layer_id.into();
+256 | |         self
+257 | |     }
+    | |_____^
+    |
+    = help: consider adding the `#[must_use]` attribute to the method or directly to the `Self` type
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#return_self_not_must_use
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/scene.rs:260:12
+    |
+260 |     pub fn with_components(mut self, components: EntityComponents) -> Self {
+    |            ^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+260 ~     #[must_use] 
+261 ~     pub fn with_components(mut self, components: EntityComponents) -> Self {
+    |
+
+warning: missing `#[must_use]` attribute on a method returning `Self`
+   --> engine/src/data/scene.rs:260:5
+    |
+260 | /     pub fn with_components(mut self, components: EntityComponents) -> Self {
+261 | |         self.components = components;
+262 | |         self
+263 | |     }
+    | |_____^
+    |
+    = help: consider adding the `#[must_use]` attribute to the method or directly to the `Self` type
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#return_self_not_must_use
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/scene.rs:363:12
+    |
+363 |     pub fn find_entity(&self, id: &str) -> Option<&Entity> {
+    |            ^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+363 ~     #[must_use] 
+364 ~     pub fn find_entity(&self, id: &str) -> Option<&Entity> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/scene.rs:387:12
+    |
+387 |     pub fn find_layer(&self, id: &str) -> Option<&Layer> {
+    |            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+387 ~     #[must_use] 
+388 ~     pub fn find_layer(&self, id: &str) -> Option<&Layer> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/scene.rs:398:12
+    |
+398 |     pub fn entities_in_layer(&self, layer_id: &str) -> Vec<&Entity> {
+    |            ^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+398 ~     #[must_use] 
+399 ~     pub fn entities_in_layer(&self, layer_id: &str) -> Vec<&Entity> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/scene.rs:403:12
+    |
+403 |     pub fn entities_of_type(&self, entity_type: EntityType) -> Vec<&Entity> {
+    |            ^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+403 ~     #[must_use] 
+404 ~     pub fn entities_of_type(&self, entity_type: EntityType) -> Vec<&Entity> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/data/components.rs:28:12
+   |
+28 |     pub fn new(x: f32, y: f32, z: f32) -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+28 ~     #[must_use] 
+29 ~     pub fn new(x: f32, y: f32, z: f32) -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/data/components.rs:32:12
+   |
+32 |     pub fn xy(x: f32, y: f32) -> Self {
+   |            ^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+32 ~     #[must_use] 
+33 ~     pub fn xy(x: f32, y: f32) -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/data/components.rs:56:12
+   |
+56 |     pub fn rgb(r: f32, g: f32, b: f32) -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+56 ~     #[must_use] 
+57 ~     pub fn rgb(r: f32, g: f32, b: f32) -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/data/components.rs:60:12
+   |
+60 |     pub fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
+   |            ^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+60 ~     #[must_use] 
+61 ~     pub fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/data/components.rs:64:12
+   |
+64 |     pub fn white() -> Self {
+   |            ^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+64 ~     #[must_use] 
+65 ~     pub fn white() -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/data/components.rs:68:12
+   |
+68 |     pub fn black() -> Self {
+   |            ^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+68 ~     #[must_use] 
+69 ~     pub fn black() -> Self {
+   |
+
+warning: item in documentation is missing backticks
+   --> engine/src/data/components.rs:292:35
+    |
+292 |     /// NPC ID (links to database NpcRow)
+    |                                   ^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+292 -     /// NPC ID (links to database NpcRow)
+292 +     /// NPC ID (links to database `NpcRow`)
+    |
+
+warning: item in documentation is missing backticks
+   --> engine/src/data/components.rs:315:37
+    |
+315 |     /// Enemy ID (links to database EnemyRow)
+    |                                     ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+315 -     /// Enemy ID (links to database EnemyRow)
+315 +     /// Enemy ID (links to database `EnemyRow`)
+    |
+
+warning: item in documentation is missing backticks
+   --> engine/src/data/components.rs:382:37
+    |
+382 |     /// Tower ID (links to database TowerRow)
+    |                                     ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+382 -     /// Tower ID (links to database TowerRow)
+382 +     /// Tower ID (links to database `TowerRow`)
+    |
+
+warning: item in documentation is missing backticks
+   --> engine/src/data/story.rs:297:29
+    |
+297 |     /// Target scene ID (if end_type is LoadScene)
+    |                             ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+297 -     /// Target scene ID (if end_type is LoadScene)
+297 +     /// Target scene ID (if `end_type` is LoadScene)
+    |
+
+warning: item in documentation is missing backticks
+   --> engine/src/data/story.rs:297:41
+    |
+297 |     /// Target scene ID (if end_type is LoadScene)
+    |                                         ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+297 -     /// Target scene ID (if end_type is LoadScene)
+297 +     /// Target scene ID (if end_type is `LoadScene`)
+    |
+
+warning: redundant closure
+   --> engine/src/data/story.rs:376:43
+    |
+376 |                 next_node_id: next_id.map(|s| s.into()),
+    |                                           ^^^^^^^^^^^^ help: replace the closure with the method itself: `std::convert::Into::into`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#redundant_closure_for_method_calls
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/story.rs:395:12
+    |
+395 |     pub fn node_type(&self) -> StoryNodeType {
+    |            ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+395 ~     #[must_use] 
+396 ~     pub fn node_type(&self) -> StoryNodeType {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/story.rs:410:12
+    |
+410 |     pub fn next_node_ids(&self) -> Vec<&str> {
+    |            ^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+410 ~     #[must_use] 
+411 ~     pub fn next_node_ids(&self) -> Vec<&str> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/story.rs:491:12
+    |
+491 |     pub fn find_node(&self, id: &str) -> Option<&StoryNodeData> {
+    |            ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+491 ~     #[must_use] 
+492 ~     pub fn find_node(&self, id: &str) -> Option<&StoryNodeData> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/story.rs:496:12
+    |
+496 |     pub fn validate(&self) -> Vec<ValidationError> {
+    |            ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+496 ~     #[must_use] 
+497 ~     pub fn validate(&self) -> Vec<ValidationError> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/story.rs:528:12
+    |
+528 |     pub fn validate_against_scene(&self, scene: &Scene) -> Vec<SceneValidationError> {
+    |            ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+528 ~     #[must_use] 
+529 ~     pub fn validate_against_scene(&self, scene: &Scene) -> Vec<SceneValidationError> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/database.rs:128:12
+    |
+128 |     pub fn with_type(mut self, item_type: ItemType) -> Self {
+    |            ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+128 ~     #[must_use] 
+129 ~     pub fn with_type(mut self, item_type: ItemType) -> Self {
+    |
+
+warning: missing `#[must_use]` attribute on a method returning `Self`
+   --> engine/src/data/database.rs:128:5
+    |
+128 | /     pub fn with_type(mut self, item_type: ItemType) -> Self {
+129 | |         self.item_type = item_type;
+130 | |         self
+131 | |     }
+    | |_____^
+    |
+    = help: consider adding the `#[must_use]` attribute to the method or directly to the `Self` type
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#return_self_not_must_use
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/database.rs:437:12
+    |
+437 |     pub fn new() -> Self {
+    |            ^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+437 ~     #[must_use] 
+438 ~     pub fn new() -> Self {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/database.rs:442:12
+    |
+442 |     pub fn find_item(&self, id: &str) -> Option<&ItemRow> {
+    |            ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+442 ~     #[must_use] 
+443 ~     pub fn find_item(&self, id: &str) -> Option<&ItemRow> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/database.rs:447:12
+    |
+447 |     pub fn find_npc(&self, id: &str) -> Option<&NpcRow> {
+    |            ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+447 ~     #[must_use] 
+448 ~     pub fn find_npc(&self, id: &str) -> Option<&NpcRow> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/database.rs:452:12
+    |
+452 |     pub fn find_tower(&self, id: &str) -> Option<&TowerRow> {
+    |            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+452 ~     #[must_use] 
+453 ~     pub fn find_tower(&self, id: &str) -> Option<&TowerRow> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/database.rs:457:12
+    |
+457 |     pub fn find_enemy(&self, id: &str) -> Option<&EnemyRow> {
+    |            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+457 ~     #[must_use] 
+458 ~     pub fn find_enemy(&self, id: &str) -> Option<&EnemyRow> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/database.rs:462:12
+    |
+462 |     pub fn find_loot_table(&self, id: &str) -> Option<&LootTableRow> {
+    |            ^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+462 ~     #[must_use] 
+463 ~     pub fn find_loot_table(&self, id: &str) -> Option<&LootTableRow> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/database.rs:467:12
+    |
+467 |     pub fn find_quest(&self, id: &str) -> Option<&QuestRow> {
+    |            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+467 ~     #[must_use] 
+468 ~     pub fn find_quest(&self, id: &str) -> Option<&QuestRow> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/data/assets.rs:46:12
+   |
+46 |     pub fn with_tags(mut self, tags: Vec<String>) -> Self {
+   |            ^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+46 ~     #[must_use] 
+47 ~     pub fn with_tags(mut self, tags: Vec<String>) -> Self {
+   |
+
+warning: missing `#[must_use]` attribute on a method returning `Self`
+  --> engine/src/data/assets.rs:46:5
+   |
+46 | /     pub fn with_tags(mut self, tags: Vec<String>) -> Self {
+47 | |         self.tags = tags;
+48 | |         self
+49 | |     }
+   | |_____^
+   |
+   = help: consider adding the `#[must_use]` attribute to the method or directly to the `Self` type
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#return_self_not_must_use
+
+warning: item in documentation is missing backticks
+   --> engine/src/data/assets.rs:121:31
+    |
+121 |     /// File path relative to story_graphs folder
+    |                               ^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+121 -     /// File path relative to story_graphs folder
+121 +     /// File path relative to `story_graphs` folder
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/assets.rs:179:12
+    |
+179 |     pub fn new() -> Self {
+    |            ^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+179 ~     #[must_use] 
+180 ~     pub fn new() -> Self {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/assets.rs:184:12
+    |
+184 |     pub fn find_sprite(&self, id: &str) -> Option<&SpriteAsset> {
+    |            ^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+184 ~     #[must_use] 
+185 ~     pub fn find_sprite(&self, id: &str) -> Option<&SpriteAsset> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/assets.rs:189:12
+    |
+189 |     pub fn find_audio(&self, id: &str) -> Option<&AudioAsset> {
+    |            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+189 ~     #[must_use] 
+190 ~     pub fn find_audio(&self, id: &str) -> Option<&AudioAsset> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/assets.rs:194:12
+    |
+194 |     pub fn find_script(&self, id: &str) -> Option<&ScriptAsset> {
+    |            ^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+194 ~     #[must_use] 
+195 ~     pub fn find_script(&self, id: &str) -> Option<&ScriptAsset> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/assets.rs:199:12
+    |
+199 |     pub fn find_prefab(&self, id: &str) -> Option<&Prefab> {
+    |            ^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+199 ~     #[must_use] 
+200 ~     pub fn find_prefab(&self, id: &str) -> Option<&Prefab> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/assets.rs:204:12
+    |
+204 |     pub fn find_story_graph(&self, id: &str) -> Option<&StoryGraphAsset> {
+    |            ^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+204 ~     #[must_use] 
+205 ~     pub fn find_story_graph(&self, id: &str) -> Option<&StoryGraphAsset> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/assets.rs:209:12
+    |
+209 |     pub fn find_scene(&self, id: &str) -> Option<&SceneAsset> {
+    |            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+209 ~     #[must_use] 
+210 ~     pub fn find_scene(&self, id: &str) -> Option<&SceneAsset> {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/data/assets.rs:214:12
+    |
+214 |     pub fn sprites_with_tag(&self, tag: &str) -> Vec<&SpriteAsset> {
+    |            ^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+214 ~     #[must_use] 
+215 ~     pub fn sprites_with_tag(&self, tag: &str) -> Vec<&SpriteAsset> {
+    |
+
+warning: docs for function returning `Result` missing `# Errors` section
+  --> engine/src/data/loader.rs:42:1
+   |
+42 | pub fn load_project(path: &Path) -> Result<Project, DataError> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+  --> engine/src/data/loader.rs:59:1
+   |
+59 | pub fn load_scene(path: &Path) -> Result<Scene, DataError> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+  --> engine/src/data/loader.rs:76:1
+   |
+76 | pub fn load_database(path: &Path) -> Result<Database, DataError> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+  --> engine/src/data/loader.rs:93:1
+   |
+93 | pub fn load_story_graph(path: &Path) -> Result<StoryGraphData, DataError> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:110:1
+    |
+110 | pub fn load_asset_index(path: &Path) -> Result<AssetIndex, DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:121:1
+    |
+121 | pub fn load_map(path: &Path) -> Result<MapAsset, DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:132:1
+    |
+132 | pub fn load_mode(path: &Path) -> Result<GameMode, DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:143:1
+    |
+143 | pub fn load_scenario(path: &Path) -> Result<ScenarioData, DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:154:1
+    |
+154 | pub fn save_project(project: &Project, path: &Path) -> Result<(), DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:161:1
+    |
+161 | pub fn save_scene(scene: &Scene, path: &Path) -> Result<(), DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:168:1
+    |
+168 | pub fn save_database(database: &Database, path: &Path) -> Result<(), DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:175:1
+    |
+175 | pub fn save_story_graph(graph: &StoryGraphData, path: &Path) -> Result<(), DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:182:1
+    |
+182 | pub fn save_map(map: &MapAsset, path: &Path) -> Result<(), DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:189:1
+    |
+189 | pub fn save_mode(mode: &GameMode, path: &Path) -> Result<(), DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:196:1
+    |
+196 | pub fn save_scenario(scenario: &ScenarioData, path: &Path) -> Result<(), DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/data/loader.rs:209:1
+    |
+209 | pub fn save_project_structure(project: &Project, root_path: &Path) -> Result<(), DataError> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/data/spawner.rs:22:12
+   |
+22 |     pub fn new(scene: Scene) -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+22 ~     #[must_use] 
+23 ~     pub fn new(scene: Scene) -> Self {
+   |
+
+warning: item in documentation is missing backticks
+  --> engine/src/data/spawner.rs:63:13
+   |
+63 | /// Convert Vec3Data to Bevy Vec3.
+   |             ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+   |
+63 - /// Convert Vec3Data to Bevy Vec3.
+63 + /// Convert `Vec3Data` to Bevy Vec3.
+   |
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/data/spawner.rs:77:19
+   |
+77 |     asset_server: Res<AssetServer>,
+   |                   ^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+77 |     asset_server: &Res<AssetServer>,
+   |                   +
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/data/spawner.rs:190:12
+    |
+190 |     query: Query<Entity, With<SceneEntityMarker>>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+190 |     query: &Query<Entity, With<SceneEntityMarker>>,
+    |            +
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/data/map.rs:93:12
+   |
+93 |     pub fn with_order(mut self, order: i32) -> Self {
+   |            ^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+93 ~     #[must_use] 
+94 ~     pub fn with_order(mut self, order: i32) -> Self {
+   |
+
+warning: missing `#[must_use]` attribute on a method returning `Self`
+  --> engine/src/data/map.rs:93:5
+   |
+93 | /     pub fn with_order(mut self, order: i32) -> Self {
+94 | |         self.order = order;
+95 | |         self
+96 | |     }
+   | |_____^
+   |
+   = help: consider adding the `#[must_use]` attribute to the method or directly to the `Self` type
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#return_self_not_must_use
+
+warning: item in documentation is missing backticks
+  --> engine/src/data/scenario.rs:18:19
+   |
+18 |     /// ID of the MapAsset to use
+   |                   ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+   |
+18 -     /// ID of the MapAsset to use
+18 +     /// ID of the `MapAsset` to use
+   |
+
+warning: item in documentation is missing backticks
+  --> engine/src/data/scenario.rs:21:19
+   |
+21 |     /// ID of the GameMode to use
+   |                   ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+   |
+21 -     /// ID of the GameMode to use
+21 +     /// ID of the `GameMode` to use
+   |
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/console.rs:16:36
+   |
+16 |     pub fn log(&mut self, message: String) {
+   |                                    ^^^^^^ help: consider changing the type to: `&str`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+
+warning: variables can be used directly in the `format!` string
+  --> engine/src/diagnostics/console.rs:18:24
+   |
+18 |         self.logs.push(format!("[{}] {}", timestamp, message));
+   |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+   |
+18 -         self.logs.push(format!("[{}] {}", timestamp, message));
+18 +         self.logs.push(format!("[{timestamp}] {message}"));
+   |
+
+warning: this `if` statement can be collapsed
+  --> engine/src/diagnostics/console.rs:48:21
+   |
+48 | /                     if !cmd.is_empty() {
+49 | |                         if tx.send(cmd).is_err() {
+50 | |                             break;
+51 | |                         }
+52 | |                     }
+   | |_____________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#collapsible_if
+   = note: `-W clippy::collapsible-if` implied by `-W clippy::all`
+   = help: to override `-W clippy::all` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+   |
+48 ~                     if !cmd.is_empty()
+49 ~                         && tx.send(cmd).is_err() {
+50 |                             break;
+51 ~                         }
+   |
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/console.rs:70:15
+   |
+70 |     receiver: Res<ConsoleReceiver>,
+   |               ^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+70 |     receiver: &Res<ConsoleReceiver>,
+   |               +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/console.rs:83:14
+   |
+83 |     windows: Query<(Entity, &Window)>,
+   |              ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+83 |     windows: &Query<(Entity, &Window)>,
+   |              +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/console.rs:84:15
+   |
+84 |     entities: Query<(Entity, Option<&Name>)>,
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+84 |     entities: &Query<(Entity, Option<&Name>)>,
+   |               +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/console.rs:85:15
+   |
+85 |     executor: Option<Res<GraphExecutor>>,
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+85 |     executor: Option<&Res<GraphExecutor>>,
+   |                      +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/console.rs:86:18
+   |
+86 |     diagnostics: Res<DiagnosticsStore>,
+   |                  ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+86 |     diagnostics: &Res<DiagnosticsStore>,
+   |                  +
+
+warning: called `map(<f>).unwrap_or(<a>)` on an `Option` value
+   --> engine/src/diagnostics/console.rs:126:36
+    |
+126 |                     let name_str = name.map(|n| n.as_str()).unwrap_or("<unnamed>");
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#map_unwrap_or
+    = note: `-W clippy::map-unwrap-or` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::map_unwrap_or)]`
+help: use `map_or(<a>, <f>)` instead
+    |
+126 -                     let name_str = name.map(|n| n.as_str()).unwrap_or("<unnamed>");
+126 +                     let name_str = name.map_or("<unnamed>", |n| n.as_str());
+    |
+
+warning: redundant closure
+   --> engine/src/diagnostics/console.rs:126:45
+    |
+126 |                     let name_str = name.map(|n| n.as_str()).unwrap_or("<unnamed>");
+    |                                             ^^^^^^^^^^^^^^ help: replace the closure with the method itself: `bevy::prelude::Name::as_str`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#redundant_closure_for_method_calls
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/diagnostics/console.rs:129:25
+    |
+129 |                         println!("⚠️  HIGH GEN: {:?} | Name: \"{}\"", entity, name_str);
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+129 -                         println!("⚠️  HIGH GEN: {:?} | Name: \"{}\"", entity, name_str);
+129 +                         println!("⚠️  HIGH GEN: {entity:?} | Name: \"{name_str}\"");
+    |
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/diagnostics/console.rs:132:17
+    |
+132 |                 println!("\nTotal Entities: {}", count);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+132 -                 println!("\nTotal Entities: {}", count);
+132 +                 println!("\nTotal Entities: {count}");
+    |
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/diagnostics/console.rs:133:17
+    |
+133 |                 println!("Entities with high generation (>10): {}", high_gen_count);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+133 -                 println!("Entities with high generation (>10): {}", high_gen_count);
+133 +                 println!("Entities with high generation (>10): {high_gen_count}");
+    |
+
+warning: redundant closure
+   --> engine/src/diagnostics/console.rs:150:31
+    |
+150 |                     .and_then(|diag| diag.smoothed())
+    |                               ^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `bevy::bevy_diagnostic::Diagnostic::smoothed`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#redundant_closure_for_method_calls
+
+warning: redundant closure
+   --> engine/src/diagnostics/console.rs:154:31
+    |
+154 |                     .and_then(|diag| diag.smoothed())
+    |                               ^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `bevy::bevy_diagnostic::Diagnostic::smoothed`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#redundant_closure_for_method_calls
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/diagnostics/console.rs:156:17
+    |
+156 |                 println!("\nFPS: {:.1}\nFrame Time: {:.2}ms\n", fps, ft);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+156 -                 println!("\nFPS: {:.1}\nFrame Time: {:.2}ms\n", fps, ft);
+156 +                 println!("\nFPS: {fps:.1}\nFrame Time: {ft:.2}ms\n");
+    |
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/mod.rs:44:54
+   |
+44 | fn setup_diagnostics(mut commands: Commands, config: Res<DiagnosticConfig>) {
+   |                                                      ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+44 | fn setup_diagnostics(mut commands: Commands, config: &Res<DiagnosticConfig>) {
+   |                                                      +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/mod.rs:71:11
+   |
+71 |     keys: Res<ButtonInput<KeyCode>>,
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+71 |     keys: &Res<ButtonInput<KeyCode>>,
+   |           +
+
+warning: this function has too many arguments (9/7)
+  --> engine/src/diagnostics/mod.rs:88:1
+   |
+88 | / fn update_diagnostics_system(
+89 | |     time: Res<Time>,
+90 | |     diagnostics: Res<DiagnosticsStore>,
+91 | |     mut config: ResMut<DiagnosticConfig>,
+...  |
+97 | |     mut overlay_query: Query<&mut Visibility, With<DiagnosticOverlay>>,
+98 | | ) {
+   | |_^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+   = note: `-W clippy::too-many-arguments` implied by `-W clippy::all`
+   = help: to override `-W clippy::all` add `#[allow(clippy::too_many_arguments)]`
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/mod.rs:89:11
+   |
+89 |     time: Res<Time>,
+   |           ^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+89 |     time: &Res<Time>,
+   |           +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/mod.rs:90:18
+   |
+90 |     diagnostics: Res<DiagnosticsStore>,
+   |                  ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+90 |     diagnostics: &Res<DiagnosticsStore>,
+   |                  +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/mod.rs:93:15
+   |
+93 |     entities: Query<Entity>,
+   |               ^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+93 |     entities: &Query<Entity>,
+   |               +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/diagnostics/mod.rs:95:14
+   |
+95 |     windows: Query<&Window>,
+   |              ^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+95 |     windows: &Query<&Window>,
+   |              +
+
+warning: redundant closure
+   --> engine/src/diagnostics/mod.rs:125:19
+    |
+125 |         .and_then(|diag| diag.smoothed());
+    |                   ^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `bevy::bevy_diagnostic::Diagnostic::smoothed`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#redundant_closure_for_method_calls
+
+warning: redundant closure
+   --> engine/src/diagnostics/mod.rs:129:19
+    |
+129 |         .and_then(|diag| diag.smoothed());
+    |                   ^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `bevy::bevy_diagnostic::Diagnostic::smoothed`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#redundant_closure_for_method_calls
+
+warning: casting `f32` to `i32` may truncate the value
+   --> engine/src/diagnostics/mod.rs:140:10
+    |
+140 |         (window.width() as i32, window.height() as i32)
+    |          ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+    = note: `-W clippy::cast-possible-truncation` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::cast_possible_truncation)]`
+
+warning: casting `f32` to `i32` may truncate the value
+   --> engine/src/diagnostics/mod.rs:140:33
+    |
+140 |         (window.width() as i32, window.height() as i32)
+    |                                 ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/diagnostics/mod.rs:147:58
+    |
+147 |         let fps_text = fps.map_or("N/A".to_string(), |v| format!("{:.1}", v));
+    |                                                          ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+147 -         let fps_text = fps.map_or("N/A".to_string(), |v| format!("{:.1}", v));
+147 +         let fps_text = fps.map_or("N/A".to_string(), |v| format!("{v:.1}"));
+    |
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/diagnostics/mod.rs:148:64
+    |
+148 |         let ms_text = frame_time.map_or("N/A".to_string(), |v| format!("{:.2}", v));
+    |                                                                ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+148 -         let ms_text = frame_time.map_or("N/A".to_string(), |v| format!("{:.2}", v));
+148 +         let ms_text = frame_time.map_or("N/A".to_string(), |v| format!("{v:.2}"));
+    |
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/diagnostics/mod.rs:150:18
+    |
+150 |           text.0 = format!(
+    |  __________________^
+151 | |             "FPS: {}\nFrame Time: {}ms\nEntities: {}\nStoryStatus: {}\nWindow: {}x{}", 
+152 | |             fps_text, ms_text, entity_count, story_status, width, height
+153 | |         );
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/diagnostics/mod.rs:171:11
+    |
+171 |     time: Res<Time>,
+    |           ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+171 |     time: &Res<Time>,
+    |           +
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/diagnostics/mod.rs:172:18
+    |
+172 |     diagnostics: Res<DiagnosticsStore>,
+    |                  ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+172 |     diagnostics: &Res<DiagnosticsStore>,
+    |                  +
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/diagnostics/mod.rs:174:14
+    |
+174 |     windows: Query<&Window>,
+    |              ^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+174 |     windows: &Query<&Window>,
+    |              +
+
+warning: redundant closure
+   --> engine/src/diagnostics/mod.rs:179:23
+    |
+179 |             .and_then(|diag| diag.smoothed())
+    |                       ^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `bevy::bevy_diagnostic::Diagnostic::smoothed`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#redundant_closure_for_method_calls
+
+warning: casting `f32` to `i32` may truncate the value
+   --> engine/src/diagnostics/mod.rs:183:14
+    |
+183 |             (window.width() as i32, window.height() as i32)
+    |              ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+
+warning: casting `f32` to `i32` may truncate the value
+   --> engine/src/diagnostics/mod.rs:183:37
+    |
+183 |             (window.width() as i32, window.height() as i32)
+    |                                     ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/input/mod.rs:38:12
+   |
+38 |     pub fn pressed(&self, action: InputAction) -> bool {
+   |            ^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+38 ~     #[must_use] 
+39 ~     pub fn pressed(&self, action: InputAction) -> bool {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/input/mod.rs:43:12
+   |
+43 |     pub fn just_pressed(&self, action: InputAction) -> bool {
+   |            ^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+43 ~     #[must_use] 
+44 ~     pub fn just_pressed(&self, action: InputAction) -> bool {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/input/mod.rs:48:12
+   |
+48 |     pub fn just_released(&self, action: InputAction) -> bool {
+   |            ^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+48 ~     #[must_use] 
+49 ~     pub fn just_released(&self, action: InputAction) -> bool {
+   |
+
+warning: item in documentation is missing backticks
+  --> engine/src/input/mod.rs:56:28
+   |
+56 |     /// Keyboard mappings: KeyCode -> InputAction
+   |                            ^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+   |
+56 -     /// Keyboard mappings: KeyCode -> InputAction
+56 +     /// Keyboard mappings: `KeyCode` -> InputAction
+   |
+
+warning: item in documentation is missing backticks
+  --> engine/src/input/mod.rs:56:39
+   |
+56 |     /// Keyboard mappings: KeyCode -> InputAction
+   |                                       ^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+   |
+56 -     /// Keyboard mappings: KeyCode -> InputAction
+56 +     /// Keyboard mappings: KeyCode -> `InputAction`
+   |
+
+warning: item in documentation is missing backticks
+   --> engine/src/input/mod.rs:106:29
+    |
+106 | /// System that updates the ActionState based on keyboard input.
+    |                             ^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+106 - /// System that updates the ActionState based on keyboard input.
+106 + /// System that updates the `ActionState` based on keyboard input.
+    |
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/input/mod.rs:108:11
+    |
+108 |     keys: Res<ButtonInput<KeyCode>>,
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+108 |     keys: &Res<ButtonInput<KeyCode>>,
+    |           +
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/input/mod.rs:109:13
+    |
+109 |     config: Res<InputConfig>,
+    |             ^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+109 |     config: &Res<InputConfig>,
+    |             +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/rendering/camera.rs:38:20
+   |
+38 |     viewport_rect: Res<ViewportRect>,
+   |                    ^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+38 |     viewport_rect: &Res<ViewportRect>,
+   |                    +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/rendering/camera.rs:40:14
+   |
+40 |     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
+   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+40 |     windows: &Query<&Window, With<bevy::window::PrimaryWindow>>,
+   |              +
+
+warning: casting `f32` to `u32` may truncate the value
+  --> engine/src/rendering/camera.rs:66:39
+   |
+66 |         physical_position: UVec2::new(min_x as u32, min_y as u32),
+   |                                       ^^^^^^^^^^^^
+   |
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+
+warning: casting `f32` to `u32` may lose the sign of the value
+  --> engine/src/rendering/camera.rs:66:39
+   |
+66 |         physical_position: UVec2::new(min_x as u32, min_y as u32),
+   |                                       ^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_sign_loss
+   = note: `-W clippy::cast-sign-loss` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::cast_sign_loss)]`
+
+warning: casting `f32` to `u32` may truncate the value
+  --> engine/src/rendering/camera.rs:66:53
+   |
+66 |         physical_position: UVec2::new(min_x as u32, min_y as u32),
+   |                                                     ^^^^^^^^^^^^
+   |
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+
+warning: casting `f32` to `u32` may lose the sign of the value
+  --> engine/src/rendering/camera.rs:66:53
+   |
+66 |         physical_position: UVec2::new(min_x as u32, min_y as u32),
+   |                                                     ^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_sign_loss
+
+warning: casting `f32` to `u32` may truncate the value
+  --> engine/src/rendering/camera.rs:67:35
+   |
+67 |         physical_size: UVec2::new(width as u32, height as u32),
+   |                                   ^^^^^^^^^^^^
+   |
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+
+warning: casting `f32` to `u32` may lose the sign of the value
+  --> engine/src/rendering/camera.rs:67:35
+   |
+67 |         physical_size: UVec2::new(width as u32, height as u32),
+   |                                   ^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_sign_loss
+
+warning: casting `f32` to `u32` may truncate the value
+  --> engine/src/rendering/camera.rs:67:49
+   |
+67 |         physical_size: UVec2::new(width as u32, height as u32),
+   |                                                 ^^^^^^^^^^^^^
+   |
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+
+warning: casting `f32` to `u32` may lose the sign of the value
+  --> engine/src/rendering/camera.rs:67:49
+   |
+67 |         physical_size: UVec2::new(width as u32, height as u32),
+   |                                                 ^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_sign_loss
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/scene/mod.rs:101:11
+    |
+101 |     time: Res<Time>,
+    |           ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+101 |     time: &Res<Time>,
+    |           +
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/scene/mod.rs:102:19
+    |
+102 |     asset_server: Res<AssetServer>,
+    |                   ^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+102 |     asset_server: &Res<AssetServer>,
+    |                   +
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/scene/mod.rs:104:15
+    |
+104 |     bg_query: Query<Entity, With<SceneBackground>>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+104 |     bg_query: &Query<Entity, With<SceneBackground>>,
+    |               +
+
+warning: wildcard matches only a single variant and will also match any future added variants
+   --> engine/src/scene/mod.rs:148:9
+    |
+148 |         _ => {}
+    |         ^ help: try: `TransitionState::Idle`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#match_wildcard_for_single_variants
+    = note: `-W clippy::match-wildcard-for-single-variants` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::match_wildcard_for_single_variants)]`
+
+warning: it is more concise to loop over references to containers instead of using explicit iteration methods
+   --> engine/src/scene/mod.rs:152:25
+    |
+152 |     for mut bg_color in overlay_query.iter_mut() {
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^ help: to write this more concisely, try: `&mut overlay_query`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#explicit_iter_loop
+
+warning: item in documentation is missing backticks
+  --> engine/src/scripting/context.rs:10:26
+   |
+10 | /// Uses a Mutex because mlua::Lua is not Sync, but we need it in Bevy resources.
+   |                          ^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+   |
+10 - /// Uses a Mutex because mlua::Lua is not Sync, but we need it in Bevy resources.
+10 + /// Uses a Mutex because `mlua::Lua` is not Sync, but we need it in Bevy resources.
+   |
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/scripting/context.rs:25:12
+   |
+25 |     pub fn new() -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+25 ~     #[must_use] 
+26 ~     pub fn new() -> Self {
+   |
+
+warning: docs for function returning `Result` missing `# Errors` section
+  --> engine/src/scripting/ffi.rs:11:1
+   |
+11 | pub fn register_core_api(lua: &Lua) -> LuaResult<()> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: this function could have a `#[must_use]` attribute
+  --> engine/src/scripting/ffi.rs:51:8
+   |
+51 | pub fn create_shared_state() -> SharedGenericState {
+   |        ^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+51 + #[must_use] 
+52 | pub fn create_shared_state() -> SharedGenericState {
+   |
+
+warning: docs for function which may panic missing `# Panics` section
+  --> engine/src/scripting/ffi.rs:56:1
+   |
+56 | pub fn register_generic_state_api(lua: &Lua, state: SharedGenericState) -> LuaResult<()> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: first possible panic found here
+  --> engine/src/scripting/ffi.rs:62:24
+   |
+62 |         let mut data = s.write().unwrap();
+   |                        ^^^^^^^^^^^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_panics_doc
+   = note: `-W clippy::missing-panics-doc` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::missing_panics_doc)]`
+
+warning: docs for function returning `Result` missing `# Errors` section
+  --> engine/src/scripting/ffi.rs:56:1
+   |
+56 | pub fn register_generic_state_api(lua: &Lua, state: SharedGenericState) -> LuaResult<()> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/scripting/ffi.rs:56:53
+   |
+56 | pub fn register_generic_state_api(lua: &Lua, state: SharedGenericState) -> LuaResult<()> {
+   |                                                     ^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+56 | pub fn register_generic_state_api(lua: &Lua, state: &SharedGenericState) -> LuaResult<()> {
+   |                                                     +
+
+warning: docs for function returning `Result` missing `# Errors` section
+   --> engine/src/scripting/ffi.rs:125:1
+    |
+125 | pub fn register_story_api(lua: &Lua) -> LuaResult<()> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_errors_doc
+
+warning: used underscore-prefixed binding
+  --> engine/src/scripting/mod.rs:21:12
+   |
+21 |     Load { path: String },
+   |            ^^^^
+   |
+note: binding is defined here
+  --> engine/src/scripting/mod.rs:21:12
+   |
+21 |     Load { path: String },
+   |            ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: item in documentation is missing backticks
+  --> engine/src/scripting/mod.rs:54:30
+   |
+54 | /// System that bridges Bevy StoryFlowEvents to Lua global callbacks.
+   |                              ^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+   |
+54 - /// System that bridges Bevy StoryFlowEvents to Lua global callbacks.
+54 + /// System that bridges Bevy `StoryFlowEvents` to Lua global callbacks.
+   |
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/scripting/mod.rs:56:14
+   |
+56 |     lua_ctx: Res<LuaContext>,
+   |              ^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+56 |     lua_ctx: &Res<LuaContext>,
+   |              +
+
+warning: you seem to be trying to use `match` for destructuring a single pattern. Consider using `if let`
+  --> engine/src/scripting/mod.rs:69:9
+   |
+69 | /         match event {
+70 | |             StoryFlowEvent::ShowDialogue { speaker, text, portrait: _ } => {
+71 | |                 let globals = lua.globals();
+72 | |                 if let Ok(func) = globals.get::<mlua::Function>("on_dialogue") {
+...  |
+78 | |             _ => {}
+79 | |         }
+   | |_________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#single_match
+   = note: `-W clippy::single-match` implied by `-W clippy::all`
+   = help: to override `-W clippy::all` add `#[allow(clippy::single_match)]`
+help: try
+   |
+69 ~         if let StoryFlowEvent::ShowDialogue { speaker, text, portrait: _ } = event {
+70 +             let globals = lua.globals();
+71 +             if let Ok(func) = globals.get::<mlua::Function>("on_dialogue") {
+72 +                 if let Err(e) = func.call::<()>( (speaker.clone(), text.clone()) ) {
+73 +                     error!("Lua on_dialogue error: {}", e);
+74 +                 }
+75 +             }
+76 +         }
+   |
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/scripting/mod.rs:94:14
+   |
+94 |     lua_ctx: Res<LuaContext>,
+   |              ^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+94 |     lua_ctx: &Res<LuaContext>,
+   |              +
+
+warning: usage of wildcard import
+ --> engine/src/story_graph/executor.rs:4:5
+  |
+4 | use super::types::*;
+  |     ^^^^^^^^^^^^^^^ help: try: `super::types::{GraphExecutor, StoryGraphLibrary, StoryFlags, ExecutionStatus, NodeAction, StoryNode, StoryGraph, NodeId}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+  = note: `-W clippy::wildcard-imports` implied by `-W clippy::pedantic`
+  = help: to override `-W clippy::pedantic` add `#[allow(clippy::wildcard_imports)]`
+
+warning: usage of wildcard import
+ --> engine/src/story_graph/executor.rs:5:5
+  |
+5 | use super::events::*;
+  |     ^^^^^^^^^^^^^^^^ help: try: `super::events::{StoryFlowEvent, StoryInputEvent}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+
+warning: this function has too many arguments (9/7)
+  --> engine/src/story_graph/executor.rs:14:1
+   |
+14 | / pub fn execute_graph(
+15 | |     executor_res: ResMut<GraphExecutor>,
+16 | |     library: Option<Res<StoryGraphLibrary>>,
+17 | |     mut flags: ResMut<StoryFlags>,
+...  |
+23 | |     time: Res<Time>,
+24 | | ) {
+   | |_^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/story_graph/executor.rs:16:14
+   |
+16 |     library: Option<Res<StoryGraphLibrary>>,
+   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+16 |     library: Option<&Res<StoryGraphLibrary>>,
+   |                     +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/story_graph/executor.rs:23:11
+   |
+23 |     time: Res<Time>,
+   |           ^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+23 |     time: &Res<Time>,
+   |           +
+
+warning: these match arms have identical bodies
+   --> engine/src/story_graph/executor.rs:121:21
+    |
+121 |                     StoryNode::Dialogue { next, .. } => *next,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+122 |                     StoryNode::Audio { next, .. } => *next,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+123 |                     StoryNode::Background { next, .. } => *next,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+124 |                     StoryNode::Wait { next, .. } => *next,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+125 |                     StoryNode::SetFlag { next, .. } => *next,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+126 |                     StoryNode::Event { next, .. } => *next,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+127 |                     StoryNode::Start { next, .. } => *next,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+128 |                     StoryNode::SubGraph { next, .. } => *next, // Fallback if not processed as jump
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is unintentional make the arms return different values
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#match_same_arms
+    = note: `-W clippy::match-same-arms` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::match_same_arms)]`
+help: otherwise merge the patterns into a single arm
+    |
+121 -                     StoryNode::Dialogue { next, .. } => *next,
+122 -                     StoryNode::Audio { next, .. } => *next,
+121 +                     StoryNode::Dialogue { next, .. } | StoryNode::Audio { next, .. } | StoryNode::Background { next, .. } | StoryNode::Wait { next, .. } | StoryNode::SetFlag { next, .. } | StoryNode::Event { next, .. } | StoryNode::Start { next, .. } | StoryNode::SubGraph { next, .. } => *next, // Fallback if not processed as jump
+    |
+
+warning: this function has too many arguments (9/7)
+   --> engine/src/story_graph/executor.rs:151:1
+    |
+151 | / fn process_node(
+152 | |     node: &StoryNode,
+153 | |     library: &Option<Res<StoryGraphLibrary>>,
+154 | |     stack: &mut Vec<(StoryGraph, Option<NodeId>)>,
+...   |
+160 | |     action_events: &mut EventWriter<StoryActionEvent>,
+161 | | ) -> NodeAction {
+    | |_______________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+
+warning: it is more idiomatic to use `Option<&T>` instead of `&Option<T>`
+   --> engine/src/story_graph/executor.rs:151:1
+    |
+151 | / fn process_node(
+152 | |     node: &StoryNode,
+153 | |     library: &Option<Res<StoryGraphLibrary>>,
+    | |              ------------------------------- help: change this to: `Option<&Res<StoryGraphLibrary>>`
+154 | |     stack: &mut Vec<(StoryGraph, Option<NodeId>)>,
+...   |
+252 | | }
+    | |_^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#ref_option
+    = note: `-W clippy::ref-option` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::ref_option)]`
+
+warning: this `else { if .. }` block can be collapsed
+   --> engine/src/story_graph/executor.rs:196:20
+    |
+196 |               } else {
+    |  ____________________^
+197 | |                 if let Some(id) = if_false { NodeAction::Jump(*id) } else { NodeAction::Advance }
+198 | |             }
+    | |_____________^ help: collapse nested if block: `if let Some(id) = if_false { NodeAction::Jump(*id) } else { NodeAction::Advance }`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#collapsible_else_if
+    = note: `-W clippy::collapsible-else-if` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::collapsible_else_if)]`
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:14:9
+   |
+14 |         speaker: String,
+   |         ^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:14:9
+   |
+14 |         speaker: String,
+   |         ^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:15:9
+   |
+15 |         text: String,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:15:9
+   |
+15 |         text: String,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:16:9
+   |
+16 |         portrait: Option<String>,
+   |         ^^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:16:9
+   |
+16 |         portrait: Option<String>,
+   |         ^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:17:9
+   |
+17 |         next: Option<NodeId>,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:17:9
+   |
+17 |         next: Option<NodeId>,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:21:9
+   |
+21 |         speaker: String,
+   |         ^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:21:9
+   |
+21 |         speaker: String,
+   |         ^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:22:9
+   |
+22 |         prompt: String,
+   |         ^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:22:9
+   |
+22 |         prompt: String,
+   |         ^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:23:9
+   |
+23 |         options: Vec<GraphChoice>,
+   |         ^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:23:9
+   |
+23 |         options: Vec<GraphChoice>,
+   |         ^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:27:9
+   |
+27 |         command: AudioCommand,
+   |         ^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:27:9
+   |
+27 |         command: AudioCommand,
+   |         ^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:28:9
+   |
+28 |         next: Option<NodeId>,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:28:9
+   |
+28 |         next: Option<NodeId>,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:32:9
+   |
+32 |         path: String,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:32:9
+   |
+32 |         path: String,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:33:9
+   |
+33 |         duration: f32,
+   |         ^^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:33:9
+   |
+33 |         duration: f32,
+   |         ^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:34:9
+   |
+34 |         next: Option<NodeId>,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:34:9
+   |
+34 |         next: Option<NodeId>,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:38:9
+   |
+38 |         graph_id: String,
+   |         ^^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:38:9
+   |
+38 |         graph_id: String,
+   |         ^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:39:9
+   |
+39 |         next: Option<NodeId>,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:39:9
+   |
+39 |         next: Option<NodeId>,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:43:9
+   |
+43 |         flag: String,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:43:9
+   |
+43 |         flag: String,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:44:9
+   |
+44 |         if_true: Option<NodeId>,
+   |         ^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:44:9
+   |
+44 |         if_true: Option<NodeId>,
+   |         ^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:45:9
+   |
+45 |         if_false: Option<NodeId>,
+   |         ^^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:45:9
+   |
+45 |         if_false: Option<NodeId>,
+   |         ^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:49:9
+   |
+49 |         flag: String,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:49:9
+   |
+49 |         flag: String,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:50:9
+   |
+50 |         value: bool,
+   |         ^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:50:9
+   |
+50 |         value: bool,
+   |         ^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:51:9
+   |
+51 |         next: Option<NodeId>,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:51:9
+   |
+51 |         next: Option<NodeId>,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:55:9
+   |
+55 |         duration: f32,
+   |         ^^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:55:9
+   |
+55 |         duration: f32,
+   |         ^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:56:9
+   |
+56 |         next: Option<NodeId>,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:56:9
+   |
+56 |         next: Option<NodeId>,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:60:9
+   |
+60 |         event_id: String,
+   |         ^^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:60:9
+   |
+60 |         event_id: String,
+   |         ^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:61:9
+   |
+61 |         payload: String,
+   |         ^^^^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:61:9
+   |
+61 |         payload: String,
+   |         ^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:62:9
+   |
+62 |         next: Option<NodeId>,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:62:9
+   |
+62 |         next: Option<NodeId>,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: used underscore-prefixed binding
+  --> engine/src/story_graph/types.rs:66:9
+   |
+66 |         next: Option<NodeId>,
+   |         ^^^^
+   |
+note: binding is defined here
+  --> engine/src/story_graph/types.rs:66:9
+   |
+66 |         next: Option<NodeId>,
+   |         ^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#used_underscore_binding
+
+warning: this method could have a `#[must_use]` attribute
+  --> engine/src/story_graph/types.rs:90:12
+   |
+90 |     pub fn new() -> Self {
+   |            ^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+90 ~     #[must_use] 
+91 ~     pub fn new() -> Self {
+   |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/story_graph/types.rs:120:12
+    |
+120 |     pub fn get(&self, flag: &str) -> bool {
+    |            ^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+120 ~     #[must_use] 
+121 ~     pub fn get(&self, flag: &str) -> bool {
+    |
+
+warning: item in documentation is missing backticks
+   --> engine/src/story_graph/types.rs:143:41
+    |
+143 |     /// Stack for sub-graph execution: (ParentGraph, ReturnNodeId)
+    |                                         ^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+143 -     /// Stack for sub-graph execution: (ParentGraph, ReturnNodeId)
+143 +     /// Stack for sub-graph execution: (`ParentGraph`, ReturnNodeId)
+    |
+
+warning: item in documentation is missing backticks
+   --> engine/src/story_graph/types.rs:143:54
+    |
+143 |     /// Stack for sub-graph execution: (ParentGraph, ReturnNodeId)
+    |                                                      ^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+    |
+143 -     /// Stack for sub-graph execution: (ParentGraph, ReturnNodeId)
+143 +     /// Stack for sub-graph execution: (ParentGraph, `ReturnNodeId`)
+    |
+
+warning: used `cloned` where `copied` could be used instead
+   --> engine/src/story_graph/types.rs:181:62
+    |
+181 |                 opt_id.as_ref().and_then(|id| id_map.get(id).cloned())
+    |                                                              ^^^^^^ help: try: `copied`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cloned_instead_of_copied
+    = note: `-W clippy::cloned-instead-of-copied` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::cloned_instead_of_copied)]`
+
+warning: item in documentation is missing backticks
+  --> engine/src/midi/mod.rs:22:38
+   |
+22 |     /// active notes: Key -> Entity (AudioSource)
+   |                                      ^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+   |
+22 -     /// active notes: Key -> Entity (AudioSource)
+22 +     /// active notes: Key -> Entity (`AudioSource`)
+   |
+
+warning: casting `usize` to `f32` causes a loss of precision (`usize` is 32 or 64 bits wide, but `f32`'s mantissa is only 23 bits wide)
+  --> engine/src/midi/mod.rs:82:17
+   |
+82 |         let t = (i as f32) / (sample_rate as f32);
+   |                 ^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+   = note: `-W clippy::cast-precision-loss` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::cast_precision_loss)]`
+
+warning: casting `usize` to `f32` causes a loss of precision (`usize` is 32 or 64 bits wide, but `f32`'s mantissa is only 23 bits wide)
+  --> engine/src/midi/mod.rs:82:30
+   |
+82 |         let t = (i as f32) / (sample_rate as f32);
+   |                              ^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: casting `usize` to `u32` may truncate the value on targets with 64-bit wide pointers
+  --> engine/src/midi/mod.rs:87:36
+   |
+87 |     let sine_source = generate_wav(num_samples as u32, sample_rate as u32, &sine_buffer);
+   |                                    ^^^^^^^^^^^^^^^^^^
+   |
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+help: ... or use `try_from` and handle the error accordingly
+   |
+87 -     let sine_source = generate_wav(num_samples as u32, sample_rate as u32, &sine_buffer);
+87 +     let sine_source = generate_wav(u32::try_from(num_samples), sample_rate as u32, &sine_buffer);
+   |
+
+warning: casting `usize` to `u32` may truncate the value on targets with 64-bit wide pointers
+  --> engine/src/midi/mod.rs:87:56
+   |
+87 |     let sine_source = generate_wav(num_samples as u32, sample_rate as u32, &sine_buffer);
+   |                                                        ^^^^^^^^^^^^^^^^^^
+   |
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+help: ... or use `try_from` and handle the error accordingly
+   |
+87 -     let sine_source = generate_wav(num_samples as u32, sample_rate as u32, &sine_buffer);
+87 +     let sine_source = generate_wav(num_samples as u32, u32::try_from(sample_rate), &sine_buffer);
+   |
+
+warning: casting `usize` to `u32` may truncate the value on targets with 64-bit wide pointers
+  --> engine/src/midi/mod.rs:90:45
+   |
+90 |     let square_source = generate_wav_square(num_samples as u32, sample_rate as u32, frequency);
+   |                                             ^^^^^^^^^^^^^^^^^^
+   |
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+help: ... or use `try_from` and handle the error accordingly
+   |
+90 -     let square_source = generate_wav_square(num_samples as u32, sample_rate as u32, frequency);
+90 +     let square_source = generate_wav_square(u32::try_from(num_samples), sample_rate as u32, frequency);
+   |
+
+warning: casting `usize` to `u32` may truncate the value on targets with 64-bit wide pointers
+  --> engine/src/midi/mod.rs:90:65
+   |
+90 |     let square_source = generate_wav_square(num_samples as u32, sample_rate as u32, frequency);
+   |                                                                 ^^^^^^^^^^^^^^^^^^
+   |
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+help: ... or use `try_from` and handle the error accordingly
+   |
+90 -     let square_source = generate_wav_square(num_samples as u32, sample_rate as u32, frequency);
+90 +     let square_source = generate_wav_square(num_samples as u32, u32::try_from(sample_rate), frequency);
+   |
+
+warning: wildcard matches only a single variant and will also match any future added variants
+   --> engine/src/midi/mod.rs:111:17
+    |
+111 |                 _ => 480,
+    |                 ^ help: try: `midly::Timing::Timecode(..)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#match_wildcard_for_single_variants
+
+warning: called `map(<f>).unwrap_or(<a>)` on an `Option` value
+   --> engine/src/midi/mod.rs:157:28
+    |
+157 |             let duration = events.last().map(|e| e.tick).unwrap_or(0);
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#map_unwrap_or
+help: use `map_or(<a>, <f>)` instead
+    |
+157 -             let duration = events.last().map(|e| e.tick).unwrap_or(0);
+157 +             let duration = events.last().map_or(0, |e| e.tick);
+    |
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/midi/mod.rs:184:11
+    |
+184 |     time: Res<Time>,
+    |           ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+184 |     time: &Res<Time>,
+    |           +
+
+warning: casts from `u32` to `f64` can be expressed infallibly using `From`
+   --> engine/src/midi/mod.rs:195:40
+    |
+195 |     let ticks_per_sec = (1_000_000.0 / playback.microseconds_per_beat as f64) * playback.ticks_per_beat as f64;
+    |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: an `as` cast can become silently lossy if the types change in the future
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_lossless
+    = note: `-W clippy::cast-lossless` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::cast_lossless)]`
+help: use `f64::from` instead
+    |
+195 -     let ticks_per_sec = (1_000_000.0 / playback.microseconds_per_beat as f64) * playback.ticks_per_beat as f64;
+195 +     let ticks_per_sec = (1_000_000.0 / f64::from(playback.microseconds_per_beat)) * playback.ticks_per_beat as f64;
+    |
+
+warning: casts from `u16` to `f64` can be expressed infallibly using `From`
+   --> engine/src/midi/mod.rs:195:81
+    |
+195 |     let ticks_per_sec = (1_000_000.0 / playback.microseconds_per_beat as f64) * playback.ticks_per_beat as f64;
+    |                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: an `as` cast can become silently lossy if the types change in the future
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_lossless
+help: use `f64::from` instead
+    |
+195 -     let ticks_per_sec = (1_000_000.0 / playback.microseconds_per_beat as f64) * playback.ticks_per_beat as f64;
+195 +     let ticks_per_sec = (1_000_000.0 / playback.microseconds_per_beat as f64) * f64::from(playback.ticks_per_beat);
+    |
+
+warning: casts from `u32` to `f64` can be expressed infallibly using `From`
+   --> engine/src/midi/mod.rs:203:12
+    |
+203 |         if event.tick as f64 <= playback.current_tick {
+    |            ^^^^^^^^^^^^^^^^^
+    |
+    = help: an `as` cast can become silently lossy if the types change in the future
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_lossless
+help: use `f64::from` instead
+    |
+203 -         if event.tick as f64 <= playback.current_tick {
+203 +         if f64::from(event.tick) <= playback.current_tick {
+    |
+
+warning: casting to the same type is unnecessary (`u32` -> `u32`)
+   --> engine/src/midi/mod.rs:243:30
+    |
+243 |     bytes.extend_from_slice(&(total_len as u32).to_le_bytes());
+    |                              ^^^^^^^^^^^^^^^^^^ help: try: `total_len`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#unnecessary_cast
+    = note: `-W clippy::unnecessary-cast` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::unnecessary_cast)]`
+
+warning: casting `u32` to `f32` causes a loss of precision (`u32` is 32 bits wide, but `f32`'s mantissa is only 23 bits wide)
+   --> engine/src/midi/mod.rs:264:17
+    |
+264 |         let t = (i as f32) / (sample_rate as f32);
+    |                 ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: casting `u32` to `f32` causes a loss of precision (`u32` is 32 bits wide, but `f32`'s mantissa is only 23 bits wide)
+   --> engine/src/midi/mod.rs:264:30
+    |
+264 |         let t = (i as f32) / (sample_rate as f32);
+    |                              ^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: casts from `u8` to `f32` can be expressed infallibly using `From`
+   --> engine/src/midi/mod.rs:283:55
+    |
+283 |                 let note_freq = 440.0 * 2.0_f32.powf((*key as f32 - 69.0) / 12.0);
+    |                                                       ^^^^^^^^^^^
+    |
+    = help: an `as` cast can become silently lossy if the types change in the future
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_lossless
+help: use `f32::from` instead
+    |
+283 -                 let note_freq = 440.0 * 2.0_f32.powf((*key as f32 - 69.0) / 12.0);
+283 +                 let note_freq = 440.0 * 2.0_f32.powf((f32::from(*key) - 69.0) / 12.0);
+    |
+
+warning: casts from `u8` to `f32` can be expressed infallibly using `From`
+   --> engine/src/midi/mod.rs:286:31
+    |
+286 |                 let volume = (*velocity as f32 / 127.0).clamp(0.0, 1.0);
+    |                               ^^^^^^^^^^^^^^^^
+    |
+    = help: an `as` cast can become silently lossy if the types change in the future
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_lossless
+help: use `f32::from` instead
+    |
+286 -                 let volume = (*velocity as f32 / 127.0).clamp(0.0, 1.0);
+286 +                 let volume = (f32::from(*velocity) / 127.0).clamp(0.0, 1.0);
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/editor/state.rs:169:12
+    |
+169 |     pub fn new() -> Self {
+    |            ^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+169 ~     #[must_use] 
+170 ~     pub fn new() -> Self {
+    |
+
+warning: this method could have a `#[must_use]` attribute
+   --> engine/src/editor/state.rs:193:12
+    |
+193 |     pub fn current_branch(&self) -> Option<&Branch> {
+    |            ^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+    |
+193 ~     #[must_use] 
+194 ~     pub fn current_branch(&self) -> Option<&Branch> {
+    |
+
+warning: usage of wildcard import
+ --> engine/src/editor/systems.rs:9:5
+  |
+9 | use super::state::*;
+  |     ^^^^^^^^^^^^^^^ help: try: `super::state::{COLOR_BG, COLOR_PRIMARY, AutomatedTestActive, EditorUiState, LogicalEntity, EditorView, ProjectMetadata, ActiveStoryGraph}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/editor/systems.rs:29:11
+   |
+29 |     time: Res<Time>,
+   |           ^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+29 |     time: &Res<Time>,
+   |           +
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> engine/src/editor/systems.rs:84:14
+   |
+84 |     project: Res<ProjectMetadata>,
+   |              ^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+   |
+84 |     project: &Res<ProjectMetadata>,
+   |              +
+
+warning: matching over `()` is more explicit
+   --> engine/src/editor/systems.rs:118:17
+    |
+118 |              Ok(_) => info!("Successfully saved project structure"),
+    |                 ^ help: use `()` instead of `_`: `()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#ignored_unit_patterns
+    = note: `-W clippy::ignored-unit-patterns` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::ignored_unit_patterns)]`
+
+warning: matching over `()` is more explicit
+   --> engine/src/editor/systems.rs:126:16
+    |
+126 |             Ok(_) => info!("Successfully saved scene to {:?}", scene_path),
+    |                ^ help: use `()` instead of `_`: `()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#ignored_unit_patterns
+
+warning: matching over `()` is more explicit
+   --> engine/src/editor/systems.rs:134:17
+    |
+134 |              Ok(_) => info!("Successfully saved story graph to {:?}", graph_path),
+    |                 ^ help: use `()` instead of `_`: `()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#ignored_unit_patterns
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+   --> engine/src/editor/systems.rs:180:9
+    |
+180 | /         components.transform = TransformComponent {
+181 | |             position: Vec3Data::new(pos.x, pos.y, pos.z),
+182 | |             rotation: Vec3Data::default(), // Simplification
+183 | |             scale: Vec3Data::new(scale.x, scale.y, scale.z),
+184 | |             lock_uniform_scale: false,
+185 | |         };
+    | |__________^
+    |
+note: consider initializing the variable with `data::components::EntityComponents { transform: TransformComponent {
+                  position: Vec3Data::new(pos.x, pos.y, pos.z),
+                  rotation: Vec3Data::default(), // Simplification
+                  scale: Vec3Data::new(scale.x, scale.y, scale.z),
+                  lock_uniform_scale: false,
+              }, ..Default::default() }` and removing relevant reassignments
+   --> engine/src/editor/systems.rs:178:9
+    |
+178 |         let mut components = EntityComponents::default();
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+    = note: `-W clippy::field-reassign-with-default` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::field_reassign_with_default)]`
+
+warning: this argument is passed by value, but not consumed in the function body
+   --> engine/src/editor/systems.rs:239:15
+    |
+239 |     settings: Res<EngineSettings>,
+    |               ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+239 |     settings: &Res<EngineSettings>,
+    |               +
+
+warning: usage of wildcard import
+ --> engine/src/editor/ui/mod.rs:3:5
+  |
+3 | use super::state::*;
+  |     ^^^^^^^^^^^^^^^ help: try: `super::state::{EditorState, EditorUiState, EditorView, COLOR_PRIMARY, ActiveStoryGraph, COLOR_SECONDARY}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+
+warning: usage of wildcard import
+ --> engine/src/editor/ui/panels.rs:9:5
+  |
+9 | use super::super::state::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^ help: try: `super::super::state::{COLOR_PRIMARY, COLOR_SECONDARY, ProjectMetadata, ActiveStoryGraph, EditorUiState, EditorView, Branch, SidePanelTab}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+
+warning: usage of wildcard import
+  --> engine/src/editor/ui/panels.rs:10:5
+   |
+10 | use super::super::systems::*;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `super::super::systems::{save_project_impl, load_scene_into_editor}`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+
+warning: this function has too many lines (197/100)
+  --> engine/src/editor/ui/panels.rs:12:1
+   |
+12 | pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+   = note: `-W clippy::too-many-lines` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::too_many_lines)]`
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/editor/ui/panels.rs:231:27
+    |
+231 |                     name: format!("Branch {}", count),
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+231 -                     name: format!("Branch {}", count),
+231 +                     name: format!("Branch {count}"),
+    |
+
+warning: this `if` branch is empty
+   --> engine/src/editor/ui/panels.rs:307:13
+    |
+307 |             if ui.button("123 Integer").clicked() {}
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: you can remove it: `ui.button("123 Integer").clicked();`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_if
+    = note: `-W clippy::needless-if` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::needless_if)]`
+
+warning: this `if` branch is empty
+   --> engine/src/editor/ui/panels.rs:311:13
+    |
+311 |             if ui.button("☑ Boolean").clicked() {}
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: you can remove it: `ui.button("☑ Boolean").clicked();`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_if
+
+warning: this `if` branch is empty
+   --> engine/src/editor/ui/panels.rs:319:13
+    |
+319 |             if ui.button("❓ If").clicked() {}
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: you can remove it: `ui.button("❓ If").clicked();`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_if
+
+warning: this `if` branch is empty
+   --> engine/src/editor/ui/panels.rs:328:13
+    |
+328 |             if ui.button("🚩 On Trigger").clicked() {}
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: you can remove it: `ui.button("🚩 On Trigger").clicked();`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_if
+
+warning: this `if` branch is empty
+   --> engine/src/editor/ui/panels.rs:336:9
+    |
+336 |         if ui.button("📦 Set Variable").clicked() {}
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: you can remove it: `ui.button("📦 Set Variable").clicked();`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_if
+
+warning: this `if` branch is empty
+   --> engine/src/editor/ui/panels.rs:337:9
+    |
+337 |         if ui.button("🔊 Play Sound").clicked() {}
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: you can remove it: `ui.button("🔊 Play Sound").clicked();`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_if
+
+warning: this function has too many lines (109/100)
+   --> engine/src/editor/ui/panels.rs:354:1
+    |
+354 | pub fn draw_right_panel(ui: &mut egui::Ui, world: &mut World) {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+
+warning: called `map(<f>).unwrap_or_else(<g>)` on an `Option` value
+   --> engine/src/editor/ui/panels.rs:436:28
+    |
+436 |                   let name = world.get::<Name>(entity)
+    |  ____________________________^
+437 | |                     .map(|n| n.as_str().to_string())
+438 | |                     .unwrap_or_else(|| "<unnamed>".to_string());
+    | |_______________________________________________________________^ help: try: `world.get::<Name>(entity).map_or_else(|| "<unnamed>".to_string(), |n| n.as_str().to_string())`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#map_unwrap_or
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/editor/ui/panels.rs:447:48
+    |
+447 |                         ui.label(RichText::new(format!("{}v{}", index, gen)).monospace().color(COLOR_SECONDARY));
+    |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+447 -                         ui.label(RichText::new(format!("{}v{}", index, gen)).monospace().color(COLOR_SECONDARY));
+447 +                         ui.label(RichText::new(format!("{index}v{gen}")).monospace().color(COLOR_SECONDARY));
+    |
+
+warning: casting `f64` to `i64` may truncate the value
+   --> engine/src/editor/ui/panels.rs:463:77
+    |
+463 | ...                   let datetime = chrono::DateTime::from_timestamp(meta.creation_timestamp as i64, 0);
+    |                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+
+warning: assigning the result of `Clone::clone()` may be inefficient
+   --> engine/src/editor/ui/panels.rs:548:13
+    |
+548 |             command_to_send = world.resource::<EditorUiState>().console_input.clone();
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `clone_from()`: `command_to_send.clone_from(&world.resource::<EditorUiState>().console_input)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#assigning_clones
+    = note: `-W clippy::assigning-clones` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::assigning_clones)]`
+
+warning: assigning the result of `Clone::clone()` may be inefficient
+   --> engine/src/editor/ui/panels.rs:553:13
+    |
+553 |             command_to_send = world.resource::<EditorUiState>().console_input.clone();
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `clone_from()`: `command_to_send.clone_from(&world.resource::<EditorUiState>().console_input)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#assigning_clones
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/editor/ui/panels.rs:561:23
+    |
+561 |             store.log(format!("> {}", command_to_send));
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+561 -             store.log(format!("> {}", command_to_send));
+561 +             store.log(format!("> {command_to_send}"));
+    |
+
+warning: usage of wildcard import
+ --> engine/src/editor/ui/views.rs:7:5
+  |
+7 | use super::super::state::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^ help: try: `super::super::state::{EditorUiState, CommitStatus, LogicalEntity, COLOR_BG, EngineSettings, COLOR_PRIMARY, ActiveStoryGraph, ProjectMetadata, COLOR_SECONDARY}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+
+warning: casting `usize` to `f32` causes a loss of precision (`usize` is 32 or 64 bits wide, but `f32`'s mantissa is only 23 bits wide)
+  --> engine/src/editor/ui/views.rs:35:22
+   |
+35 |         let angle = (idx as f32 / branches.len() as f32) * std::f32::consts::TAU;
+   |                      ^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: casting `usize` to `f32` causes a loss of precision (`usize` is 32 or 64 bits wide, but `f32`'s mantissa is only 23 bits wide)
+  --> engine/src/editor/ui/views.rs:35:35
+   |
+35 |         let angle = (idx as f32 / branches.len() as f32) * std::f32::consts::TAU;
+   |                                   ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: wildcard matches only a single variant and will also match any future added variants
+  --> engine/src/editor/ui/views.rs:70:17
+   |
+70 |                 _ => Color32::from_rgb(40, 40, 40),
+   |                 ^ help: try: `CommitStatus::Pending`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#match_wildcard_for_single_variants
+
+warning: wildcard matches only a single variant and will also match any future added variants
+  --> engine/src/editor/ui/views.rs:80:17
+   |
+80 |                 _ => Color32::YELLOW,
+   |                 ^ help: try: `CommitStatus::Pending`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#match_wildcard_for_single_variants
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/editor/ui/views.rs:152:31
+    |
+152 |                     Name::new(format!("{} [{:.0}, {:.0}]", item, snap_x, snap_y)),
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+152 -                     Name::new(format!("{} [{:.0}, {:.0}]", item, snap_x, snap_y)),
+152 +                     Name::new(format!("{item} [{snap_x:.0}, {snap_y:.0}]")),
+    |
+
+warning: binding to `_` prefixed variable with no side-effect
+   --> engine/src/editor/ui/views.rs:112:17
+    |
+112 |             let _relative_pos = pointer_pos - rect.min;
+    |                 ^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#no_effect_underscore_binding
+    = note: `-W clippy::no-effect-underscore-binding` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::no_effect_underscore_binding)]`
+
+warning: this function has too many lines (187/100)
+   --> engine/src/editor/ui/views.rs:196:1
+    |
+196 | pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+
+warning: casting `i32` to `f32` causes a loss of precision (`i32` is 32 bits wide, but `f32`'s mantissa is only 23 bits wide)
+   --> engine/src/editor/ui/views.rs:221:31
+    |
+221 |         let x = rect.min.x + (i as f32 * 80.0);
+    |                               ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: casting `i32` to `f32` causes a loss of precision (`i32` is 32 bits wide, but `f32`'s mantissa is only 23 bits wide)
+   --> engine/src/editor/ui/views.rs:223:31
+    |
+223 |         let y = rect.min.y + (i as f32 * 80.0);
+    |                               ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: these match arms have identical bodies
+   --> engine/src/editor/ui/views.rs:282:17
+    |
+282 |                 "Background" => StoryNodeData::end(id.clone()), 
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+283 |                 "Camera" => StoryNodeData::end(id.clone()), 
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+284 |                 "Wait" => StoryNodeData::end(id.clone()), 
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+285 |                 "End" => StoryNodeData::end(id.clone()),
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is unintentional make the arms return different values
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#match_same_arms
+help: otherwise merge the patterns into a single arm
+    |
+282 ~                 "Background" | "Camera" | "Wait" | "End" => StoryNodeData::end(id.clone()), 
+283 ~                 _ => StoryNodeData::dialogue(id.clone(), "Err", format!("Unknown: {}", cmd)),
+    |
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/editor/ui/views.rs:286:65
+    |
+286 |                 _ => StoryNodeData::dialogue(id.clone(), "Err", format!("Unknown: {}", cmd)),
+    |                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+286 -                 _ => StoryNodeData::dialogue(id.clone(), "Err", format!("Unknown: {}", cmd)),
+286 +                 _ => StoryNodeData::dialogue(id.clone(), "Err", format!("Unknown: {cmd}")),
+    |
+
+warning: assigning the result of `Clone::clone()` may be inefficient
+   --> engine/src/editor/ui/views.rs:294:17
+    |
+294 |                 graph.0.root_node_id = id.clone();
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `clone_from()`: `graph.0.root_node_id.clone_from(&id)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#assigning_clones
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/editor/ui/views.rs:469:58
+    |
+469 |                 actions.entry(*action).or_default().push(format!("{:?}", key));
+    |                                                          ^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+469 -                 actions.entry(*action).or_default().push(format!("{:?}", key));
+469 +                 actions.entry(*action).or_default().push(format!("{key:?}"));
+    |
+
+warning: variables can be used directly in the `format!` string
+   --> engine/src/editor/ui/views.rs:473:26
+    |
+473 |                 ui.label(format!("{:?}", action));
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+    |
+473 -                 ui.label(format!("{:?}", action));
+473 +                 ui.label(format!("{action:?}"));
+    |
+
+warning: unnecessary `Debug` formatting in `format!` args
+   --> engine/src/editor/ui/views.rs:497:48
+    |
+497 |                 ui.label(format!("Path: {:?}", project.path.as_ref().unwrap_or(&std::path::PathBuf::from("None"))));
+    |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: use `Display` formatting and change this to `project.path.as_ref().unwrap_or(&std::path::PathBuf::from("None")).display()`
+    = note: switching to `Display` formatting will change how the value is shown; escaped characters will no longer be escaped and surrounding quotes will be removed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#unnecessary_debug_formatting
+    = note: `-W clippy::unnecessary-debug-formatting` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::unnecessary_debug_formatting)]`
+
+warning: the borrowed expression implements the required traits
+  --> engine/src/editor/ui/campaign.rs:48:17
+   |
+48 |                 &node.name.to_uppercase(),
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^ help: change this to: `node.name.to_uppercase()`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_borrows_for_generic_args
+   = note: `-W clippy::needless-borrows-for-generic-args` implied by `-W clippy::all`
+   = help: to override `-W clippy::all` add `#[allow(clippy::needless_borrows_for_generic_args)]`
+
+warning: docs for function which may panic missing `# Panics` section
+  --> engine/src/editor/ui/phases_view.rs:6:1
+   |
+ 6 | pub fn draw_phases_view(ui: &mut egui::Ui, world: &mut World) {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: first possible panic found here
+  --> engine/src/editor/ui/phases_view.rs:32:25
+   |
+32 |             if phase != manager.phase_order.last().unwrap() {
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_panics_doc
+
+warning: variables can be used directly in the `format!` string
+  --> engine/src/editor/ui/phases_view.rs:23:40
+   |
+23 |                 ui.label(RichText::new(format!("{:?}", phase)).color(color));
+   |                                        ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+   |
+23 -                 ui.label(RichText::new(format!("{:?}", phase)).color(color));
+23 +                 ui.label(RichText::new(format!("{phase:?}")).color(color));
+   |
+
+warning: usage of wildcard import
+ --> engine/src/editor/ui/feature_grid.rs:6:5
+  |
+6 | use super::super::state::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^ help: try: `super::super::state::{COLOR_PRIMARY, EditorUiState, FeatureGrid}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+
+warning: casting `i32` to `f32` causes a loss of precision (`i32` is 32 bits wide, but `f32`'s mantissa is only 23 bits wide)
+  --> engine/src/editor/ui/feature_grid.rs:12:22
+   |
+12 |         let angle = (i as f32 / 6.0) * std::f32::consts::TAU - std::f32::consts::FRAC_PI_6;
+   |                      ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: casting `i32` to `f32` causes a loss of precision (`i32` is 32 bits wide, but `f32`'s mantissa is only 23 bits wide)
+  --> engine/src/editor/ui/feature_grid.rs:38:32
+   |
+38 |     for x in (-10..10).map(|i| i as f32 * 60.0) {
+   |                                ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: casting `i32` to `f32` causes a loss of precision (`i32` is 32 bits wide, but `f32`'s mantissa is only 23 bits wide)
+  --> engine/src/editor/ui/feature_grid.rs:39:36
+   |
+39 |         for y in (-10..10).map(|i| i as f32 * 52.0) {
+   |                                    ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: casting `f32` to `i32` may truncate the value
+  --> engine/src/editor/ui/feature_grid.rs:40:29
+   |
+40 |             let offset = if (y / 52.0) as i32 % 2 == 0 { 0.0 } else { 30.0 };
+   |                             ^^^^^^^^^^^^^^^^^
+   |
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_possible_truncation
+
+warning: casting `usize` to `f32` causes a loss of precision (`usize` is 32 or 64 bits wide, but `f32`'s mantissa is only 23 bits wide)
+  --> engine/src/editor/ui/feature_grid.rs:85:26
+   |
+85 |             let angle = (i as f32 / ecosystem.nodes.len() as f32) * std::f32::consts::TAU - std::f32::consts::FRAC_PI_2;
+   |                          ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: casting `usize` to `f32` causes a loss of precision (`usize` is 32 or 64 bits wide, but `f32`'s mantissa is only 23 bits wide)
+  --> engine/src/editor/ui/feature_grid.rs:85:37
+   |
+85 |             let angle = (i as f32 / ecosystem.nodes.len() as f32) * std::f32::consts::TAU - std::f32::consts::FRAC_PI_2;
+   |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: this function has too many lines (139/100)
+ --> engine/src/editor/ui/timeline.rs:8:1
+  |
+8 | pub fn draw_timeline_view(ui: &mut egui::Ui, _world: &mut World) {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+
+warning: adding items after statements is confusing, since items exist from the start of the scope
+  --> engine/src/editor/ui/timeline.rs:57:5
+   |
+57 | /     struct Track {
+58 | |         name: String,
+59 | |         color: Color32,
+60 | |         clips: Vec<(f32, f32, String)>, // start, width, name
+61 | |     }
+   | |_____^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#items_after_statements
+   = note: `-W clippy::items-after-statements` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::items_after_statements)]`
+
+warning: adding items after statements is confusing, since items exist from the start of the scope
+   --> engine/src/editor/ui/timeline.rs:178:5
+    |
+178 |     use bevy_egui::egui::Shape;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#items_after_statements
+
+warning: casting `i32` to `f32` causes a loss of precision (`i32` is 32 bits wide, but `f32`'s mantissa is only 23 bits wide)
+  --> engine/src/editor/ui/timeline.rs:40:38
+   |
+40 |         let x = ruler_rect.left() + (i as f32 * 100.0);
+   |                                      ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#cast_precision_loss
+
+warning: variables can be used directly in the `format!` string
+  --> engine/src/editor/ui/timeline.rs:49:17
+   |
+49 |                 format!("00:0{}.00", i),
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+   |
+49 -                 format!("00:0{}.00", i),
+49 +                 format!("00:0{i}.00"),
+   |
+
+warning: docs for function which may panic missing `# Panics` section
+  --> engine/src/editor/ui/mod.rs:12:1
+   |
+12 | pub fn editor_ui_system(world: &mut World) {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: first possible panic found here
+  --> engine/src/editor/ui/mod.rs:13:15
+   |
+13 |       let ctx = world
+   |  _______________^
+14 | |         .query_filtered::<&mut bevy_egui::EguiContext, With<bevy::window::PrimaryWindow>>()
+15 | |         .get_single_mut(world)
+16 | |         .map(|mut c| c.get_mut().clone())
+17 | |         .expect("Missing primary window EguiContext");
+   | |_____________________________________________________^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_panics_doc
+
+warning: docs for function which may panic missing `# Panics` section
+  --> engine/src/editor/validation.rs:14:1
+   |
+14 | / pub fn draw_validation_panel(
+15 | |     ui: &mut egui::Ui,
+16 | |     validation_state: &mut ValidationState,
+17 | |     active_graph: Option<&StoryGraphData>,
+18 | |     active_scene: Option<&mut Scene>,
+19 | | ) {
+   | |_^
+   |
+note: first possible panic found here
+  --> engine/src/editor/validation.rs:28:17
+   |
+28 |     let graph = active_graph.unwrap();
+   |                 ^^^^^^^^^^^^^^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#missing_panics_doc
+
+warning: variables can be used directly in the `format!` string
+  --> engine/src/editor/validation.rs:55:42
+   |
+55 | ...                   ui.label(format!("Node '{}' requires entity '{}'", node_id, entity_id));
+   |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+   |
+55 -                                 ui.label(format!("Node '{}' requires entity '{}'", node_id, entity_id));
+55 +                                 ui.label(format!("Node '{node_id}' requires entity '{entity_id}'"));
+   |
+
+warning: variables can be used directly in the `format!` string
+  --> engine/src/editor/validation.rs:60:42
+   |
+60 | ...                   if ui.button(format!("Fix: Spawn {}", entity_id)).clicked() {
+   |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+   |
+60 -                             if ui.button(format!("Fix: Spawn {}", entity_id)).clicked() {
+60 +                             if ui.button(format!("Fix: Spawn {entity_id}")).clicked() {
+   |
+
+warning: variables can be used directly in the `format!` string
+  --> engine/src/editor/validation.rs:67:42
+   |
+67 | ...                   ui.label(format!("Node '{}' expects '{}' to be {:?}, found {:?}", node_id, entity_id, expected, found));
+   |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+   |
+67 -                                 ui.label(format!("Node '{}' expects '{}' to be {:?}, found {:?}", node_id, entity_id, expected, found));
+67 +                                 ui.label(format!("Node '{node_id}' expects '{entity_id}' to be {expected:?}, found {found:?}"));
+   |
+
+warning: usage of wildcard import
+  --> engine/src/editor/mod.rs:13:5
+   |
+13 | use systems::*;
+   |     ^^^^^^^^^^ help: try: `systems::{configure_visuals_system, apply_window_settings_system, launch_project_system, automated_ui_test_system}`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+
+warning: usage of wildcard import
+  --> engine/src/editor/mod.rs:14:5
+   |
+14 | use ui::*;
+   |     ^^^^^ help: try: `ui::editor_ui_system`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+
+warning: item in documentation is missing backticks
+  --> engine/src/editor/mod.rs:18:34
+   |
+18 | /// Resource wrapping the loaded EditorPreferences
+   |                                  ^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#doc_markdown
+help: try
+   |
+18 - /// Resource wrapping the loaded EditorPreferences
+18 + /// Resource wrapping the loaded `EditorPreferences`
+   |
+
+warning: redundant closure
+  --> engine/src/editor/mod.rs:71:64
+   |
+71 |             if let Some(last) = preferences.last_project().map(|s| s.to_owned()) {
+   |                                                                ^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `std::borrow::ToOwned::to_owned`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#redundant_closure_for_method_calls
+
+warning: this function could have a `#[must_use]` attribute
+  --> engine/src/lib.rs:69:8
+   |
+69 | pub fn engine_version() -> &'static str {
+   |        ^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#must_use_candidate
+help: add the attribute
+   |
+69 + #[must_use] 
+70 | pub fn engine_version() -> &'static str {
+   |
+
+warning: useless use of `vec!`
+  --> engine/src/editor/ui/timeline.rs:63:18
+   |
+63 |       let tracks = vec![
+   |  __________________^
+64 | |         Track {
+65 | |             name: "🎮 INPUT BUS".into(),
+66 | |             color: Color32::from_rgb(0, 150, 255),
+...  |
+83 | |         },
+84 | |     ];
+   | |_____^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#useless_vec
+   = note: `-W clippy::useless-vec` implied by `-W clippy::all`
+   = help: to override `-W clippy::all` add `#[allow(clippy::useless_vec)]`
+help: you can use an array directly
+   |
+63 ~     let tracks = [Track {
+64 ~             name: "🎮 INPUT BUS".into(),
+65 +             color: Color32::from_rgb(0, 150, 255),
+66 +             clips: vec![(50.0, 100.0, "Move Input".into()), (300.0, 50.0, "Jump".into())],
+67 +         },
+68 +         Track {
+69 ~             name: "⚙️ PHYSICS".into(),
+70 +             color: Color32::from_rgb(255, 100, 0),
+71 +             clips: vec![(55.0, 100.0, "Velocity".into()), (305.0, 150.0, "Gravity Calc".into())],
+72 +         },
+73 +         Track {
+74 ~             name: "🧠 LOGIC (QUEST)".into(),
+75 +             color: Color32::from_rgb(200, 0, 255),
+76 +             clips: vec![(400.0, 200.0, "Check Valid".into())],
+77 +         },
+78 +         Track {
+79 ~             name: "💥 VFX / AUDIO".into(),
+80 +             color: Color32::from_rgb(0, 255, 100),
+81 +             clips: vec![(310.0, 80.0, "Jump SFX".into()), (450.0, 100.0, "Sparkle".into())],
+82 ~         }];
+   |
+
+warning: unused return value of `bevy_inspector_egui::egui::Ui::button` that must be used
+   --> engine/src/editor/ui/panels.rs:322:9
+    |
+322 |         ui.button("🔀 Switch");
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: You should check if the user clicked this with `if ui.button(…).clicked() { … } 
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+322 |         let _ = ui.button("🔀 Switch");
+    |         +++++++
+
+warning: unused return value of `bevy_inspector_egui::egui::Ui::button` that must be used
+   --> engine/src/editor/ui/panels.rs:331:9
+    |
+331 |         ui.button("💥 On Damage");
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: You should check if the user clicked this with `if ui.button(…).clicked() { … } 
+help: use `let _ = ...` to ignore the resulting value
+    |
+331 |         let _ = ui.button("💥 On Damage");
+    |         +++++++
+
+warning: `dj_engine` (lib) generated 363 warnings (30 duplicates) (run `cargo clippy --fix --lib -p dj_engine` to apply 170 suggestions)
+warning: `dj_engine` (lib test) generated 353 warnings (353 duplicates)
+warning: 5 bindings with single-character names in scope
+   --> tools/asset_generator/src/main.rs:79:44
+    |
+ 79 | fn process_asset(path: std::path::PathBuf, w: u32, h: u32) {
+    |                                            ^       ^
+...
+112 |         let Rgba([r, g, b, _]) = *pixel;
+    |                   ^  ^  ^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#many_single_char_names
+    = note: `-W clippy::many-single-char-names` implied by `-W clippy::pedantic`
+    = help: to override `-W clippy::pedantic` add `#[allow(clippy::many_single_char_names)]`
+
+warning: it is more concise to loop over references to containers instead of using explicit iteration methods
+  --> tools/asset_generator/src/music.rs:30:21
+   |
+30 |         for note in bass_notes.iter() {
+   |                     ^^^^^^^^^^^^^^^^^ help: to write this more concisely, try: `&bass_notes`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#explicit_iter_loop
+   = note: `-W clippy::explicit-iter-loop` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::explicit_iter_loop)]`
+
+warning: it is more concise to loop over references to containers instead of using explicit iteration methods
+  --> tools/asset_generator/src/music.rs:66:22
+   |
+66 |         for chord in chords.iter() {
+   |                      ^^^^^^^^^^^^^ help: to write this more concisely, try: `&chords`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#explicit_iter_loop
+
+warning: this `if` has identical blocks
+  --> tools/asset_generator/src/music.rs:71:38
+   |
+71 |                     delta: if i == 0 { 0.into() } else { 0.into() }, // Simultaneous
+   |                                      ^^^^^^^^^^^^
+   |
+note: same as this
+  --> tools/asset_generator/src/music.rs:71:56
+   |
+71 |                     delta: if i == 0 { 0.into() } else { 0.into() }, // Simultaneous
+   |                                                        ^^^^^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#if_same_then_else
+   = note: `-W clippy::if-same-then-else` implied by `-W clippy::all`
+   = help: to override `-W clippy::all` add `#[allow(clippy::if_same_then_else)]`
+
+warning: it is more concise to loop over references to containers instead of using explicit iteration methods
+   --> tools/asset_generator/src/music.rs:104:21
+    |
+104 |         for note in melody_notes.iter() {
+    |                     ^^^^^^^^^^^^^^^^^^^ help: to write this more concisely, try: `&melody_notes`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#explicit_iter_loop
+
+warning: binding to `_` prefixed variable with no side-effect
+  --> tools/asset_generator/src/music.rs:11:9
+   |
+11 |     let _scale_d_harmonic_minor = [62, 64, 65, 67, 69, 70, 73, 74];
+   |         ^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#no_effect_underscore_binding
+   = note: `-W clippy::no-effect-underscore-binding` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::no_effect_underscore_binding)]`
+
+warning: unnecessary `Debug` formatting in `println!` args
+  --> tools/asset_generator/src/main.rs:20:38
+   |
+20 |     println!("Generated MIDI: {:?}", midi_path);
+   |                                      ^^^^^^^^^
+   |
+   = help: use `Display` formatting and change this to `midi_path.display()`
+   = note: switching to `Display` formatting will change how the value is shown; escaped characters will no longer be escaped and surrounding quotes will be removed
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#unnecessary_debug_formatting
+   = note: `-W clippy::unnecessary-debug-formatting` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::unnecessary_debug_formatting)]`
+
+warning: variables can be used directly in the `format!` string
+  --> tools/asset_generator/src/main.rs:20:5
+   |
+20 |     println!("Generated MIDI: {:?}", midi_path);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+   = note: `-W clippy::uninlined-format-args` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+   |
+20 -     println!("Generated MIDI: {:?}", midi_path);
+20 +     println!("Generated MIDI: {midi_path:?}");
+   |
+
+warning: parameter is only used in recursion
+  --> tools/asset_generator/src/main.rs:38:44
+   |
+38 | fn process_directory_recursive(dir: &Path, rules: &HashMap<&str, (u32, u32)>) {
+   |                                            ^^^^^ help: if this is intentional, prefix it with an underscore: `_rules`
+   |
+note: parameter used here
+  --> tools/asset_generator/src/main.rs:43:52
+   |
+43 |                 process_directory_recursive(&path, rules);
+   |                                                    ^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#only_used_in_recursion
+   = note: `-W clippy::only-used-in-recursion` implied by `-W clippy::all`
+   = help: to override `-W clippy::all` add `#[allow(clippy::only_used_in_recursion)]`
+
+warning: this argument is passed by value, but not consumed in the function body
+  --> tools/asset_generator/src/main.rs:79:24
+   |
+79 | fn process_asset(path: std::path::PathBuf, w: u32, h: u32) {
+   |                        ^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+   = note: `-W clippy::needless-pass-by-value` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::needless_pass_by_value)]`
+help: consider taking a reference instead
+   |
+79 | fn process_asset(path: &std::path::PathBuf, w: u32, h: u32) {
+   |                        +
+
+warning: unnecessary `Debug` formatting in `println!` args
+  --> tools/asset_generator/src/main.rs:85:42
+   |
+85 |     println!("Processing {:?} -> {}x{}", path.file_name().unwrap_or_default(), w, h);
+   |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Display` formatting and change this to `path.file_name().unwrap_or_default().display()`
+   = note: switching to `Display` formatting will change how the value is shown; escaped characters will no longer be escaped and surrounding quotes will be removed
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#unnecessary_debug_formatting
+
+warning: this could be rewritten as `let...else`
+  --> tools/asset_generator/src/main.rs:88:5
+   |
+88 | /     let bytes = match std::fs::read(&path) {
+89 | |         Ok(b) => b,
+90 | |         Err(_) => return, // Skip if read fails
+91 | |     };
+   | |______^ help: consider writing: `let Ok(bytes) = std::fs::read(&path) else { return };`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#manual_let_else
+   = note: `-W clippy::manual-let-else` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::manual_let_else)]`
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+ --> engine/tests/campaign_tests.rs:8:5
+  |
+8 |     node1.id = "node_1".to_string();
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+note: consider initializing the variable with `dj_engine::data::CampaignNodeData { id: "node_1".to_string(), name: "Intro Scene".to_string(), node_type: CampaignNodeType::Scene, content_path: Some("scenes/intro.json".to_string()), ..Default::default() }` and removing relevant reassignments
+ --> engine/tests/campaign_tests.rs:7:5
+  |
+7 |     let mut node1 = CampaignNodeData::default();
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+  = note: `-W clippy::field-reassign-with-default` implied by `-W clippy::all`
+  = help: to override `-W clippy::all` add `#[allow(clippy::field_reassign_with_default)]`
+
+warning: variables can be used directly in the `format!` string
+  --> engine/tests/campaign_tests.rs:16:5
+   |
+16 |     println!("{}", serialized);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+   = note: `-W clippy::uninlined-format-args` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+   |
+16 -     println!("{}", serialized);
+16 +     println!("{serialized}");
+   |
+
+warning: used `assert_eq!` with a literal bool
+  --> engine/tests/integration_tests.rs:83:5
+   |
+83 |     assert_eq!(flags.get("met_hamster"), true);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#bool_assert_comparison
+   = note: `-W clippy::bool-assert-comparison` implied by `-W clippy::all`
+   = help: to override `-W clippy::all` add `#[allow(clippy::bool_assert_comparison)]`
+help: replace it with `assert!(..)`
+   |
+83 -     assert_eq!(flags.get("met_hamster"), true);
+83 +     assert!(flags.get("met_hamster"));
+   |
+
+warning: use of `default` to create a unit struct
+  --> engine/tests/headless_tests.rs:14:21
+   |
+14 |     app.add_plugins(bevy::input::InputPlugin::default());
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^-----------
+   |                                             |
+   |                                             help: remove this call to `default`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#default_constructed_unit_structs
+   = note: `-W clippy::default-constructed-unit-structs` implied by `-W clippy::all`
+   = help: to override `-W clippy::all` add `#[allow(clippy::default_constructed_unit_structs)]`
+
+warning: use of `default` to create a unit struct
+  --> engine/tests/headless_tests.rs:44:21
+   |
+44 |     app.add_plugins(bevy::input::InputPlugin::default());
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^-----------
+   |                                             |
+   |                                             help: remove this call to `default`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#default_constructed_unit_structs
+
+warning: variables can be used directly in the `format!` string
+  --> engine/tests/headless_tests.rs:73:5
+   |
+73 |     println!("Loading story graph from: {:?}", path);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+   = note: `-W clippy::uninlined-format-args` implied by `-W clippy::pedantic`
+   = help: to override `-W clippy::pedantic` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+   |
+73 -     println!("Loading story graph from: {:?}", path);
+73 +     println!("Loading story graph from: {path:?}");
+   |
+
+warning: variables can be used directly in the `format!` string
+  --> engine/tests/headless_tests.rs:74:5
+   |
+74 |     assert!(path.exists(), "Test game JSON must exist at {:?}", path);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#uninlined_format_args
+help: change this to
+   |
+74 -     assert!(path.exists(), "Test game JSON must exist at {:?}", path);
+74 +     assert!(path.exists(), "Test game JSON must exist at {path:?}");
+   |
+
+warning: `asset_generator` (bin "asset_generator" test) generated 12 warnings (run `cargo clippy --fix --bin "asset_generator" -p asset_generator --tests` to apply 4 suggestions)
+warning: `dj_engine` (test "campaign_tests") generated 2 warnings (run `cargo clippy --fix --test "campaign_tests" -p dj_engine` to apply 1 suggestion)
+warning: `dj_engine` (test "integration_tests") generated 1 warning (run `cargo clippy --fix --test "integration_tests" -p dj_engine` to apply 1 suggestion)
+warning: `asset_generator` (bin "asset_generator") generated 12 warnings (12 duplicates)
+warning: `dj_engine` (test "headless_tests") generated 4 warnings (run `cargo clippy --fix --test "headless_tests" -p dj_engine` to apply 4 suggestions)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 31.36s
