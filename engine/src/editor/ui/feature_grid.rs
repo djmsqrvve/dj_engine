@@ -22,6 +22,17 @@ pub fn draw_feature_grid(ui: &mut egui::Ui, world: &mut World) {
     // Background
     ui.painter().rect_filled(rect, 0.0, Color32::from_rgb(8, 8, 12));
     
+    // VISUAL DEMO banner
+    let banner_rect = egui::Rect::from_min_size(rect.left_top(), egui::vec2(rect.width(), 24.0));
+    ui.painter().rect_filled(banner_rect, 0.0, Color32::from_rgb(80, 60, 20));
+    ui.painter().text(
+        banner_rect.center(),
+        egui::Align2::CENTER_CENTER,
+        "⚠ VISUAL DEMO — Feature toggling is for visualization only",
+        egui::FontId::proportional(12.0),
+        Color32::from_rgb(255, 200, 100),
+    );
+    
     // Draw subtle hex grid pattern in background
     let grid_color = Color32::from_rgba_unmultiplied(255, 255, 255, 10);
     for x in (-10..10).map(|i| i as f32 * 60.0) {
