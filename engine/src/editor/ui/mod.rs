@@ -6,6 +6,7 @@ pub mod panels;
 pub mod views;
 pub mod campaign;
 pub mod phases_view;
+pub mod feature_grid;
 
 pub fn editor_ui_system(world: &mut World) {
     let ctx = world
@@ -72,6 +73,9 @@ fn draw_central_panel(ui: &mut egui::Ui, world: &mut World) {
     match current_view {
         EditorView::Core => {
             views::draw_core_dashboard(ui, world);
+        }
+        EditorView::FeatureGrid => {
+            feature_grid::draw_feature_grid(ui, world);
         }
 
         EditorView::MapEditor | EditorView::ScenarioEditor => {

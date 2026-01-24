@@ -101,6 +101,7 @@ impl Plugin for EditorPlugin {
             .init_resource::<ActiveScenario>()
             .init_resource::<CampaignEditorState>()
             .init_resource::<EngineSettings>()
+            .init_resource::<FeatureGrid>()
             .add_systems(Update, configure_visuals_system)
             .add_systems(Update, editor_ui_system)
             .add_systems(Update, apply_window_settings_system)

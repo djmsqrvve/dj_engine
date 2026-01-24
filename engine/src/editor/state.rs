@@ -27,6 +27,7 @@ pub enum SidePanelTab {
 pub enum EditorView {
     #[default]
     Core,           // Workspace Dashboard
+    FeatureGrid,    // Ecosystem toggle grid
     MapEditor,      // Edit static geometry (MapAsset)
     ScenarioEditor, // Edit dynamic entities (ScenarioData)
     StoryGraph,
@@ -37,7 +38,7 @@ pub enum EditorView {
     Play,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Commit {
     pub id: String,
     pub message: String,
@@ -52,7 +53,7 @@ pub enum CommitStatus {
     Pending,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct Branch {
     pub id: String,
     pub name: String,
@@ -60,6 +61,75 @@ pub struct Branch {
     pub active_view: EditorView,
     pub active_tab: SidePanelTab,
     pub history: Vec<Commit>,
+    pub node_overrides: std::collections::HashMap<String, bool>, // feature_id -> enabled
+}
+
+// ============== FEATURE GRID ==============
+
+#[derive(Debug, Clone)]
+pub struct Ecosystem {
+    pub id: String,
+    pub name: String,
+    pub icon: String,
+    pub color: Color32,
+    pub nodes: Vec<FeatureNode>,
+    pub position: Vec2,
+}
+
+#[derive(Debug, Clone)]
+pub struct FeatureNode {
+    pub id: String,
+    pub name: String,
+    pub icon: String,
+    pub description: String,
+}
+
+#[derive(Resource)]
+pub struct FeatureGrid {
+    pub ecosystems: Vec<Ecosystem>,
+}
+
+impl Default for FeatureGrid {
+    fn default() -> Self {
+        Self {
+            ecosystems: vec![
+                Ecosystem {
+                    id: "abilities".into(),
+                    name: "Abilities".into(),
+                    icon: "⚡".into(),
+                    color: Color32::from_rgb(255, 100, 100),
+                    position: Vec2::new(-200.0, -100.0),
+                    nodes: vec![
+                        FeatureNode { id: "fireball".into(), name: "Fireball".into(), icon: "🔥".into(), description: "Launch a ball of fire".into() },
+                        FeatureNode { id: "ice_spear".into(), name: "Ice Spear".into(), icon: "❄️".into(), description: "Throw a frozen spear".into() },
+                        FeatureNode { id: "lightning".into(), name: "Lightning".into(), icon: "⚡".into(), description: "Call down lightning".into() },
+                    ],
+                },
+                Ecosystem {
+                    id: "items".into(),
+                    name: "Items".into(),
+                    icon: "📦".into(),
+                    color: Color32::from_rgb(100, 200, 100),
+                    position: Vec2::new(200.0, -100.0),
+                    nodes: vec![
+                        FeatureNode { id: "potion_hp".into(), name: "Health Potion".into(), icon: "❤️".into(), description: "Restores HP".into() },
+                        FeatureNode { id: "potion_mp".into(), name: "Mana Potion".into(), icon: "💙".into(), description: "Restores MP".into() },
+                    ],
+                },
+                Ecosystem {
+                    id: "physics".into(),
+                    name: "Physics".into(),
+                    icon: "⚙️".into(),
+                    color: Color32::from_rgb(100, 150, 255),
+                    position: Vec2::new(0.0, 150.0),
+                    nodes: vec![
+                        FeatureNode { id: "gravity".into(), name: "Gravity".into(), icon: "🌍".into(), description: "World gravity".into() },
+                        FeatureNode { id: "collision".into(), name: "Collision".into(), icon: "💥".into(), description: "Collision detection".into() },
+                    ],
+                },
+            ],
+        }
+    }
 }
 
 #[derive(Resource, Default)]
@@ -111,6 +181,7 @@ impl EditorUiState {
                         position: Vec2::new(0.0, 0.0),
                     }
                 ],
+                node_overrides: std::collections::HashMap::new(),
             }],
             active_branch_idx: 0,
             ..Default::default()

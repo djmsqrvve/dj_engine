@@ -160,6 +160,17 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                     state.global_view = EditorView::Core;
                 }
             }
+            ui.add_space(5.0);
+
+            let is_feature_grid = active_view == EditorView::FeatureGrid;
+            if ui.selectable_label(is_feature_grid, "🔷 Feature Grid").clicked() {
+                if let Some(mut state) = world.get_resource_mut::<EditorUiState>() {
+                    state.global_view = EditorView::FeatureGrid;
+                    if let Some(branch) = state.active_branches.get_mut(active_idx) {
+                        branch.active_view = EditorView::FeatureGrid;
+                    }
+                }
+            }
             ui.add_space(10.0);
 
             let views = [
@@ -205,6 +216,7 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                     active_view: EditorView::MapEditor,
                     active_tab: SidePanelTab::Hierarchy,
                     history: vec![],
+                    node_overrides: std::collections::HashMap::new(),
                 });
                 let new_idx = world.resource::<EditorUiState>().active_branches.len() - 1;
                 world.resource_mut::<EditorUiState>().active_branch_idx = new_idx;
