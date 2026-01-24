@@ -233,3 +233,30 @@ pub fn load_scene_into_editor(world: &mut World, scene: Scene) {
     }
     info!("Loaded scene with {} entities", entity_count);
 }
+
+pub fn apply_window_settings_system(
+    settings: Res<EngineSettings>,
+    mut windows: Query<&mut Window, With<bevy::window::PrimaryWindow>>,
+) {
+    if settings.is_changed() {
+        if let Ok(mut window) = windows.get_single_mut() {
+            // Update Resolution
+            window.resolution.set(settings.window_width, settings.window_height);
+
+            // Update Mode
+            window.mode = match settings.window_mode_index {
+                1 => bevy::window::WindowMode::BorderlessFullscreen(MonitorSelection::Index(settings.monitor_index)),
+                2 => bevy::window::WindowMode::SizedFullscreen(MonitorSelection::Index(settings.monitor_index)),
+                _ => bevy::window::WindowMode::Windowed,
+            };
+
+            // Update Position (if windowed, re-center on selected monitor)
+            if window.mode == bevy::window::WindowMode::Windowed {
+                window.position = WindowPosition::Centered(MonitorSelection::Index(settings.monitor_index));
+            }
+            
+            info!("Applied Window Settings: {}x{} (ModeIndex={}, MonitorIndex={})", 
+                settings.window_width, settings.window_height, settings.window_mode_index, settings.monitor_index);
+        }
+    }
+}

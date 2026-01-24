@@ -107,6 +107,10 @@ pub struct EngineSettings {
     pub show_bounds: bool,
     pub log_scripts: bool,
     pub master_volume: f32,
+    pub window_width: f32,
+    pub window_height: f32,
+    pub monitor_index: usize,
+    pub window_mode_index: usize, // 0: Windowed, 1: Borderless, 2: Fullscreen
 }
 
 impl Default for EngineSettings {
@@ -116,6 +120,10 @@ impl Default for EngineSettings {
             show_bounds: false,
             log_scripts: false,
             master_volume: 0.8,
+            window_width: 1920.0,
+            window_height: 1080.0,
+            monitor_index: 0,
+            window_mode_index: 0,
         }
     }
 }

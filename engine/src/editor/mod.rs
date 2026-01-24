@@ -103,6 +103,7 @@ impl Plugin for EditorPlugin {
             .init_resource::<EngineSettings>()
             .add_systems(Update, configure_visuals_system)
             .add_systems(Update, editor_ui_system)
+            .add_systems(Update, apply_window_settings_system)
             .add_systems(OnEnter(EditorState::Playing), launch_project_system);
         
         if test_mode {

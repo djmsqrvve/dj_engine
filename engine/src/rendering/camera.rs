@@ -50,15 +50,21 @@ pub fn update_camera_viewport(
     let _physical_width = window.width();
     let _physical_height = window.height();
 
+    // Ensure the rect is within window bounds to avoid wgpu panics
+    let win_w = window.width();
+    let win_h = window.height();
+    
+    let min_x = rect.min.x.clamp(0.0, win_w);
+    let min_y = rect.min.y.clamp(0.0, win_h);
+    let max_x = rect.max.x.clamp(0.0, win_w);
+    let max_y = rect.max.y.clamp(0.0, win_h);
+    
+    let width = (max_x - min_x).max(1.0);
+    let height = (max_y - min_y).max(1.0);
+
     camera.viewport = Some(bevy::render::camera::Viewport {
-        physical_position: UVec2::new(
-            rect.min.x as u32,
-            rect.min.y as u32,
-        ),
-        physical_size: UVec2::new(
-            (rect.max.x - rect.min.x) as u32,
-            (rect.max.y - rect.min.y) as u32,
-        ),
+        physical_position: UVec2::new(min_x as u32, min_y as u32),
+        physical_size: UVec2::new(width as u32, height as u32),
         depth: 0.0..1.0,
     });
 }

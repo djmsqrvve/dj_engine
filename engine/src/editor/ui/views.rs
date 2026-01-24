@@ -434,6 +434,46 @@ pub fn draw_settings_view(ui: &mut egui::Ui, world: &mut World) {
                     *settings = EngineSettings::default();
                 }
             });
+
+            cols[0].add_space(10.0);
+
+            // DISPLAY SETTINGS
+            cols[0].group(|ui| {
+                ui.label(RichText::new("🖥️ DISPLAY").strong().color(COLOR_PRIMARY));
+                ui.separator();
+                
+                ui.horizontal(|ui| {
+                    ui.label("Resolution:");
+                    if ui.button("1920x1080").clicked() {
+                        settings.window_width = 1920.0;
+                        settings.window_height = 1080.0;
+                    }
+                    if ui.button("1280x720").clicked() {
+                        settings.window_width = 1280.0;
+                        settings.window_height = 720.0;
+                    }
+                });
+
+                ui.horizontal(|ui| {
+                    ui.label("Mode:");
+                    egui::ComboBox::from_id_salt("window_mode")
+                        .selected_text(match settings.window_mode_index {
+                            1 => "Borderless",
+                            2 => "Fullscreen",
+                            _ => "Windowed",
+                        })
+                        .show_ui(ui, |ui| {
+                            ui.selectable_value(&mut settings.window_mode_index, 0, "Windowed");
+                            ui.selectable_value(&mut settings.window_mode_index, 1, "Borderless");
+                            ui.selectable_value(&mut settings.window_mode_index, 2, "Fullscreen");
+                        });
+                });
+
+                ui.horizontal(|ui| {
+                    ui.label("Monitor Index:");
+                    ui.add(egui::DragValue::new(&mut settings.monitor_index).range(0..=4));
+                });
+            });
         });
     });
 }

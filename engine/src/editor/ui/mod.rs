@@ -8,12 +8,13 @@ pub mod campaign;
 pub mod phases_view;
 
 pub fn editor_ui_system(world: &mut World) {
-    let mut egui_context = world
-        .query_filtered::<&mut bevy_egui::EguiContext, With<bevy::window::PrimaryWindow>>()
-        .single(world)
-        .clone();
+    let ctx = world
+        .query_filtered::<&bevy_egui::EguiContext, With<bevy::window::PrimaryWindow>>()
+        .get_single(world)
+        .map(|c| c.get_mut().clone())
+        .expect("Missing primary window EguiContext");
         
-    egui::TopBottomPanel::top("top_panel").show(egui_context.get_mut(), |ui| {
+    egui::TopBottomPanel::top("top_panel").show(&ctx, |ui| {
         panels::draw_top_menu(ui, world);
     });
 
@@ -21,19 +22,19 @@ pub fn editor_ui_system(world: &mut World) {
     egui::TopBottomPanel::bottom("console_panel")
         .default_height(150.0)
         .resizable(true)
-        .show(egui_context.get_mut(), |ui| {
+        .show(&ctx, |ui| {
             panels::draw_console_panel(ui, world);
         });
 
     egui::SidePanel::left("left_panel")
         .default_width(250.0)
-        .show(egui_context.get_mut(), |ui| {
+        .show(&ctx, |ui| {
             panels::draw_left_panel(ui, world);
         });
 
     egui::SidePanel::right("right_panel")
         .default_width(300.0)
-        .show(egui_context.get_mut(), |ui| {
+        .show(&ctx, |ui| {
             panels::draw_right_panel(ui, world);
         });
 
@@ -41,10 +42,10 @@ pub fn editor_ui_system(world: &mut World) {
     let central_frame = if *current_state == EditorState::Playing {
         egui::Frame::none()
     } else {
-        egui::Frame::central_panel(&egui_context.get_mut().style())
+        egui::Frame::central_panel(&ctx.style())
     };
 
-    egui::CentralPanel::default().frame(central_frame).show(egui_context.get_mut(), |ui| {
+    egui::CentralPanel::default().frame(central_frame).show(&ctx, |ui| {
         // Capture the actual rect for the camera viewport!
         let rect = ui.max_rect();
         if let Some(mut viewport) = world.get_resource_mut::<crate::rendering::ViewportRect>() {
