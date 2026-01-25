@@ -1,0 +1,52 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+
+# Build artifacts
+Cargo.lock  # Uncomment if you want to ignore (not recommended for apps)
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Bevy - Assets
+# NOTE: We include placeholder assets, but large assets should be:
+# 1. Stored in git LFS (git lfs track "*.png")
+# 2. Or stored externally and downloaded at build time
+
+# Large asset types (uncomment if you add real assets)
+# assets/**/*.png
+# assets/**/*.jpg
+# assets/**/*.jpeg
+# assets/**/*.mp3
+# assets/**/*.wav
+# assets/**/*.ogg
+
+# Keep these placeholder files (they're small)
+!assets/sprites/player.png
+!assets/backgrounds/layer1.png
+!assets/backgrounds/layer2.png
+!assets/backgrounds/layer3.png
+!assets/tiles/tileset.png
+
+# Logs
+*.log
+*.txt
+
+# Coverage
+tarpaulin-report.html
+cobertura.xml
+coverage/
+
+# Temporary files
+*.tmp
+*.temp

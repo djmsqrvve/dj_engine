@@ -44,3 +44,73 @@ impl Default for CameraSettings {
         }
     }
 }
+
+#[derive(Resource, Default)]
+pub struct DebugConsole {
+    pub messages: Vec<String>,
+    pub max_messages: usize,
+}
+
+impl DebugConsole {
+    pub fn new(max_messages: usize) -> Self {
+        Self {
+            messages: Vec::new(),
+            max_messages,
+        }
+    }
+
+    pub fn log(&mut self, message: String) {
+        self.messages.push(message);
+        if self.messages.len() > self.max_messages {
+            self.messages.remove(0);
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.messages.clear();
+    }
+
+    pub fn get_messages(&self) -> &[String] {
+        &self.messages
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mouse_position_default() {
+        let mouse_pos = MousePosition::default();
+        assert_eq!(mouse_pos.world_position, Vec2::ZERO);
+    }
+
+    #[test]
+    fn test_camera_settings_default() {
+        let settings = CameraSettings::default();
+        assert_eq!(settings.follow_speed, 5.0);
+        assert_eq!(settings.zoom_speed, 0.1);
+        assert_eq!(settings.current_zoom, 1.0);
+    }
+
+    #[test]
+    fn test_mouse_position_custom() {
+        let mouse_pos = MousePosition {
+            world_position: Vec2::new(100.0, 200.0),
+        };
+        assert_eq!(mouse_pos.world_position.x, 100.0);
+        assert_eq!(mouse_pos.world_position.y, 200.0);
+    }
+
+    #[test]
+    fn test_camera_settings_custom() {
+        let settings = CameraSettings {
+            follow_speed: 10.0,
+            zoom_speed: 0.2,
+            current_zoom: 2.0,
+        };
+        assert_eq!(settings.follow_speed, 10.0);
+        assert_eq!(settings.zoom_speed, 0.2);
+        assert_eq!(settings.current_zoom, 2.0);
+    }
+}

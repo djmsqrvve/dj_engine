@@ -48,6 +48,35 @@ For release build with optimizations:
 cargo run --release
 ```
 
+## Testing
+
+### Run All Tests
+```bash
+./test.sh
+```
+
+### Run Specific Test Types
+```bash
+./test.sh unit          # Unit tests only
+./test.sh integration   # Integration tests
+./test.sh coverage      # Generate coverage report
+./test.sh lint          # Code linting
+./test.sh all           # Everything
+```
+
+See [TESTING.md](TESTING.md) for detailed testing documentation.
+
+## Quick Test Reference
+
+| Command | Description |
+|---------|-------------|
+| `cargo test` | Run all tests |
+| `cargo test --lib` | Run unit tests only |
+| `cargo test --test '*'` | Run integration tests |
+| `cargo clippy` | Run linter |
+| `cargo fmt` | Format code |
+| `./test.sh coverage` | Generate HTML coverage report |
+
 ## Controls
 
 - **Mouse Movement** - Moves the point light

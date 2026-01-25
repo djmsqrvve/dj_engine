@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Bevy 2D Renderer Demo with Debug Console
+# Runs the application and shows expected console output
+
+echo "=========================================="
+echo "🎮 BEJY 2D RENDERER DEMO"
+echo "=========================================="
+echo ""
+echo "Starting application with debug console..."
+echo ""
+echo "📊 Debug Console will show:"
+echo "  • FPS (frames per second)"
+echo "  • Mouse position (world coordinates)"
+echo "  • Camera zoom level"
+echo "  • Player position"
+echo "  • Elapsed time"
+echo ""
+echo "🎮 Controls:"
+echo "  • Move mouse → light follows"
+echo "  • Press + / - → zoom in/out"
+echo "  • Press ESC → close window"
+echo ""
+echo "🎨 Visuals:"
+echo "  • Neon green player (4-frame animation)"
+echo "  • 3-layer parallax backgrounds (purple/blue gradient)"
+echo "  • Green mouse-following point light"
+echo "  • Cyan tilemap grid"
+echo ""
+echo "=========================================="
+echo "Press Ctrl+C to exit at any time"
+echo "=========================================="
+echo ""
+
+# Run the application
+cargo run
+
+echo ""
+echo "=========================================="
+echo "✅ Demo Finished"
+echo "=========================================="
+echo ""
+echo "The debug console displayed real-time information:"
+echo "  • System performance (FPS)"
+echo "  • Input tracking (mouse position)"
+echo "  • Camera state (zoom level)"
+echo "  • Entity positions (player)"
+echo "  • Game time (elapsed)"
+echo ""
+echo "See TESTING.md for more debugging tips!"
+echo ""

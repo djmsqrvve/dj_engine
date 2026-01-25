@@ -13,6 +13,7 @@ pub fn setup_camera(mut commands: Commands) {
     ));
 }
 
+
 pub fn handle_camera_follow(
     player_query: Query<&Transform, With<Player>>,
     mut camera_query: Query<&mut Transform, (With<MainCamera>, Without<Player>)>,
@@ -168,26 +169,15 @@ pub fn update_parallax_layers(
 }
 
 pub fn setup_tilemap(mut commands: Commands, assets: Res<GameAssets>) {
-    let map_size = TilemapSize { x: 32, y: 24 };
+    // Create a simple tilemap
+    let map_size = TilemapSize { x: 10, y: 8 };
     let tile_size = TilemapTileSize { x: 32.0, y: 32.0 };
     let grid_size = tile_size.into();
     let map_type = TilemapType::default();
     
-    let mut tile_storage = TileStorage::empty(map_size);
+    let tile_storage = TileStorage::empty(map_size);
     
-    for x in 0..map_size.x {
-        for y in 0..map_size.y {
-            let tile_pos = TilePos { x, y };
-            let tile_entity = commands
-                .spawn(TileBundle {
-                    position: tile_pos,
-                    ..default()
-                })
-                .id();
-            tile_storage.set(&tile_pos, tile_entity);
-        }
-    }
-    
+    // Create tilemap entity with all required components from the start
     commands.spawn((
         TilemapBundle {
             size: map_size,
@@ -196,9 +186,73 @@ pub fn setup_tilemap(mut commands: Commands, assets: Res<GameAssets>) {
             tile_size,
             grid_size,
             map_type,
-            transform: Transform::from_xyz(-512.0, -384.0, -10.0),
+            transform: Transform::from_xyz(-160.0, -128.0, -10.0),
             ..default()
         },
         TilemapLayer,
     ));
+}
+
+pub fn setup_debug_console(mut commands: Commands) {
+    commands.spawn((
+        TextBundle::from_sections([
+            TextSection::new(
+                "Debug Console\n",
+                TextStyle {
+                    font_size: 14.0,
+                    color: Color::srgb(0.0, 1.0, 0.5),
+                    ..default()
+                },
+            ),
+            TextSection::new(
+                "",
+                TextStyle {
+                    font_size: 12.0,
+                    color: Color::srgb(0.8, 0.8, 0.8),
+                    ..default()
+                },
+            ),
+        ])
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            right: Val::Px(10.0),
+            top: Val::Px(10.0),
+            max_width: Val::Px(300.0),
+            ..default()
+        }),
+        DebugConsoleUI,
+    ));
+}
+
+pub fn update_debug_console(
+    _console: Res<DebugConsole>,
+    mut query: Query<&mut Text, With<DebugConsoleUI>>,
+    time: Res<Time>,
+    mouse: Res<MousePosition>,
+    camera_settings: Res<CameraSettings>,
+    player_query: Query<&Transform, With<Player>>,
+) {
+    if let Ok(mut text) = query.get_single_mut() {
+        let fps = 1.0 / time.delta_seconds();
+        let mouse_pos = mouse.world_position;
+        let zoom = camera_settings.current_zoom;
+        let player_pos = player_query.single().translation;
+        
+        let debug_text = format!(
+            "FPS: {:.1}\n\
+             Mouse: ({:.1}, {:.1})\n\
+             Zoom: {:.2}x\n\
+             Player: ({:.1}, {:.1})\n\
+             Time: {:.2}s\n",
+            fps,
+            mouse_pos.x, mouse_pos.y,
+            zoom,
+            player_pos.x, player_pos.y,
+            time.elapsed_seconds()
+        );
+        
+        if let Some(section) = text.sections.get_mut(1) {
+            section.value = debug_text;
+        }
+    }
 }
