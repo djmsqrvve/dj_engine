@@ -311,7 +311,6 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_ecs_tilemap",
- "bevy_trickfilm",
 ]
 
 [[package]]
@@ -1032,18 +1031,6 @@ dependencies = [
  "bevy_hierarchy",
  "bevy_math",
  "bevy_reflect",
- "thiserror",
-]
-
-[[package]]
-name = "bevy_trickfilm"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cb80b0f8f64153cc0d31d7f9cb8031dbf13ee7a0452c7e5ff030df09212ddc4"
-dependencies = [
- "bevy",
- "ron",
- "serde",
  "thiserror",
 ]
 

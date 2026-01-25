@@ -16,7 +16,6 @@ path = "src/main.rs"
 [dependencies]
 bevy = "0.14"
 bevy_ecs_tilemap = "0.14"
-bevy_trickfilm = "0.7"
 
 [profile.dev]
 opt-level = 1
