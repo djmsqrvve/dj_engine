@@ -14,7 +14,7 @@ name = "bevy-3d-renderer"
 path = "src/main.rs"
 
 [dependencies]
-bevy = { version = "0.14", features = ["wayland", "bevy_gltf"] }
+bevy = { version = "0.18", features = ["wayland", "bevy_gltf"] }
 
 [dev-dependencies]
 bevy = { version = "0.14", features = ["bevy_gltf"] }

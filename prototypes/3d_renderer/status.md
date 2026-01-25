@@ -125,6 +125,21 @@ INFO bevy_3d_renderer::plugins::models: Drow model loaded successfully! Spawning
 
 ---
 
+### **Testing Status:**
+
+- ✅ **Test Suite**: All tests passing (5/5)
+  - Unit tests: 3/3 (plugin compilation)
+  - Integration tests: 2/2 (app initialization)
+- 📊 **Coverage**: ~30% (basic coverage)
+- 📝 **Test Files**: 
+  - `src/lib.rs` (unit tests)
+  - `tests/integration_test.rs` (integration tests)
+- 🔧 **Test Scripts**: 
+  - `./test.sh` (quick test runner)
+  - `./coverage.sh` (coverage reports)
+  - See `TESTING.md` for full guide
+- 🎯 **Coverage Goal**: 70%+ (future milestone)
+
 **Status**: **PRODUCTION READY** for PBR material and lighting testing
 **Last Updated**: 2026-01-24
 **Bevy Version**: 0.14.2

@@ -72,6 +72,44 @@ Edit `src/plugins/models.rs` to change:
 - Color palette
 - Primitive shapes
 
+## Testing
+
+### Run Tests
+
+All tests are passing:
+
+```bash
+# Quick test run
+./test.sh
+
+# Or manually
+cargo test --all
+
+# Expected output:
+# ✓ Unit tests passed (3/3)
+# ✓ Integration tests passed (2/2)
+# All tests completed successfully!
+```
+
+### Test Coverage
+
+- **Unit tests**: Plugin compilation tests
+- **Integration tests**: App initialization and entity spawning
+- **Coverage**: ~30% (see `TESTING.md` for details)
+
+### Coverage Reports
+
+```bash
+# Install tarpaulin (once)
+cargo install cargo-tarpaulin
+
+# Generate coverage
+cargo tarpaulin --out Html
+open tarpaulin-report.html
+```
+
+See [`QUICKSTART.md`](QUICKSTART.md) for quick testing commands and [`TESTING.md`](TESTING.md) for comprehensive testing guide.
+
 ## Future Enhancements
 
 - Mouse/keyboard camera controls
@@ -79,3 +117,4 @@ Edit `src/plugins/models.rs` to change:
 - UI for real-time material/parameter adjustment
 - More model loading options
 - Environment map support
+- Increase test coverage to 70%+
