@@ -42,7 +42,7 @@ fn check_death_system(
         if stats.hp <= 0 {
             info!("Entity {:?} has died.", entity);
             commands.entity(entity).despawn_recursive();
-            // TODO: Trigger Loot drops or Death effects
+            // TODO(#103): Trigger Loot drops or Death effects
         }
     }
 }

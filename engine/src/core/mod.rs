@@ -8,15 +8,6 @@ pub mod phases;
 
 pub use phases::{GamePhase, GamePhasePlugin, PhaseManager};
 
-// use crate::animation::DJAnimationPlugin;
-// use crate::assets::DJAssetPlugin;
-// use crate::audio::DJAudioPlugin;
-// use crate::diagnostics::DiagnosticsPlugin;
-// use crate::input::DJInputPlugin;
-// use crate::rendering::RenderingPlugin;
-// use crate::scene::DJScenePlugin;
-// use crate::scripting::DJScriptingPlugin;
-// use crate::story_graph::StoryGraphPlugin;
 use crate::types::EngineConfig;
 
 /// Master plugin that bundles all DJ Engine systems.
@@ -57,27 +48,7 @@ impl Plugin for DJEnginePlugin {
         app.insert_resource(self.config.clone());
 
         // Add core engine plugins
-        // app.add_plugins(RenderingPlugin);
-        // app.add_plugins(DJAnimationPlugin);
-        // app.add_plugins(DJAssetPlugin);
-        // app.add_plugins(DJAudioPlugin);
-        // app.add_plugins(crate::combat::DJCombatPlugin);
-        // app.add_plugins(DJInputPlugin);
-        // app.add_plugins(DJScenePlugin);
-        // app.add_plugins(StoryGraphPlugin);
-        // app.add_plugins(DJScriptingPlugin);
-        // app.add_plugins(crate::physics::DJPhysicsPlugin);
-        // app.add_plugins(crate::navigation::DJNavigationPlugin);
-        // app.add_plugins(crate::game::DJGamePlugin);
-        // app.add_plugins(crate::midi::MidiPlugin);
-        // app.add_plugins(crate::data::DataPlugin);
-        // app.add_plugins(crate::ui::DJUiPlugin);
         app.add_plugins(phases::GamePhasePlugin);
-
-        // Conditionally add diagnostics
-        // if self.with_diagnostics {
-        //     app.add_plugins(DiagnosticsPlugin);
-        // }
 
         info!(
             "DJ Engine v{} initialized ({}x{}, debug={})",

@@ -17,7 +17,7 @@ pub struct DJAssetPlugin;
 impl Plugin for DJAssetPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<HamsterPartLibrary>();
-        // TODO: Register HamsterPartLoader
-        // TODO: Register PaletteLoader
+        // TODO(#105): Register HamsterPartLoader
+        // TODO(#106): Register PaletteLoader
     }
 }

@@ -170,20 +170,17 @@ fn spawn_entity(commands: &mut Commands, entity: &SceneEntity, asset_server: &As
             }
         }
         EntityType::Spawner => {
-            if let Some(spawner) = &components.spawner {
-                entity_commands.insert(SpawnerMarker {
+            if let Some(_spawner) = &components.spawner {
+                entity_commands.insert(SawnerMarker {
                     spawner_id: entity.id.clone(),
                 });
-                // TODO: Initialize spawner state
-                let _ = spawner;
+                // Spawner component recognized but state initialization not yet implemented.
             }
         }
         _ => {}
     }
 
-    // TODO: Add collision components (requires physics plugin)
-    // TODO: Add audio source components
-    // TODO: Add interactivity components
+    // TODO(#107): Add collision (physics), audio source, interactivity components
 
     debug!(
         "Spawned entity '{}' ({:?})",

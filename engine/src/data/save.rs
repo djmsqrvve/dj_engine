@@ -27,7 +27,7 @@ pub struct GameSaveData {
     pub story_flags: HashMap<String, FlagValue>,
     pub current_node: Option<NodeId>,
     pub player_position: Vec3,
-    // TODO: Inventory, Quests
+    // TODO(#104): Add Inventory and Quests to save data
 }
 
 fn handle_save_event(

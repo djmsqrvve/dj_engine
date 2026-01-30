@@ -17,7 +17,7 @@ impl Plugin for RenderingPlugin {
             .add_systems(Startup, camera::setup_camera)
             .add_systems(Update, camera::update_camera_viewport);
 
-        // TODO: Setup offscreen render target (320×240)
-        // TODO: Register CRT post-processing pass
+        // TODO(#101): Setup offscreen render target (320×240)
+        // TODO(#102): Register CRT post-processing pass
     }
 }

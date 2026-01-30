@@ -1,5 +1,5 @@
 use crate::data::scene::{Entity, EntityType, Scene};
-use crate::data::story::{SceneValidationError, StoryGraphData};
+use crate::data::story::{RequiredEntity, SceneValidationError, StoryGraphData};
 use bevy::prelude::*;
 use bevy_egui::egui;
 
@@ -8,6 +8,13 @@ use bevy_egui::egui;
 pub struct ValidationState {
     pub errors: Vec<SceneValidationError>,
     pub last_validation_time: f64,
+}
+
+/// Find the required entity type for a given entity ID in the graph.
+fn find_required_entity_type<'a>(graph: &'a StoryGraphData, entity_id: &str) -> Option<&'a RequiredEntity> {
+    graph.nodes.iter().find_map(|node| {
+        node.required_entities.iter().find(|r| r.entity_id == entity_id)
+    })
 }
 
 /// Panel for displaying validation errors and missing items.
@@ -26,119 +33,97 @@ pub fn draw_validation_panel(
     }
 
     let graph = active_graph.unwrap();
-    let scene = active_scene.unwrap(); // We need mutable access for fixing issues
+    let scene = active_scene.unwrap();
 
-    // Validate if needed (e.g. periodically or on change, for now we assume errors are populated)
-    // In a real implementation, we might trigger this on events.
-    // For this immediate mode UI, let's re-validate every frame for simplicity,
-    // or rely on the system calling this to update `validation_state`.
-    // Let's re-validate here for the "Missing Items" feature demonstration.
     validation_state.errors = graph.validate_against_scene(scene);
 
     if validation_state.errors.is_empty() {
         ui.label(egui::RichText::new("✓ All checks passed").color(egui::Color32::GREEN));
-    } else {
-        ui.label(
-            egui::RichText::new(format!("⚠ Found {} issues", validation_state.errors.len()))
-                .color(egui::Color32::YELLOW),
-        );
-        ui.separator();
+        return;
+    }
 
-        egui::ScrollArea::vertical().show(ui, |ui| {
-            // Iterate over errors. Note: fixing modifies scene, so we need to be careful with borrowing.
-            // We collect fixes to apply after the loop.
-            let mut fixes_to_apply = Vec::new();
+    ui.label(
+        egui::RichText::new(format!("⚠ Found {} issues", validation_state.errors.len()))
+            .color(egui::Color32::YELLOW),
+    );
+    ui.separator();
 
-            for (index, error) in validation_state.errors.iter().enumerate() {
-                ui.group(|ui| {
-                    match error {
-                        SceneValidationError::MissingRequiredEntity { node_id, entity_id } => {
-                            ui.horizontal(|ui| {
-                                ui.label(
-                                    egui::RichText::new("Missing Entity")
-                                        .strong()
-                                        .color(egui::Color32::RED),
-                                );
-                                ui.label(format!(
-                                    "Node '{}' requires entity '{}'",
-                                    node_id, entity_id
-                                ));
-                            });
+    egui::ScrollArea::vertical().show(ui, |ui| {
+        let mut fixes_to_apply = Vec::new();
 
-                            // Feature: Drag and drop / Auto-fix
-                            // We simulate "dragging" by clicking a button that spawns the entity.
-                            if ui.button(format!("Fix: Spawn {}", entity_id)).clicked() {
-                                fixes_to_apply.push((index, "spawn_entity", entity_id.clone()));
-                            }
-                        }
-                        SceneValidationError::WrongEntityType {
-                            node_id,
-                            entity_id,
-                            expected,
-                            found,
-                        } => {
-                            ui.horizontal(|ui| {
-                                ui.label(
-                                    egui::RichText::new("Type Mismatch")
-                                        .strong()
-                                        .color(egui::Color32::ORANGE),
-                                );
-                                ui.label(format!(
-                                    "Node '{}' expects '{}' to be {:?}, found {:?}",
-                                    node_id, entity_id, expected, found
-                                ));
-                            });
+        for (index, error) in validation_state.errors.iter().enumerate() {
+            ui.group(|ui| {
+                match error {
+                    SceneValidationError::MissingRequiredEntity { node_id, entity_id } => {
+                        ui.horizontal(|ui| {
+                            ui.label(
+                                egui::RichText::new("Missing Entity")
+                                    .strong()
+                                    .color(egui::Color32::RED),
+                            );
+                            ui.label(format!(
+                                "Node '{}' requires entity '{}'",
+                                node_id, entity_id
+                            ));
+                        });
 
-                            if ui.button("Fix: Update Type").clicked() {
-                                fixes_to_apply.push((index, "update_type", entity_id.clone()));
-                            }
+                        if ui.button(format!("Fix: Spawn {}", entity_id)).clicked() {
+                            fixes_to_apply.push((index, FixAction::SpawnEntity(entity_id.clone())));
                         }
                     }
-                });
-            }
+                    SceneValidationError::WrongEntityType {
+                        node_id,
+                        entity_id,
+                        expected,
+                        found,
+                    } => {
+                        ui.horizontal(|ui| {
+                            ui.label(
+                                egui::RichText::new("Type Mismatch")
+                                    .strong()
+                                    .color(egui::Color32::ORANGE),
+                            );
+                            ui.label(format!(
+                                "Node '{}' expects '{}' to be {:?}, found {:?}",
+                                node_id, entity_id, expected, found
+                            ));
+                        });
 
-            // Apply fixes
-            for (_index, action, id) in fixes_to_apply {
-                if action == "spawn_entity" {
-                    // Logic to spawn a placeholder entity
-                    // In a real editor, this might start a drag payload
-                    let mut new_entity = Entity::new(id.clone(), id.clone());
-                    // Try to guess type from the error? For Simplicity, default to NPC if unknown
-                    new_entity.entity_type = EntityType::Npc;
-                    // Verify if we can find the specific requirement to set the correct type
-                    if let Some(node) = graph
-                        .nodes
-                        .iter()
-                        .find(|n| n.required_entities.iter().any(|r| r.entity_id == id))
-                    {
-                        if let Some(req) = node.required_entities.iter().find(|r| r.entity_id == id)
-                        {
-                            if let Some(etype) = req.entity_type {
-                                new_entity.entity_type = etype;
-                            }
-                        }
-                    }
-
-                    scene.add_entity(new_entity);
-                } else if action == "update_type" {
-                    if let Some(entity) = scene.find_entity_mut(&id) {
-                        // Find expected type again
-                        if let Some(node) = graph
-                            .nodes
-                            .iter()
-                            .find(|n| n.required_entities.iter().any(|r| r.entity_id == id))
-                        {
-                            if let Some(req) =
-                                node.required_entities.iter().find(|r| r.entity_id == id)
-                            {
-                                if let Some(etype) = req.entity_type {
-                                    entity.entity_type = etype;
-                                }
-                            }
+                        if ui.button("Fix: Update Type").clicked() {
+                            fixes_to_apply.push((index, FixAction::UpdateType(entity_id.clone())));
                         }
                     }
                 }
+            });
+        }
+
+        apply_fixes(fixes_to_apply, graph, scene);
+    });
+}
+
+/// Actions that can be applied to fix validation errors.
+enum FixAction {
+    SpawnEntity(String),
+    UpdateType(String),
+}
+
+/// Apply collected fixes to the scene.
+fn apply_fixes(fixes: Vec<(usize, FixAction)>, graph: &StoryGraphData, scene: &mut Scene) {
+    for (_, action) in fixes {
+        match action {
+            FixAction::SpawnEntity(id) => {
+                let mut new_entity = Entity::new(id.clone(), id.clone());
+                new_entity.entity_type = find_required_entity_type(graph, &id)
+                    .and_then(|req| req.entity_type)
+                    .unwrap_or(EntityType::Npc);
+                scene.add_entity(new_entity);
             }
-        });
+            FixAction::UpdateType(id) => {
+                let Some(entity) = scene.find_entity_mut(&id) else { continue };
+                let Some(req) = find_required_entity_type(graph, &id) else { continue };
+                let Some(etype) = req.entity_type else { continue };
+                entity.entity_type = etype;
+            }
+        }
     }
 }

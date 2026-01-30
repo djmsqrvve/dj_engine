@@ -1,6 +1,13 @@
 use crate::data::components::{CollisionComponent, CollisionShape, BodyType};
 use bevy::prelude::*;
 
+/// Default collision box size in pixels (32x32).
+/// TODO(#108): Get collision size from actual sprite/component data instead of default.
+const DEFAULT_COLLISION_SIZE: f32 = 32.0;
+
+/// Separation distance to apply when resolving collisions.
+const COLLISION_SEPARATION: f32 = 2.0;
+
 pub struct DJPhysicsPlugin;
 
 impl Plugin for DJPhysicsPlugin {
@@ -44,13 +51,12 @@ fn check_collision(
     t1: &Transform, c1: &CollisionComponent,
     t2: &Transform, c2: &CollisionComponent,
 ) -> bool {
-    // Basic AABB check for now
     match (&c1.shape, &c2.shape) {
         (CollisionShape::Box, CollisionShape::Box) => {
             let pos1 = t1.translation.truncate();
             let pos2 = t2.translation.truncate();
-            let size1 = Vec2::ONE * 32.0; // TODO: Get size from sprite/component
-            let size2 = Vec2::ONE * 32.0;
+            let size1 = Vec2::ONE * DEFAULT_COLLISION_SIZE;
+            let size2 = Vec2::ONE * DEFAULT_COLLISION_SIZE;
 
             let min1 = pos1 - size1 * 0.5;
             let max1 = pos1 + size1 * 0.5;
@@ -60,7 +66,8 @@ fn check_collision(
             max1.x > min2.x && min1.x < max2.x &&
             max1.y > min2.y && min1.y < max2.y
         }
-        _ => false, // TODO: Support Circle
+        // Circle collision not yet implemented.
+        _ => false,
     }
 }
 
@@ -75,16 +82,14 @@ fn resolve_collision_system(
             let (mut t2, c2) = q2;
 
             if c1.body_type == BodyType::Static && c2.body_type == BodyType::Dynamic {
-                // Push t2 away from t1
                 let diff = t2.translation - t1.translation;
                 if diff != Vec3::ZERO {
-                    t2.translation += diff.normalize() * 2.0;
+                    t2.translation += diff.normalize() * COLLISION_SEPARATION;
                 }
             } else if c1.body_type == BodyType::Dynamic && c2.body_type == BodyType::Static {
-                // Push t1 away from t2
                 let diff = t1.translation - t2.translation;
                 if diff != Vec3::ZERO {
-                    t1.translation += diff.normalize() * 2.0;
+                    t1.translation += diff.normalize() * COLLISION_SEPARATION;
                 }
             }
         }

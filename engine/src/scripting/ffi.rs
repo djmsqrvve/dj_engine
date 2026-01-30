@@ -4,6 +4,7 @@
 
 use bevy::prelude::*;
 use mlua::prelude::*;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 
 /// Registers core FFI functions into the Lua global table.
@@ -52,78 +53,73 @@ pub fn create_shared_state() -> SharedGenericState {
     Arc::new(RwLock::new(GenericStateBuffer::default()))
 }
 
-const MAX_LUA_STRING_LEN: usize = 1024;
-const MAX_STATE_ENTRIES: usize = 1000;
+/// Maximum string length for Lua keys/values (1MB to prevent accidental memory exhaustion).
+const MAX_LUA_STRING_LEN: usize = 1_048_576;
+
+/// Helper function to handle RwLock poisoning.
+/// Panics on poisoned locks since this indicates a thread panic and is unrecoverable.
+fn lock_state<T>(result: std::result::Result<std::sync::RwLockReadGuard<'_, T>, std::sync::PoisonError<std::sync::RwLockReadGuard<'_, T>>>) -> LuaResult<std::sync::RwLockReadGuard<'_, T>> {
+    result.map_err(|_| LuaError::RuntimeError("State lock poisoned - thread panic detected".into()))
+}
+
+fn lock_state_mut<T>(result: std::result::Result<std::sync::RwLockWriteGuard<'_, T>, std::sync::PoisonError<std::sync::RwLockWriteGuard<'_, T>>>) -> LuaResult<std::sync::RwLockWriteGuard<'_, T>> {
+    result.map_err(|_| LuaError::RuntimeError("State lock poisoned - thread panic detected".into()))
+}
 
 /// Register generic state access functions.
 pub fn register_generic_state_api(lua: &Lua, state: SharedGenericState) -> LuaResult<()> {
     let globals = lua.globals();
 
     // set_float(key, value)
-    let s = state.clone();
     let set_float = lua.create_function(move |_, (key, value): (String, f32)| {
         if key.len() > MAX_LUA_STRING_LEN {
-            return Err(LuaError::RuntimeError("Key too long".into()));
+            return Err(LuaError::RuntimeError(format!("Key too long (max {} bytes)", MAX_LUA_STRING_LEN)));
         }
-        let mut data = s.write().map_err(|e| LuaError::RuntimeError(format!("State poisoned: {}", e)))?;
-        if data.floats.len() >= MAX_STATE_ENTRIES && !data.floats.contains_key(&key) {
-            return Err(LuaError::RuntimeError("State buffer full".into()));
-        }
+        let mut data = lock_state_mut(Arc::clone(&state).write())?;
         data.floats.insert(key, value);
         Ok(())
     })?;
     globals.set("set_float", set_float)?;
 
     // get_float(key) -> f32
-    let s = state.clone();
     let get_float = lua.create_function(move |_, key: String| {
-        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("State poisoned: {}", e)))?;
+        let data = lock_state(Arc::clone(&state).read())?;
         Ok(data.floats.get(&key).copied().unwrap_or(0.0))
     })?;
     globals.set("get_float", get_float)?;
 
     // set_string(key, value)
-    let s = state.clone();
     let set_string = lua.create_function(move |_, (key, value): (String, String)| {
         if key.len() > MAX_LUA_STRING_LEN || value.len() > MAX_LUA_STRING_LEN {
-            return Err(LuaError::RuntimeError("Input string too long".into()));
+            return Err(LuaError::RuntimeError(format!("String too long (max {} bytes)", MAX_LUA_STRING_LEN)));
         }
-        let mut data = s.write().map_err(|e| LuaError::RuntimeError(format!("State poisoned: {}", e)))?;
-        if data.strings.len() >= MAX_STATE_ENTRIES && !data.strings.contains_key(&key) {
-            return Err(LuaError::RuntimeError("State buffer full".into()));
-        }
+        let mut data = lock_state_mut(Arc::clone(&state).write())?;
         data.strings.insert(key, value);
         Ok(())
     })?;
     globals.set("set_string", set_string)?;
 
     // get_string(key) -> string
-    let s = state.clone();
     let get_string = lua.create_function(move |_, key: String| {
-        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("State poisoned: {}", e)))?;
+        let data = lock_state(Arc::clone(&state).read())?;
         Ok(data.strings.get(&key).cloned().unwrap_or_default())
     })?;
     globals.set("get_string", get_string)?;
 
     // set_bool(key, value)
-    let s = state.clone();
     let set_bool = lua.create_function(move |_, (key, value): (String, bool)| {
         if key.len() > MAX_LUA_STRING_LEN {
-            return Err(LuaError::RuntimeError("Key too long".into()));
+            return Err(LuaError::RuntimeError(format!("Key too long (max {} bytes)", MAX_LUA_STRING_LEN)));
         }
-        let mut data = s.write().map_err(|e| LuaError::RuntimeError(format!("State poisoned: {}", e)))?;
-        if data.bools.len() >= MAX_STATE_ENTRIES && !data.bools.contains_key(&key) {
-            return Err(LuaError::RuntimeError("State buffer full".into()));
-        }
+        let mut data = lock_state_mut(Arc::clone(&state).write())?;
         data.bools.insert(key, value);
         Ok(())
     })?;
     globals.set("set_bool", set_bool)?;
 
     // get_bool(key) -> bool
-    let s = state.clone();
     let get_bool = lua.create_function(move |_, key: String| {
-        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("State poisoned: {}", e)))?;
+        let data = lock_state(Arc::clone(&state).read())?;
         Ok(data.bools.get(&key).copied().unwrap_or(false))
     })?;
     globals.set("get_bool", get_bool)?;
@@ -152,33 +148,29 @@ pub fn register_input_api(lua: &Lua, state: SharedInputState) -> LuaResult<()> {
     let actions = lua.create_table()?;
 
     // actions.pressed(action_name) -> bool
-    let s = state.clone();
     let pressed = lua.create_function(move |_, action: String| {
-        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("Input state poisoned: {}", e)))?;
+        let data = lock_state(Arc::clone(&state).read())?;
         Ok(data.pressed.contains(&action))
     })?;
     actions.set("pressed", pressed)?;
 
     // actions.just_pressed(action_name) -> bool
-    let s = state.clone();
     let just_pressed = lua.create_function(move |_, action: String| {
-        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("Input state poisoned: {}", e)))?;
+        let data = lock_state(Arc::clone(&state).read())?;
         Ok(data.just_pressed.contains(&action))
     })?;
     actions.set("just_pressed", just_pressed)?;
 
     // actions.just_released(action_name) -> bool
-    let s = state.clone();
     let just_released = lua.create_function(move |_, action: String| {
-        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("Input state poisoned: {}", e)))?;
+        let data = lock_state(Arc::clone(&state).read())?;
         Ok(data.just_released.contains(&action))
     })?;
     actions.set("just_released", just_released)?;
 
     // actions.mouse_pos() -> (x, y)
-    let s = state.clone();
     let mouse_pos = lua.create_function(move |_, ()| {
-        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("Input state poisoned: {}", e)))?;
+        let data = lock_state(Arc::clone(&state).read())?;
         Ok((data.cursor_position.x, data.cursor_position.y))
     })?;
     actions.set("mouse_pos", mouse_pos)?;
@@ -188,20 +180,15 @@ pub fn register_input_api(lua: &Lua, state: SharedInputState) -> LuaResult<()> {
     Ok(())
 }
 
-use std::sync::atomic::{AtomicBool, Ordering};
-
 pub static STORY_ADVANCE_PENDING: AtomicBool = AtomicBool::new(false);
 
 /// Register Story Graph control APIs.
-
 pub fn register_story_api(lua: &Lua) -> LuaResult<()> {
     let globals = lua.globals();
 
     // next_node() -> Advance the story graph
-
     let next_node = lua.create_function(|_, ()| {
         STORY_ADVANCE_PENDING.store(true, Ordering::SeqCst);
-
         Ok(())
     })?;
 
@@ -216,9 +203,8 @@ pub fn register_animation_api(lua: &Lua, shared: crate::animation::SharedAnimati
     let animation = lua.create_table()?;
 
     // animation.set_expression(id, expression)
-    let s = shared.clone();
     let set_expression = lua.create_function(move |_, (id, expr): (String, String)| {
-        if let Ok(mut queue) = s.0.lock() {
+        if let Ok(mut queue) = shared.0.lock() {
             queue.push(crate::animation::AnimationCommand::SetExpression {
                 target_id: id,
                 expression: expr,
