@@ -45,35 +45,6 @@ impl Default for CameraSettings {
     }
 }
 
-#[derive(Resource, Default)]
-pub struct DebugConsole {
-    pub messages: Vec<String>,
-    pub max_messages: usize,
-}
-
-impl DebugConsole {
-    pub fn new(max_messages: usize) -> Self {
-        Self {
-            messages: Vec::new(),
-            max_messages,
-        }
-    }
-
-    pub fn log(&mut self, message: String) {
-        self.messages.push(message);
-        if self.messages.len() > self.max_messages {
-            self.messages.remove(0);
-        }
-    }
-
-    pub fn clear(&mut self) {
-        self.messages.clear();
-    }
-
-    pub fn get_messages(&self) -> &[String] {
-        &self.messages
-    }
-}
 
 #[cfg(test)]
 mod tests {

@@ -14,8 +14,8 @@ name = "bevy-2d-renderer"
 path = "src/main.rs"
 
 [dependencies]
-bevy = "0.14"
-bevy_ecs_tilemap = "0.14"
+bevy = "0.18"
+bevy_ecs_tilemap = "0.18"
 
 [profile.dev]
 opt-level = 1
@@ -24,5 +24,5 @@ opt-level = 1
 opt-level = 3
 
 [dev-dependencies]
-bevy = "0.14"
-bevy_ecs_tilemap = "0.14"
+bevy = "0.18"
+bevy_ecs_tilemap = "0.18"

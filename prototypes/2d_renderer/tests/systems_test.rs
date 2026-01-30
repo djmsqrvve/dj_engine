@@ -9,15 +9,11 @@ fn test_animation_timer_creation() {
 }
 
 #[test]
-fn test_debug_console_creation() {
-    let console = DebugConsole::new(5);
     assert_eq!(console.max_messages, 5);
     assert_eq!(console.messages.len(), 0);
 }
 
 #[test]
-fn test_debug_console_logging() {
-    let mut console = DebugConsole::new(3);
     
     console.log("Message 1".to_string());
     console.log("Message 2".to_string());
@@ -37,8 +33,6 @@ fn test_debug_console_logging() {
 }
 
 #[test]
-fn test_debug_console_clear() {
-    let mut console = DebugConsole::new(10);
     console.log("Test message".to_string());
     assert_eq!(console.messages.len(), 1);
     
@@ -47,8 +41,6 @@ fn test_debug_console_clear() {
 }
 
 #[test]
-fn test_debug_console_get_messages() {
-    let mut console = DebugConsole::new(3);
     console.log("Msg 1".to_string());
     console.log("Msg 2".to_string());
     

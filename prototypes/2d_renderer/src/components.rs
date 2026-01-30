@@ -37,6 +37,15 @@ pub struct TilemapLayer;
 #[derive(Component)]
 pub struct DebugConsoleUI;
 
+#[derive(Component)]
+pub struct Camera2DMarker;
+
+#[derive(Component, Default)]
+pub struct AnimationFrame {
+    pub index: usize,
+    pub layout: Handle<TextureAtlasLayout>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
