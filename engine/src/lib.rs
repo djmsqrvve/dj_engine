@@ -14,12 +14,25 @@
 //!     .run();
 //! ```
 
+pub mod animation;
 pub mod assets;
+pub mod audio;
+pub mod combat;
 pub mod core;
 pub mod data;
 pub mod diagnostics;
+pub mod editor;
+pub mod game;
+pub mod input;
+pub mod midi;
+pub mod navigation;
+pub mod physics;
+pub mod rendering;
+pub mod scene;
+pub mod scripting;
 pub mod story_graph;
 pub mod types;
+pub mod ui;
 
 /// Prelude module for convenient imports
 pub mod prelude {

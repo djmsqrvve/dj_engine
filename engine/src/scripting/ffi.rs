@@ -58,11 +58,11 @@ const MAX_LUA_STRING_LEN: usize = 1_048_576;
 
 /// Helper function to handle RwLock poisoning.
 /// Panics on poisoned locks since this indicates a thread panic and is unrecoverable.
-fn lock_state<T>(result: std::result::Result<std::sync::RwLockReadGuard<'_, T>, std::sync::PoisonError<std::sync::RwLockReadGuard<'_, T>>>) -> LuaResult<std::sync::RwLockReadGuard<'_, T>> {
+fn lock_state<'a, T>(result: std::result::Result<std::sync::RwLockReadGuard<'a, T>, std::sync::PoisonError<std::sync::RwLockReadGuard<'a, T>>>) -> LuaResult<std::sync::RwLockReadGuard<'a, T>> {
     result.map_err(|_| LuaError::RuntimeError("State lock poisoned - thread panic detected".into()))
 }
 
-fn lock_state_mut<T>(result: std::result::Result<std::sync::RwLockWriteGuard<'_, T>, std::sync::PoisonError<std::sync::RwLockWriteGuard<'_, T>>>) -> LuaResult<std::sync::RwLockWriteGuard<'_, T>> {
+fn lock_state_mut<'a, T>(result: std::result::Result<std::sync::RwLockWriteGuard<'a, T>, std::sync::PoisonError<std::sync::RwLockWriteGuard<'a, T>>>) -> LuaResult<std::sync::RwLockWriteGuard<'a, T>> {
     result.map_err(|_| LuaError::RuntimeError("State lock poisoned - thread panic detected".into()))
 }
 

@@ -171,7 +171,7 @@ fn spawn_entity(commands: &mut Commands, entity: &SceneEntity, asset_server: &As
         }
         EntityType::Spawner => {
             if let Some(_spawner) = &components.spawner {
-                entity_commands.insert(SawnerMarker {
+                entity_commands.insert(SpawnerMarker {
                     spawner_id: entity.id.clone(),
                 });
                 // Spawner component recognized but state initialization not yet implemented.

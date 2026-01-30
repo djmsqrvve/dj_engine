@@ -554,7 +554,7 @@ pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
         if let Some((from, to)) = connection_established {
             if let Some(node) = graph.0.nodes.iter_mut().find(|n| n.id == from) {
                 // Ugly mutation manually based on type
-                // TODO: Add helper 'set_next' to StoryNodeData
+                // TODO(#109): Add helper 'set_next' to StoryNodeData to avoid manual variant matching
                 match &mut node.data {
                     StoryNodeVariant::Start(d) => d.next_node_id = Some(to),
                     StoryNodeVariant::Dialogue(d) => d.next_node_id = Some(to),
@@ -633,7 +633,7 @@ pub fn draw_settings_view(ui: &mut egui::Ui, world: &mut World) {
                         .unwrap_or(&std::path::PathBuf::from("None"))
                 ));
                 ui.add_space(10.0);
-                if ui.button("Clean Cache").clicked() { /* TODO */ }
+                if ui.button("Clean Cache").clicked() { /* TODO(#110): Implement cache cleanup */ }
             });
 
             cols[0].add_space(10.0);

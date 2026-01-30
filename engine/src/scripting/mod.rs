@@ -203,19 +203,30 @@ fn handle_script_commands(lua_ctx: Res<LuaContext>, mut events: EventReader<Scri
     }
 }
 
+/// Errors that can occur during path sanitization.
+#[derive(Debug, thiserror::Error)]
+enum PathSanitizationError {
+    #[error("Failed to canonicalize base directory: {0}")]
+    CanonicalizeBase(std::io::Error),
+    #[error("Failed to canonicalize script path: {0}")]
+    CanonicalizePath(std::io::Error),
+    #[error("Directory traversal attempt detected: path escapes sandbox")]
+    DirectoryTraversal,
+}
+
 /// Helper to ensure a path stays within a base directory (Sandbox).
-fn sanitize_path(base: &std::path::Path, tail: &str) -> Result<std::path::PathBuf, String> {
+fn sanitize_path(base: &std::path::Path, tail: &str) -> Result<std::path::PathBuf, PathSanitizationError> {
     let path = base.join(tail);
-    let canonical_base = base.canonicalize().map_err(|e| e.to_string())?;
+    let canonical_base = base.canonicalize().map_err(PathSanitizationError::CanonicalizeBase)?;
     
     // Attempt to canonicalize the full path. If it doesn't exist yet, we can't fully canonicalize,
     // but for LOADING a script it MUST exist.
-    let canonical_path = path.canonicalize().map_err(|e| format!("Path error: {}", e))?;
+    let canonical_path = path.canonicalize().map_err(PathSanitizationError::CanonicalizePath)?;
 
-    if canonical_path.starts_with(canonical_base) {
+    if canonical_path.starts_with(&canonical_base) {
         Ok(canonical_path)
     } else {
-        Err("Directory traversal attempt detected".to_string())
+        Err(PathSanitizationError::DirectoryTraversal)
     }
 }
 
