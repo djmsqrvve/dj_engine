@@ -3,6 +3,7 @@ pub use crate::data::project::EngineSettings;
 use crate::data::scenario::ScenarioData;
 use crate::data::story::StoryGraphData;
 use bevy::prelude::*;
+pub use bevy_egui::egui;
 use bevy_egui::egui::Color32;
 use egui_dock::DockState;
 use serde::{Deserialize, Serialize};
@@ -22,7 +23,7 @@ pub enum EditorState {
 }
 
 /// Enumeration of tabs available in the side panel.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 pub enum SidePanelTab {
     #[default]
     Hierarchy,
@@ -31,7 +32,7 @@ pub enum SidePanelTab {
 }
 
 /// Enumeration of all possible views/windows in the editor.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
 pub enum EditorView {
     #[default]
     /// Main dashboard with project overview.
@@ -70,7 +71,7 @@ pub enum EditorView {
 }
 
 /// Represents a single commit in the project history.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Reflect, Serialize, Deserialize, PartialEq, Default)]
 pub struct Commit {
     pub id: String,
     pub message: String,
@@ -79,23 +80,60 @@ pub struct Commit {
 }
 
 /// Status of a commit in the history graph.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Reflect, Serialize, Deserialize, Default)]
 pub enum CommitStatus {
     Passed,
     Failed,
+    #[default]
     Pending,
 }
 
+/// A floating window/tool in the workspace.
+/// A floating window/tool in the workspace.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct StudioElement {
+    pub id: String,
+    pub view: EditorView,
+    pub rect: egui::Rect,
+    pub z_index: u32,
+    pub is_minimized: bool,
+}
+
+impl Default for StudioElement {
+    fn default() -> Self {
+        Self {
+            id: "".into(),
+            view: EditorView::default(),
+            rect: egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(100.0, 100.0)),
+            z_index: 0,
+            is_minimized: false,
+        }
+    }
+}
+
+/// Manages the infinite canvas state.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub struct WorkspaceState {
+    pub elements: Vec<StudioElement>,
+    pub camera_pan: Vec2,
+    pub camera_zoom: f32,
+    pub active_element_id: Option<String>,
+}
+
 /// Represents a branch in the version control visualization.
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default, Reflect, Serialize, Deserialize)]
 pub struct Branch {
     pub id: String,
     pub name: String,
+    #[reflect(ignore)]
     pub color: Color32,
     pub active_view: EditorView,
     pub active_tab: SidePanelTab,
     pub history: Vec<Commit>,
     pub node_overrides: std::collections::HashMap<String, bool>, // feature_id -> enabled
+    #[reflect(ignore)]
+    #[serde(skip)]
+    pub workspace: WorkspaceState,
 }
 
 // ============== FEATURE GRID ==============
@@ -232,6 +270,9 @@ pub struct EditorUiState {
     pub dragged_node_id: Option<String>,
     pub connection_start_id: Option<String>,
     pub selected_node_id: Option<String>,
+    
+    // Global workspace (fallback if no branch)
+    pub workspace: WorkspaceState,
 }
 
 impl Default for EditorUiState {
@@ -251,6 +292,7 @@ impl Default for EditorUiState {
                     position: bevy::math::Vec2::new(0.0, 0.0),
                 }],
                 node_overrides: std::collections::HashMap::new(),
+                workspace: WorkspaceState::default(),
             }],
             active_branch_idx: 0,
             selected_entities: Default::default(),
@@ -261,6 +303,7 @@ impl Default for EditorUiState {
             dragged_node_id: Default::default(),
             connection_start_id: Default::default(),
             selected_node_id: Default::default(),
+            workspace: WorkspaceState::default(),
         }
     }
 }

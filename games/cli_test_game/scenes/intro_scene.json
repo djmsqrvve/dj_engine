@@ -1,0 +1,22 @@
+{
+  "id": "intro_scene",
+  "name": "Intro Scene",
+  "entities": [
+    {
+      "id": "hero_01",
+      "name": "Hero",
+      "entity_type": "npc",
+      "components": {
+        "transform": {
+          "position": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+        },
+        "sprite": {
+          "sprite_id": "pixel",
+          "tint": { "r": 0.0, "g": 1.0, "b": 0.8, "a": 1.0 }
+        }
+      }
+    }
+  ]
+}

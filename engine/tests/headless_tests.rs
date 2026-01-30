@@ -14,7 +14,7 @@ fn test_headless_initialization() {
     app.add_plugins(bevy::input::InputPlugin::default());
 
     // Add Core Engine Plugin
-    app.add_plugins(DJEnginePlugin::default());
+    app.add_plugins(DJEnginePlugin::default().without_diagnostics());
 
     // Manually init editor resources instead of EditorPlugin (avoids Egui requirements)
     app.init_resource::<EditorUiState>();
@@ -52,7 +52,7 @@ fn test_feature_grid_population() {
     app.add_plugins(bevy::asset::AssetPlugin::default());
     app.add_plugins(bevy::audio::AudioPlugin::default());
     app.add_plugins(bevy::input::InputPlugin::default());
-    app.add_plugins(DJEnginePlugin::default());
+    app.add_plugins(DJEnginePlugin::default().without_diagnostics());
     app.init_resource::<EditorUiState>();
     app.init_resource::<FeatureGrid>();
     app.update();

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use dj_engine::prelude::*;
 use dj_engine::story_graph::types::{
-    ExecutionStatus, GraphExecutor, StoryFlags, StoryGraph, StoryGraphLibrary, StoryNode,
+    ExecutionStatus, FlagValue, GraphExecutor, StoryFlags, StoryGraph, StoryGraphLibrary, StoryNode,
 };
 
 #[test]
@@ -18,11 +18,11 @@ fn test_subgraph_execution() {
     app.add_plugins(DJEnginePlugin::default().without_diagnostics());
 
     // 1. Setup Library with a Sub-Graph
-    let mut sub_graph = StoryGraph::new();
+    let mut sub_graph = StoryGraph::new("my_scene");
     // SubNode 0: Set flag 'in_subgraph'
     let s0 = sub_graph.add(StoryNode::SetFlag {
         flag: "in_subgraph".to_string(),
-        value: true,
+        value: FlagValue::Bool(true),
         next: Some(1),
     });
     // SubNode 1: End
@@ -33,7 +33,7 @@ fn test_subgraph_execution() {
     library.graphs.insert("my_scene".to_string(), sub_graph);
 
     // 2. Setup Main Graph
-    let mut main_graph = StoryGraph::new();
+    let mut main_graph = StoryGraph::new("main");
     // Node 0: SubGraph call
     let m0 = main_graph.add(StoryNode::SubGraph {
         graph_id: "my_scene".to_string(),
@@ -42,16 +42,20 @@ fn test_subgraph_execution() {
     // Node 1: Set flag 'back_in_main'
     let _m1 = main_graph.add(StoryNode::SetFlag {
         flag: "back_in_main".to_string(),
-        value: true,
+        value: FlagValue::Bool(true),
         next: Some(2),
     });
     // Node 2: End
     let _m2 = main_graph.add(StoryNode::End);
     main_graph.set_start(m0);
 
+    let main_id = main_graph.id.clone();
+    let main_start = main_graph.start_node;
+    app.world_mut().resource_mut::<StoryGraphLibrary>().graphs.insert(main_id.clone(), main_graph);
+
     // 3. Start Execution
     let mut executor = app.world_mut().resource_mut::<GraphExecutor>();
-    executor.start(main_graph);
+    executor.start(main_id, main_start);
 
     // 4. Update Loop
     // Iteration 1: Process m0 (SubGraph) -> Pushes to stack, Switches to sub_graph, Jumps to s0
@@ -60,7 +64,7 @@ fn test_subgraph_execution() {
     // Verify inside subgraph
     let flags = app.world().resource::<StoryFlags>();
     assert!(
-        flags.get("in_subgraph"),
+        flags.get_bool("in_subgraph"),
         "Should be in subgraph and have processed s0"
     );
 
@@ -72,7 +76,7 @@ fn test_subgraph_execution() {
 
     let flags = app.world().resource::<StoryFlags>();
     assert!(
-        flags.get("back_in_main"),
+        flags.get_bool("back_in_main"),
         "Should have returned to main graph and processed m1"
     );
 
@@ -93,7 +97,7 @@ fn test_stack_depth() {
     // Create a recursive graph with Waits to pause execution
     // A -> B -> C (Wait)
 
-    let mut graph_c = StoryGraph::new();
+    let mut graph_c = StoryGraph::new("C");
     let c_wait = graph_c.add(StoryNode::Wait {
         duration: 1.0,
         next: None,
@@ -105,14 +109,14 @@ fn test_stack_depth() {
     // So Wait with next: None works as "Wait then End".
     graph_c.set_start(c_wait);
 
-    let mut graph_b = StoryGraph::new();
+    let mut graph_b = StoryGraph::new("B");
     let b0 = graph_b.add(StoryNode::SubGraph {
         graph_id: "C".into(),
         next: None,
     });
     graph_b.set_start(b0);
 
-    let mut graph_a = StoryGraph::new();
+    let mut graph_a = StoryGraph::new("A");
     let a0 = graph_a.add(StoryNode::SubGraph {
         graph_id: "B".into(),
         next: None,
@@ -122,9 +126,10 @@ fn test_stack_depth() {
     let mut library = app.world_mut().resource_mut::<StoryGraphLibrary>();
     library.graphs.insert("C".into(), graph_c);
     library.graphs.insert("B".into(), graph_b);
+    library.graphs.insert("A".into(), graph_a);
 
     let mut executor = app.world_mut().resource_mut::<GraphExecutor>();
-    executor.start(graph_a);
+    executor.start("A".into(), Some(a0));
 
     // Frame 1: A -> B -> C -> Wait
     app.update();

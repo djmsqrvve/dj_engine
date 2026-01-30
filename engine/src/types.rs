@@ -30,6 +30,8 @@ pub type DJResult<T> = std::result::Result<T, DJEngineError>;
 pub struct DiagnosticConfig {
     /// Whether to show the diagnostic overlay
     pub enabled: bool,
+    /// Whether to show the World Inspector (bevy-inspector-egui)
+    pub show_inspector: bool,
     /// Color of the diagnostic text
     pub text_color: Color,
     /// Font size of the diagnostic text
@@ -42,6 +44,7 @@ impl Default for DiagnosticConfig {
     fn default() -> Self {
         Self {
             enabled: true,
+            show_inspector: false,
             text_color: Color::srgb(0.0, 1.0, 0.0), // Neon Green
             font_size: 16.0,
             update_timer: Timer::from_seconds(0.1, TimerMode::Repeating),

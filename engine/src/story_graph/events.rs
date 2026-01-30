@@ -12,6 +12,16 @@ pub enum StoryFlowEvent {
         prompt: String,
         options: Vec<String>,
     }, // Only send text to UI
+    CameraControl {
+        preset_id: Option<String>,
+        position: Vec3,
+        zoom: f32,
+        duration: f32,
+    },
+    TimeControl {
+        time_scale: f32,
+        pause: bool,
+    },
     GraphComplete,
 }
 

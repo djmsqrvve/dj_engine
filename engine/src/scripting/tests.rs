@@ -6,7 +6,10 @@ use tempfile::NamedTempFile;
 fn setup_test_app() -> App {
     let mut app = App::new();
     app.add_plugins(MinimalPlugins);
+    app.add_plugins(bevy::asset::AssetPlugin::default());
+    app.add_plugins(bevy::input::InputPlugin);
     app.add_plugins(crate::story_graph::StoryGraphPlugin);
+    app.add_plugins(crate::input::DJInputPlugin);
     app.add_event::<crate::audio::AudioCommand>();
     app.add_event::<crate::scene::ChangeSceneEvent>();
     app.init_resource::<crate::scene::SceneManager>();

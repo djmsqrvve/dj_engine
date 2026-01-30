@@ -131,6 +131,63 @@ pub fn register_generic_state_api(lua: &Lua, state: SharedGenericState) -> LuaRe
     Ok(())
 }
 
+/// Shared input state buffer for bridging ActionState (ECS) to Lua (non-ECS).
+#[derive(Default, Debug)]
+pub struct InputStateBuffer {
+    pub pressed: std::collections::HashSet<String>,
+    pub just_pressed: std::collections::HashSet<String>,
+    pub just_released: std::collections::HashSet<String>,
+    pub cursor_position: Vec2,
+}
+
+pub type SharedInputState = Arc<RwLock<InputStateBuffer>>;
+
+pub fn create_shared_input_state() -> SharedInputState {
+    Arc::new(RwLock::new(InputStateBuffer::default()))
+}
+
+/// Register input state access functions.
+pub fn register_input_api(lua: &Lua, state: SharedInputState) -> LuaResult<()> {
+    let globals = lua.globals();
+    let actions = lua.create_table()?;
+
+    // actions.pressed(action_name) -> bool
+    let s = state.clone();
+    let pressed = lua.create_function(move |_, action: String| {
+        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("Input state poisoned: {}", e)))?;
+        Ok(data.pressed.contains(&action))
+    })?;
+    actions.set("pressed", pressed)?;
+
+    // actions.just_pressed(action_name) -> bool
+    let s = state.clone();
+    let just_pressed = lua.create_function(move |_, action: String| {
+        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("Input state poisoned: {}", e)))?;
+        Ok(data.just_pressed.contains(&action))
+    })?;
+    actions.set("just_pressed", just_pressed)?;
+
+    // actions.just_released(action_name) -> bool
+    let s = state.clone();
+    let just_released = lua.create_function(move |_, action: String| {
+        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("Input state poisoned: {}", e)))?;
+        Ok(data.just_released.contains(&action))
+    })?;
+    actions.set("just_released", just_released)?;
+
+    // actions.mouse_pos() -> (x, y)
+    let s = state.clone();
+    let mouse_pos = lua.create_function(move |_, ()| {
+        let data = s.read().map_err(|e| LuaError::RuntimeError(format!("Input state poisoned: {}", e)))?;
+        Ok((data.cursor_position.x, data.cursor_position.y))
+    })?;
+    actions.set("mouse_pos", mouse_pos)?;
+
+    globals.set("actions", actions)?;
+
+    Ok(())
+}
+
 use std::sync::atomic::{AtomicBool, Ordering};
 
 pub static STORY_ADVANCE_PENDING: AtomicBool = AtomicBool::new(false);
@@ -149,6 +206,29 @@ pub fn register_story_api(lua: &Lua) -> LuaResult<()> {
     })?;
 
     globals.set("story_next", next_node)?;
+
+    Ok(())
+}
+
+/// Register Animation APIs.
+pub fn register_animation_api(lua: &Lua, shared: crate::animation::SharedAnimationCommands) -> LuaResult<()> {
+    let globals = lua.globals();
+    let animation = lua.create_table()?;
+
+    // animation.set_expression(id, expression)
+    let s = shared.clone();
+    let set_expression = lua.create_function(move |_, (id, expr): (String, String)| {
+        if let Ok(mut queue) = s.0.lock() {
+            queue.push(crate::animation::AnimationCommand::SetExpression {
+                target_id: id,
+                expression: expr,
+            });
+        }
+        Ok(())
+    })?;
+    animation.set("set_expression", set_expression)?;
+
+    globals.set("animation", animation)?;
 
     Ok(())
 }

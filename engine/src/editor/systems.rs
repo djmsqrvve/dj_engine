@@ -341,3 +341,70 @@ pub fn auto_save_prefs_system(prefs: Res<EditorPrefs>) {
         }
     }
 }
+pub fn cli_load_startup_system(world: &mut World) {
+    let project_path = {
+        let meta = world.resource::<ProjectMetadata>();
+        meta.path.clone()
+    };
+
+    if let Some(path) = project_path {
+        info!("Startup: CLI project path detected at {:?}", path);
+        
+        // 1. Load project metadata
+        let project_file = path.join("project.json");
+        if project_file.exists() {
+            match loader::load_project(&project_file) {
+                Ok(project) => {
+                    world.resource_mut::<ProjectMetadata>().name = project.name.clone();
+                    info!("Startup: Loaded project '{}'", project.name);
+                }
+                Err(e) => error!("Startup: Failed to load project.json: {}", e),
+            }
+        }
+
+        // 2. Load primary scene
+        let scene_path = path.join("scenes/intro_scene.json");
+        if scene_path.exists() {
+            match loader::load_scene(&scene_path) {
+                Ok(scene) => {
+                    load_scene_into_editor(world, scene);
+                }
+                Err(e) => error!("Startup: Failed to load scene: {}", e),
+            }
+        }
+
+        // 3. Load story graph
+        let graph_path = path.join("story_graphs/test_game.json");
+        if graph_path.exists() {
+            match loader::load_story_graph(&graph_path) {
+                Ok(graph) => {
+                    world.insert_resource(ActiveStoryGraph(graph.clone()));
+                    info!("Startup: Loaded story graph");
+
+                    // 4. Start playing if in Playing state
+                    let start_playing = {
+                        let state = world.resource::<State<EditorState>>();
+                        **state == EditorState::Playing
+                    };
+
+                    if start_playing {
+                        info!("Startup: Auto-starting story execution");
+                        use crate::story_graph::types::{StoryGraphLibrary, GraphExecutor};
+                        
+                        // Ensure library exists
+                        if world.get_resource::<StoryGraphLibrary>().is_none() {
+                            world.insert_resource(StoryGraphLibrary::default());
+                        }
+
+                        // Use resource_scope to avoid multiple mutable borrows of world
+                        world.resource_scope::<StoryGraphLibrary, _>(|world, mut library| {
+                            let mut executor = world.resource_mut::<GraphExecutor>();
+                            executor.load_from_data(&graph, &mut library);
+                        });
+                    }
+                }
+                Err(e) => error!("Startup: Failed to load story graph: {}", e),
+            }
+        }
+    }
+}

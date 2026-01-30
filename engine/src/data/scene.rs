@@ -161,15 +161,22 @@ pub struct PathfindingCell {
 }
 
 /// Pathfinding grid for TD maps.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Reflect, Resource)]
 pub struct PathfindingGrid {
     /// Grid width in cells
     pub width: u32,
     /// Grid height in cells
     pub height: u32,
+    /// Cell size in pixels (e.g. 32)
+    #[serde(default = "default_cell_size")]
+    pub cell_size: u32,
     /// Individual cell data
     #[serde(default)]
     pub cells: Vec<PathfindingCell>,
+}
+
+fn default_cell_size() -> u32 {
+    32
 }
 
 /// Scene pathfinding configuration.

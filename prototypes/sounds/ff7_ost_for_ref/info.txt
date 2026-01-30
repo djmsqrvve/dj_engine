@@ -1,0 +1,25 @@
+Archive created by -=MIRSOFT=-
+Look for game MIDs at http://go.to/gamemids
+
+*** Archive info ***
+Archiver: Mirsoft
+Type: Soundtrack
+Format: MID (AWE, GM, XG, YGM)
+Original Composer: Nobuo Uematsu
+Sequencer: Various Authors
+Num of tunes: 385
+Complete: 100%
+
+*** Game info ***
+Name: Final Fantasy 7 OST
+Platform: Audio CD
+Year: 1996
+Genre: RPG
+Publisher: Square
+Catalogue Nr: SSCX-10004
+
+*** Additional info ***
+This is complete MIDI soundtrack from one of the best soundtracks ever made - Final Fantasy VII.
+It is in 4 versions - General MIDI, AWE, XG and YGM. 
+The tracks are numbered as they are ordered in OST. Plus there are added bonus tunes, which are
+playing in the game, but haven't been on the soundtrack. Enjoy! :)

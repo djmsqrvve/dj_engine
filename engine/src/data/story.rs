@@ -23,6 +23,45 @@ pub enum StoryGraphType {
     MissionLogic,
 }
 
+/// Supported types for story flags/variables.
+#[derive(Debug, Clone, Reflect, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "type", content = "value")]
+pub enum FlagValue {
+    Bool(bool),
+    Number(f32),
+    String(String),
+}
+
+impl Default for FlagValue {
+    fn default() -> Self {
+        Self::Bool(false)
+    }
+}
+
+/// Condition logic for branching.
+#[derive(Debug, Clone, Reflect, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "type")]
+pub enum StoryCondition {
+    /// Flag is true (for booleans)
+    IsTrue { flag: String },
+    /// Flag equals a certain value
+    Equals { flag: String, value: FlagValue },
+    /// Flag is greater than a value
+    GreaterThan { flag: String, value: f32 },
+    /// Flag is less than a value
+    LessThan { flag: String, value: f32 },
+    /// Evaluate a Lua script (returns boolean)
+    LuaExpression { script: String },
+}
+
+impl Default for StoryCondition {
+    fn default() -> Self {
+        Self::IsTrue {
+            flag: String::new(),
+        }
+    }
+}
+
 /// Story node type enumeration.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Reflect)]
 #[serde(rename_all = "snake_case")]
@@ -36,6 +75,8 @@ pub enum StoryNodeType {
     Action,
     /// Conditional branch
     Conditional,
+    /// Set a story flag
+    SetFlag,
     /// Camera movement
     Camera,
     /// Time/pause control
@@ -45,12 +86,6 @@ pub enum StoryNodeType {
     /// End of branch
     End,
 }
-
-// ... (skipping unchanged code if possible, but replace_file_content needs contiguous block? No, I can target specific blocks)
-// Since node_type() and next_node_ids() are further down, I will use multiple replace chunks if they were separate tool calls, but here I can just replace the enum first.
-
-// Wait, I messed up the thinking. I can use MultiReplaceFileContent or multiple ReplaceFileContent.
-// I'll do StoryNodeType update first.
 
 /// Condition operator for story conditions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Reflect)]
@@ -122,18 +157,6 @@ fn default_one() -> u32 {
 /// Localized string (text in multiple languages).
 pub type LocalizedString = HashMap<String, String>;
 
-/// A condition for story branching.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
-pub struct StoryCondition {
-    /// Variable name to check
-    pub variable: String,
-    /// Comparison operator
-    #[serde(default)]
-    pub operator: ConditionOperator,
-    /// Value to compare against
-    #[reflect(ignore)]
-    pub value: serde_json::Value,
-}
 
 /// An effect/action that modifies game state.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
@@ -166,6 +189,9 @@ pub struct DialogueNodeData {
     /// Next node ID
     #[serde(default)]
     pub next_node_id: Option<String>,
+    /// Effects when this dialogue is viewed/completed
+    #[serde(default)]
+    pub effects: Vec<StoryEffect>,
 }
 
 /// A choice option in a choice node.
@@ -210,7 +236,7 @@ pub struct ActionNodeData {
 }
 
 /// Conditional node data.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct ConditionalNodeData {
     /// Condition to evaluate
     pub condition: StoryCondition,
@@ -221,7 +247,7 @@ pub struct ConditionalNodeData {
 }
 
 /// Camera node data.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct CameraNodeData {
     /// Camera preset ID
     #[serde(default)]
@@ -253,22 +279,8 @@ fn default_duration() -> f32 {
     1.0
 }
 
-impl Default for CameraNodeData {
-    fn default() -> Self {
-        Self {
-            preset_id: None,
-            position: Vec3Data::default(),
-            zoom: 1.0,
-            angle: 0.0,
-            duration: 1.0,
-            easing: "linear".to_string(),
-            next_node_id: None,
-        }
-    }
-}
-
 /// Time control node data.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct TimeControlNodeData {
     /// Whether to pause gameplay
     #[serde(default)]
@@ -283,16 +295,6 @@ pub struct TimeControlNodeData {
 
 fn default_time_scale() -> f32 {
     1.0
-}
-
-impl Default for TimeControlNodeData {
-    fn default() -> Self {
-        Self {
-            pause_gameplay: false,
-            time_scale: 1.0,
-            next_node_id: None,
-        }
-    }
 }
 
 /// End node data.
@@ -312,12 +314,19 @@ pub struct StartNodeData {
     #[serde(default)]
     pub next_node_id: Option<String>,
 }
-
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct SubGraphNodeData {
     /// ID of the sub-graph to execute (Scene)
     pub graph_id: String,
     /// Next node ID after sub-graph returns
+    #[serde(default)]
+    pub next_node_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
+pub struct SetFlagNodeData {
+    pub flag: String,
+    pub value: FlagValue,
     #[serde(default)]
     pub next_node_id: Option<String>,
 }
@@ -331,14 +340,21 @@ pub enum StoryNodeVariant {
     Choice(ChoiceNodeData),
     Action(ActionNodeData),
     Conditional(ConditionalNodeData),
+    SetFlag(SetFlagNodeData),
     Camera(CameraNodeData),
     TimeControl(TimeControlNodeData),
     SubGraph(SubGraphNodeData),
     End(EndNodeData),
 }
 
+impl Default for StoryNodeVariant {
+    fn default() -> Self {
+        Self::Start(StartNodeData::default())
+    }
+}
+
 /// A node in a story graph.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Reflect)]
 pub struct StoryNodeData {
     /// Unique node identifier
     pub id: String,
@@ -409,6 +425,7 @@ impl StoryNodeData {
             StoryNodeVariant::Choice(_) => StoryNodeType::Choice,
             StoryNodeVariant::Action(_) => StoryNodeType::Action,
             StoryNodeVariant::Conditional(_) => StoryNodeType::Conditional,
+            StoryNodeVariant::SetFlag(_) => StoryNodeType::SetFlag,
             StoryNodeVariant::Camera(_) => StoryNodeType::Camera,
             StoryNodeVariant::TimeControl(_) => StoryNodeType::TimeControl,
             StoryNodeVariant::SubGraph(_) => StoryNodeType::SubGraph,
@@ -431,6 +448,7 @@ impl StoryNodeData {
                 c.true_target_node_id.as_str(),
                 c.false_target_node_id.as_str(),
             ],
+            StoryNodeVariant::SetFlag(s) => s.next_node_id.as_deref().into_iter().collect(),
             StoryNodeVariant::Camera(c) => c.next_node_id.as_deref().into_iter().collect(),
             StoryNodeVariant::TimeControl(t) => t.next_node_id.as_deref().into_iter().collect(),
             StoryNodeVariant::SubGraph(s) => s.next_node_id.as_deref().into_iter().collect(),
@@ -450,6 +468,8 @@ pub enum ValidationError {
     DeadEnd(String),
     /// Unreachable node
     UnreachableNode(String),
+    /// Cycle detected in the graph
+    CycleDetected(String),
 }
 
 /// Validation error when checking against a scene.
@@ -471,6 +491,9 @@ pub enum SceneValidationError {
 pub struct StoryGraphData {
     /// Unique graph identifier
     pub id: String,
+    /// Format version for compatibility
+    #[serde(default = "default_version")]
+    pub format_version: String,
     /// Human-readable name
     pub name: String,
     /// Description
@@ -490,11 +513,16 @@ pub struct StoryGraphData {
     pub nodes: Vec<StoryNodeData>,
 }
 
+fn default_version() -> String {
+    "1.0".to_string()
+}
+
 impl StoryGraphData {
     /// Create a new empty story graph.
     pub fn new(id: impl Into<String>, name: impl Into<String>) -> Self {
         Self {
             id: id.into(),
+            format_version: default_version(),
             name: name.into(),
             description: String::new(),
             graph_type: StoryGraphType::Dialogue,
@@ -542,9 +570,84 @@ impl StoryGraphData {
             }
         }
 
-        // TODO: Check for unreachable nodes (would need graph traversal)
+        // Check for unreachable nodes and cycles
+        let mut visited = std::collections::HashSet::new();
+        let mut recursion_stack = std::collections::HashSet::new();
+        let mut has_cycle = false;
+
+        fn traverse(
+            node_id: &str,
+            graph: &StoryGraphData,
+            visited: &mut std::collections::HashSet<String>,
+            recursion_stack: &mut std::collections::HashSet<String>,
+            errors: &mut Vec<ValidationError>,
+            has_cycle: &mut bool,
+        ) {
+            visited.insert(node_id.to_string());
+            recursion_stack.insert(node_id.to_string());
+
+            if let Some(node) = graph.find_node(node_id) {
+                for next_id in node.next_node_ids() {
+                    if recursion_stack.contains(next_id) {
+                        if !*has_cycle {
+                            errors.push(ValidationError::CycleDetected(format!(
+                                "Cycle through node {}",
+                                next_id
+                            )));
+                            *has_cycle = true;
+                        }
+                    } else if !visited.contains(next_id) {
+                        traverse(next_id, graph, visited, recursion_stack, errors, has_cycle);
+                    }
+                }
+            }
+
+            recursion_stack.remove(node_id);
+        }
+
+        if node_ids.contains(self.root_node_id.as_str()) {
+            traverse(
+                &self.root_node_id,
+                self,
+                &mut visited,
+                &mut recursion_stack,
+                &mut errors,
+                &mut has_cycle,
+            );
+        }
+
+        // Orphans (Unreachable)
+        for node in &self.nodes {
+            if !visited.contains(&node.id) {
+                errors.push(ValidationError::UnreachableNode(node.id.clone()));
+            }
+        }
 
         errors
+    }
+
+    /// Calculate a complexity score for the graph.
+    /// Higher score implies more complex logic/branching.
+    pub fn complexity_score(&self) -> u32 {
+        let mut score = 0;
+        
+        // Base score for node count
+        score += self.nodes.len() as u32;
+
+        for node in &self.nodes {
+            match node.data {
+                StoryNodeVariant::Choice(ref c) => {
+                    score += 2; // Choices are interactive
+                    score += c.options.len() as u32; // More options = more complex
+                }
+                StoryNodeVariant::Conditional(_) => score += 3, // Logic branching is complex
+                StoryNodeVariant::SubGraph(_) => score += 5, // Subgraphs hide complexity
+                StoryNodeVariant::SetFlag(_) => score += 1, // State change
+                _ => {}
+            }
+        }
+
+        score
     }
 
     /// Validate the story graph against a specific scene.
@@ -599,16 +702,9 @@ mod tests {
 
     #[test]
     fn test_validation_missing_root() {
-        let graph = StoryGraphData {
-            id: "test".to_string(),
-            name: "Test".to_string(),
-            description: String::new(),
-            graph_type: StoryGraphType::Dialogue,
-            root_node_id: "nonexistent".to_string(),
-            variables: HashMap::new(),
-
-            nodes: vec![],
-        };
+        let mut graph = StoryGraphData::new("test", "Test");
+        graph.root_node_id = "nonexistent".to_string();
+        graph.nodes = vec![];
 
         let errors = graph.validate();
         assert!(errors

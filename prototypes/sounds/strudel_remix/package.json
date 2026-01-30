@@ -1,0 +1,13 @@
+{
+  "name": "ff7-strudel-remix",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@strudel/embed": "^1.0.0",
+    "vite": "^5.0.0"
+  }
+}

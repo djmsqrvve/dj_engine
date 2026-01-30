@@ -1,7 +1,6 @@
 use super::state::*;
 use bevy::prelude::*;
-use bevy_egui::egui::{self, RichText};
-use egui_dock::{DockArea, Style};
+use bevy_egui::egui::{self, Color32, RichText};
 
 pub mod campaign;
 pub mod feature_grid;
@@ -9,6 +8,7 @@ pub mod panels;
 pub mod phases_view;
 pub mod timeline;
 pub mod views;
+pub mod workspace;
 
 pub struct EditorTabViewer<'a> {
     pub world: &'a mut World,
@@ -72,12 +72,14 @@ impl<'a> egui_dock::TabViewer for EditorTabViewer<'a> {
                     {
                         self.world
                             .resource_scope::<ActiveStoryGraph, _>(|world, graph| {
-                                if let Some(mut executor) =
-                                    world.get_resource_mut::<crate::story_graph::GraphExecutor>()
-                                {
-                                    executor.load_from_data(&graph.0);
-                                    info!("Editor: Loaded Story Graph into Executor");
-                                }
+                                world.resource_scope::<crate::story_graph::StoryGraphLibrary, _>(|world, mut library| {
+                                    if let Some(mut executor) =
+                                        world.get_resource_mut::<crate::story_graph::GraphExecutor>()
+                                    {
+                                        executor.load_from_data(&graph.0, &mut library);
+                                        info!("Editor: Loaded Story Graph into Executor");
+                                    }
+                                });
                             });
                         self.world
                             .resource_mut::<NextState<EditorState>>()
@@ -155,12 +157,10 @@ pub fn editor_ui_system(world: &mut World) {
         panels::draw_top_menu(ui, world);
     });
 
-    // Dock Area (Rest of the screen)
-    // We must extract EditorDockState to avoid borrow conflicts if TabViewer uses World
-    world.resource_scope::<EditorDockState, _>(|world, mut dock_state| {
-        let mut tab_viewer = EditorTabViewer { world };
-        DockArea::new(&mut dock_state.0)
-            .style(Style::from_egui(ctx.style().as_ref()))
-            .show(&ctx, &mut tab_viewer);
-    });
+    // Workspace Canvas (Rest of the screen)
+    egui::CentralPanel::default()
+        .frame(egui::Frame::none().fill(Color32::TRANSPARENT))
+        .show(&ctx, |ui| {
+            workspace::draw_workspace_canvas(ui, world);
+        });
 }

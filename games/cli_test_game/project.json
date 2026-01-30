@@ -1,0 +1,8 @@
+{
+  "name": "CLI Test Game",
+  "version": "1.0.0",
+  "settings": {
+    "engine_version": "0.1.0",
+    "target_platform": "Linux"
+  }
+}

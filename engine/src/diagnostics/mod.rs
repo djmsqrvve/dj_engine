@@ -1,6 +1,8 @@
 //! Engine diagnostics and performance monitoring.
 
-use crate::{editor::state::EditorState, story_graph::GraphExecutor, types::DiagnosticConfig};
+use std::collections::HashMap;
+
+use crate::types::DiagnosticConfig;
 use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
@@ -12,23 +14,27 @@ pub mod inspector;
 /// Plugin that provides diagnostic overlays and performance tracking.
 pub struct DiagnosticsPlugin;
 
+#[derive(Resource, Default, Debug, Clone, Reflect)]
+#[reflect(Resource)]
+pub struct SystemTimer {
+    pub timings: HashMap<String, f32>,
+}
+
 impl Plugin for DiagnosticsPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<DiagnosticConfig>()
-            .init_resource::<DiagnosticConfig>()
+        app.init_resource::<DiagnosticConfig>()
+            .init_resource::<SystemTimer>()
+            .register_type::<DiagnosticConfig>()
+            .register_type::<SystemTimer>()
             .add_plugins(FrameTimeDiagnosticsPlugin)
-            .add_systems(Startup, setup_diagnostics)
-            .add_systems(
-                Update,
-                (
-                    toggle_diagnostics_system,
-                    update_diagnostics_system.run_if(resource_exists::<DiagnosticConfig>),
-                    console_fps_logger_system.run_if(resource_exists::<DiagnosticConfig>),
-                ),
-            )
-            // Disabled temporarily due to WSL2/LLVMpipe compatibility issues (incompatible window kind panic)
-            // .add_plugins(inspector::InspectorPlugin)
-            .add_plugins(console::ConsolePlugin);
+            .add_plugins(inspector::InspectorPlugin)
+            .add_plugins(console::ConsolePlugin)
+            .add_systems(Startup, setup_diagnostic_overlay)
+            .add_systems(Update, (
+                update_diagnostic_overlay,
+                update_config_from_input,
+                console_fps_logger_system.run_if(resource_exists::<DiagnosticConfig>),
+            ));
     }
 }
 
@@ -40,7 +46,7 @@ struct DiagnosticText;
 #[derive(Component)]
 struct DiagnosticOverlay;
 
-fn setup_diagnostics(mut commands: Commands, config: Res<DiagnosticConfig>) {
+fn setup_diagnostic_overlay(mut commands: Commands, config: Res<DiagnosticConfig>) {
     commands
         .spawn((
             Node {
@@ -50,8 +56,8 @@ fn setup_diagnostics(mut commands: Commands, config: Res<DiagnosticConfig>) {
                 flex_direction: FlexDirection::Column,
                 ..default()
             },
-            DiagnosticOverlay,
             Visibility::Inherited,
+            DiagnosticOverlay,
         ))
         .with_children(|parent| {
             parent.spawn((
@@ -66,7 +72,7 @@ fn setup_diagnostics(mut commands: Commands, config: Res<DiagnosticConfig>) {
         });
 }
 
-fn toggle_diagnostics_system(
+fn update_config_from_input(
     keys: Res<ButtonInput<KeyCode>>,
     mut config: ResMut<DiagnosticConfig>,
     mut query: Query<&mut Visibility, With<DiagnosticOverlay>>,
@@ -84,83 +90,35 @@ fn toggle_diagnostics_system(
     }
 }
 
-fn update_diagnostics_system(
-    time: Res<Time>,
+fn update_diagnostic_overlay(
+    _time: Res<Time>,
+    mut text_query: Query<&mut Text, With<DiagnosticText>>,
+    config: Res<DiagnosticConfig>,
     diagnostics: Res<DiagnosticsStore>,
-    mut config: ResMut<DiagnosticConfig>,
-    mut query: Query<(&mut Text, &mut TextColor), With<DiagnosticText>>,
-    entities: Query<Entity>,
-    executor: Option<Res<GraphExecutor>>,
-    windows: Query<&Window>,
-    editor_state: Option<Res<State<EditorState>>>,
-    mut overlay_query: Query<&mut Visibility, With<DiagnosticOverlay>>,
+    timer: Res<SystemTimer>,
 ) {
     if !config.enabled {
-        return;
-    }
-
-    config.update_timer.tick(time.delta());
-    if !config.update_timer.just_finished() {
-        return;
-    }
-
-    // Enforce visibility based on EditorState
-    if let Some(state) = editor_state {
-        if let Ok(mut overlay_vis) = overlay_query.get_single_mut() {
-            if **state == EditorState::Editor {
-                if *overlay_vis != Visibility::Hidden {
-                    *overlay_vis = Visibility::Hidden;
-                }
-                return; // Stop updating text
-            } else if config.enabled && *overlay_vis == Visibility::Hidden {
-                // Restore visibility if Playing and enabled
-                *overlay_vis = Visibility::Inherited;
-            }
+        for mut text in &mut text_query {
+            text.0 = String::new();
         }
+        return;
     }
 
     let fps = diagnostics
         .get(&FrameTimeDiagnosticsPlugin::FPS)
-        .and_then(|diag| diag.smoothed());
+        .and_then(|diag| diag.smoothed())
+        .map(|value| format!("{:.1}", value))
+        .unwrap_or_else(|| "N/A".into());
 
-    let frame_time = diagnostics
-        .get(&FrameTimeDiagnosticsPlugin::FRAME_TIME)
-        .and_then(|diag| diag.smoothed());
+    let mut timing_str = String::new();
+    let mut keys: Vec<_> = timer.timings.keys().collect();
+    keys.sort();
+    for key in keys {
+        timing_str.push_str(&format!("\n{}: {:.2}ms", key, timer.timings[key] * 1000.0));
+    }
 
-    let entity_count = entities.iter().count();
-
-    let story_status = if let Some(exec) = executor {
-        format!("{:?}", exec.status)
-    } else {
-        "No Executor".to_string()
-    };
-
-    let (width, height) = if let Ok(window) = windows.get_single() {
-        (window.width() as i32, window.height() as i32)
-    } else {
-        (0, 0)
-    };
-
-    if let Ok((mut text, mut color)) = query.get_single_mut() {
-        let fps_text = fps.map_or("N/A".to_string(), |v| format!("{:.1}", v));
-        let ms_text = frame_time.map_or("N/A".to_string(), |v| format!("{:.2}", v));
-
-        text.0 = format!(
-            "FPS: {}\nFrame Time: {}ms\nEntities: {}\nStoryStatus: {}\nWindow: {}x{}",
-            fps_text, ms_text, entity_count, story_status, width, height
-        );
-
-        // Color coding based on performance
-        if let Some(v) = fps {
-            let new_color = if v < 30.0 {
-                Color::srgb(1.0, 0.0, 0.0) // Red
-            } else if v < 55.0 {
-                Color::srgb(1.0, 1.0, 0.0) // Yellow
-            } else {
-                config.text_color // Preferred green
-            };
-            color.0 = new_color;
-        }
+    for mut text in &mut text_query {
+        text.0 = format!("FPS: {}{}", fps, timing_str);
     }
 }
 

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crate::state::GameState;
 use crate::story::StoryState;
-use dj_engine::story_graph::{GraphExecutor, StoryNode, StoryGraph};
+use dj_engine::story_graph::{GraphExecutor, StoryNode, StoryGraph, StoryCondition, FlagValue};
 use super::{player::Player, NPC};
 
 pub fn interaction_check(
@@ -56,7 +56,7 @@ pub fn interaction_check(
                             });
 
                             let branch_glitch = graph.add(StoryNode::Branch {
-                                flag: "DefeatedGlitch".to_string(),
+                                condition: StoryCondition::IsTrue("DefeatedGlitch".to_string()),
                                 if_true: Some(win1),
                                 if_false: Some(quest1),
                             });
@@ -64,7 +64,7 @@ pub fn interaction_check(
                             // 3. Intro Path (if not MetHamster)
                             let set_met = graph.add(StoryNode::SetFlag {
                                 flag: "MetHamster".to_string(),
-                                value: true,
+                                value: FlagValue::Bool(true),
                                 next: Some(end), 
                             });
                             let intro3 = graph.add(StoryNode::Dialogue {
@@ -88,7 +88,7 @@ pub fn interaction_check(
 
                             // 4. Root Branch (MetHamster?)
                             let root = graph.add(StoryNode::Branch {
-                                flag: "MetHamster".to_string(),
+                                condition: StoryCondition::IsTrue("MetHamster".to_string()),
                                 if_true: Some(branch_glitch),
                                 if_false: Some(intro1),
                             });
@@ -129,7 +129,7 @@ pub fn interaction_check(
                             });
 
                             let branch_victory = graph.add(StoryNode::Branch {
-                                flag: "DefeatedGlitch".to_string(),
+                                condition: StoryCondition::IsTrue("DefeatedGlitch".to_string()),
                                 if_true: Some(inert),
                                 if_false: Some(screech),
                             });
@@ -149,7 +149,7 @@ pub fn interaction_check(
                             });
 
                             let root = graph.add(StoryNode::Branch {
-                                flag: "MetHamster".to_string(),
+                                condition: StoryCondition::IsTrue("MetHamster".to_string()),
                                 if_true: Some(branch_victory),
                                 if_false: Some(warn1),
                             });

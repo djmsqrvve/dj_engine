@@ -589,11 +589,11 @@ pub fn draw_controls_view(ui: &mut egui::Ui, world: &mut World) {
             // Group by Action (BTreeMap for deterministic order)
             let mut actions: std::collections::BTreeMap<crate::input::InputAction, Vec<String>> =
                 std::collections::BTreeMap::new();
-            for (key, action) in &config.keyboard_map {
+            for (key, action) in &config.keyboard {
                 actions
                     .entry(*action)
                     .or_default()
-                    .push(format!("{:?}", key));
+                    .push(key.clone());
             }
 
             for (action, keys) in actions {

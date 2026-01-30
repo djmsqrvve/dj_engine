@@ -23,6 +23,7 @@ pub mod scenario;
 pub mod scene;
 pub mod spawner;
 pub mod story;
+pub mod save;
 
 // Re-export commonly used types
 pub use assets::{AssetIndex, Prefab};
@@ -104,6 +105,7 @@ impl Plugin for DataPlugin {
             .register_type::<mode::GameMode>()
             .register_type::<mode::PlayerCountRange>()
             .register_type::<scenario::ScenarioData>()
-            .register_type::<scenario::ScenarioEntity>();
+            .register_type::<scenario::ScenarioEntity>()
+            .add_plugins(save::SavePlugin);
     }
 }

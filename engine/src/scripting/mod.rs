@@ -10,8 +10,9 @@ pub mod ffi;
 use crate::story_graph::{executor::StoryActionEvent, StoryFlowEvent, StoryInputEvent};
 pub use context::LuaContext;
 pub use ffi::{
-    create_shared_state, register_core_api, register_generic_state_api, GenericStateBuffer,
-    SharedGenericState,
+    create_shared_input_state, create_shared_state, register_core_api, register_generic_state_api,
+    register_input_api, register_story_api, GenericStateBuffer, SharedGenericState,
+    SharedInputState,
 };
 
 /// Events for script control.
@@ -27,6 +28,10 @@ pub struct DJScriptingPlugin;
 impl Plugin for DJScriptingPlugin {
     fn build(&self, app: &mut App) {
         let lua_ctx = LuaContext::new();
+        let input_state = create_shared_input_state();
+        
+        // Get shared animation commands if available (assuming DJAnimationPlugin is present)
+        let animation_commands = app.world().get_resource::<crate::animation::SharedAnimationCommands>().cloned();
 
         // Register core APIs (log, warn, error)
         {
@@ -38,6 +43,14 @@ impl Plugin for DJScriptingPlugin {
                     if let Err(e) = ffi::register_story_api(&lua) {
                         error!("Failed to register Story Lua API: {}", e);
                     }
+                    if let Err(e) = ffi::register_input_api(&lua, input_state.clone()) {
+                        error!("Failed to register Input Lua API: {}", e);
+                    }
+                    if let Some(anim_cmds) = &animation_commands {
+                        if let Err(e) = ffi::register_animation_api(&lua, anim_cmds.clone()) {
+                            error!("Failed to register Animation Lua API: {}", e);
+                        }
+                    }
                 }
                 Err(e) => {
                     error!("Failed to acquire Lua lock during initialization: {}", e);
@@ -46,11 +59,40 @@ impl Plugin for DJScriptingPlugin {
         }
 
         app.insert_resource(lua_ctx)
+            .insert_resource(SharedInputStateResource(input_state))
             .register_type::<ScriptCommand>()
             .add_event::<ScriptCommand>()
-            .add_systems(Update, (handle_script_commands, bridge_story_events_to_lua));
+            .add_systems(Update, (handle_script_commands, bridge_story_events_to_lua, sync_input_to_lua));
 
         info!("DJ Scripting Plugin initialized");
+    }
+}
+
+/// Resource wrapper for shared input state.
+#[derive(Resource)]
+pub struct SharedInputStateResource(pub SharedInputState);
+
+fn sync_input_to_lua(
+    action_state: Res<crate::input::ActionState>,
+    shared_input: Res<SharedInputStateResource>,
+) {
+    if let Ok(mut buffer) = shared_input.0.write() {
+        buffer.cursor_position = action_state.cursor_position;
+        
+        buffer.pressed.clear();
+        for action in action_state.iter_pressed() {
+            buffer.pressed.insert(action.as_str().to_string());
+        }
+        
+        buffer.just_pressed.clear();
+        for action in action_state.iter_just_pressed() {
+            buffer.just_pressed.insert(action.as_str().to_string());
+        }
+        
+        buffer.just_released.clear();
+        for action in action_state.iter_just_released() {
+            buffer.just_released.insert(action.as_str().to_string());
+        }
     }
 }
 

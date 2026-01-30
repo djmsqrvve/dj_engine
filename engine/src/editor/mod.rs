@@ -38,6 +38,7 @@ impl Plugin for EditorPlugin {
         let mut initial_project = ProjectMetadata::default();
         let mut initial_view = EditorView::MapEditor; // Default to map editor
         let mut test_mode = false;
+        let mut start_playing = false;
 
         let mut i = 0;
         while i < args.len() {
@@ -62,6 +63,10 @@ impl Plugin for EditorPlugin {
                 "--test-mode" => {
                     test_mode = true;
                     info!("CLI: Automated Test Mode Enabled");
+                }
+                "--play" => {
+                    start_playing = true;
+                    info!("CLI: Direct Play Mode Enabled");
                 }
                 _ => {}
             }
@@ -131,7 +136,17 @@ impl Plugin for EditorPlugin {
             surface.push_to_first_leaf(EditorView::Core);
         }
 
-        app.init_state::<EditorState>()
+        if start_playing {
+            app.insert_state(EditorState::Playing);
+        } else {
+            app.insert_state(EditorState::Editor);
+        }
+
+        app.register_type::<Commit>()
+            .register_type::<CommitStatus>()
+            .register_type::<Branch>()
+            .register_type::<EditorView>()
+            .register_type::<SidePanelTab>()
             .insert_resource(EditorPrefs(preferences))
             .insert_resource(initial_project)
             .insert_resource(ui_state)
@@ -147,6 +162,7 @@ impl Plugin for EditorPlugin {
             .add_systems(Update, apply_window_settings_system)
             .add_systems(Update, sync_dock_layout_system) // Sync Dock
             .add_systems(Update, auto_save_prefs_system) // Auto Save
+            .add_systems(Startup, cli_load_startup_system)
             .add_systems(OnEnter(EditorState::Playing), launch_project_system);
 
         if test_mode {

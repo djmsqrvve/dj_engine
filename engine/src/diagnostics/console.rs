@@ -151,7 +151,7 @@ fn handle_console_commands(
                 if let Some(exec) = executor.as_ref() {
                     println!("Status: {:?}", exec.status);
                     println!("Active Node: {:?}", exec.current_node);
-                    println!("Has Active Graph: {}", exec.active_graph.is_some());
+                    println!("Has Active Graph: {}", exec.active_graph_id.is_some());
                 } else {
                     println!("No GraphExecutor resource found.");
                 }

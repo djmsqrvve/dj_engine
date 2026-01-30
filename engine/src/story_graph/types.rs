@@ -1,10 +1,40 @@
 use crate::audio::AudioCommand;
 use crate::data::story::{StoryGraphData, StoryNodeVariant};
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Unique identifier for a node in the graph.
 pub type NodeId = usize;
+
+/// Supported types for story flags.
+#[derive(Debug, Clone, Reflect, PartialEq, Serialize, Deserialize)]
+pub enum FlagValue {
+    Bool(bool),
+    Number(f32),
+    String(String),
+}
+
+impl Default for FlagValue {
+    fn default() -> Self {
+        Self::Bool(false)
+    }
+}
+
+/// Condition logic for branching.
+#[derive(Debug, Clone, Reflect, PartialEq, Serialize, Deserialize)]
+pub enum StoryCondition {
+    /// Flag is true (for booleans)
+    IsTrue(String),
+    /// Flag equals a certain value
+    Equals(String, FlagValue),
+    /// Flag is greater than a value
+    GreaterThan(String, f32),
+    /// Flag is less than a value
+    LessThan(String, f32),
+    /// Lua script returning boolean
+    LuaExpression(String),
+}
 
 /// Represents a single logic or content step in the story.
 #[derive(Debug, Clone, Reflect)]
@@ -15,6 +45,7 @@ pub enum StoryNode {
         text: String,
         portrait: Option<String>,
         next: Option<NodeId>,
+        effects: Vec<crate::data::story::StoryEffect>,
     },
     /// Present a set of choices to the player.
     Choice {
@@ -38,16 +69,16 @@ pub enum StoryNode {
         graph_id: String,
         next: Option<NodeId>,
     },
-    /// Conditional branch based on a story flag.
+    /// Conditional branch based on story logic.
     Branch {
-        flag: String,
+        condition: StoryCondition,
         if_true: Option<NodeId>,
         if_false: Option<NodeId>,
     },
-    /// Set or unset a story flag.
+    /// Set or update a story flag.
     SetFlag {
         flag: String,
-        value: bool,
+        value: FlagValue,
         next: Option<NodeId>,
     },
     /// Wait for a specified duration in seconds.
@@ -56,6 +87,20 @@ pub enum StoryNode {
     Event {
         event_id: String,
         payload: String,
+        next: Option<NodeId>,
+    },
+    /// Move or transition the camera.
+    Camera {
+        preset_id: Option<String>,
+        position: Vec3,
+        zoom: f32,
+        duration: f32,
+        next: Option<NodeId>,
+    },
+    /// Control time scale or pause gameplay.
+    TimeControl {
+        time_scale: f32,
+        pause: bool,
         next: Option<NodeId>,
     },
     /// Start execution of the graph.
@@ -69,21 +114,24 @@ pub enum StoryNode {
 pub struct GraphChoice {
     pub text: String,
     pub next: Option<NodeId>,
-    pub flag_required: Option<String>,
+    pub conditions: Vec<StoryCondition>,
+    pub effects: Vec<crate::data::story::StoryEffect>,
 }
 
 /// The graph container holding all nodes.
 #[derive(Resource, Default, Clone, Reflect)]
 #[reflect(Resource)]
 pub struct StoryGraph {
+    pub id: String,
     pub nodes: HashMap<NodeId, StoryNode>,
     pub start_node: Option<NodeId>,
     pub next_id: usize,
 }
 
 impl StoryGraph {
-    pub fn new() -> Self {
+    pub fn new(id: impl Into<String>) -> Self {
         Self {
+            id: id.into(),
             nodes: HashMap::new(),
             start_node: None,
             next_id: 0,
@@ -102,22 +150,63 @@ impl StoryGraph {
     }
 }
 
-/// Generic container for story flags (booleans).
+/// Generic container for story flags.
 #[derive(Resource, Default, Debug, Clone, Reflect)]
 #[reflect(Resource)]
-pub struct StoryFlags(pub HashMap<String, bool>);
+pub struct StoryFlags(pub HashMap<String, FlagValue>);
 
 impl StoryFlags {
-    pub fn set(&mut self, flag: &str, value: bool) {
+    pub fn set(&mut self, flag: &str, value: FlagValue) {
         self.0.insert(flag.to_string(), value);
     }
 
-    pub fn get(&self, flag: &str) -> bool {
-        *self.0.get(flag).unwrap_or(&false)
+    pub fn get(&self, flag: &str) -> Option<&FlagValue> {
+        self.0.get(flag)
+    }
+
+    /// Returns true if the flag exists in the state.
+    pub fn exists(&self, flag: &str) -> bool {
+        self.0.contains_key(flag)
+    }
+
+    /// Returns the boolean value of a flag. 
+    /// Returns `None` if the flag is missing or not a boolean.
+    pub fn get_bool_strict(&self, flag: &str) -> Option<bool> {
+        match self.0.get(flag) {
+            Some(FlagValue::Bool(b)) => Some(*b),
+            _ => None,
+        }
+    }
+
+    /// Returns the boolean value of a flag, defaulting to false if missing or type mismatch.
+    pub fn get_bool(&self, flag: &str) -> bool {
+        match self.0.get(flag) {
+            Some(FlagValue::Bool(b)) => *b,
+            _ => false,
+        }
+    }
+
+    pub fn evaluate(&self, condition: &StoryCondition) -> bool {
+        match condition {
+            StoryCondition::IsTrue(f) => self.get_bool(f),
+            StoryCondition::Equals(f, val) => self.0.get(f) == Some(val),
+            StoryCondition::GreaterThan(f, target) => match self.0.get(f) {
+                Some(FlagValue::Number(n)) => n > target,
+                _ => false,
+            },
+            StoryCondition::LessThan(f, target) => match self.0.get(f) {
+                Some(FlagValue::Number(n)) => n < target,
+                _ => false,
+            },
+            StoryCondition::LuaExpression(_) => {
+                error!("LuaExpression cannot be evaluated by StoryFlags directly! Use GraphExecutor.");
+                false
+            }
+        }
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Reflect, Serialize, Deserialize)]
 pub enum ExecutionStatus {
     #[default]
     Idle,
@@ -127,18 +216,23 @@ pub enum ExecutionStatus {
     Paused,
 }
 
-#[derive(Resource, Default, Reflect)]
+#[derive(Resource, Default, Reflect, Serialize, Deserialize)]
 #[reflect(Resource)]
 pub struct GraphExecutor {
-    // For prototype simplicity, we store the struct directly.
-    pub active_graph: Option<StoryGraph>,
+    pub active_graph_id: Option<String>,
     pub current_node: Option<NodeId>,
     pub status: ExecutionStatus,
-    pub wait_timer: Timer,
-    /// Stack for sub-graph execution: (ParentGraph, ReturnNodeId)
     #[reflect(ignore)]
-    pub stack: Vec<(StoryGraph, Option<NodeId>)>,
+    #[serde(skip)] // Timer is transient
+    pub wait_timer: Timer,
+    /// Stack for sub-graph execution: (ParentGraphID, ReturnNodeId)
+    pub stack: Vec<(String, Option<NodeId>)>,
+    /// Current subgraph nesting depth
+    pub current_depth: usize,
 }
+
+pub const MAX_SUBGRAPH_DEPTH: usize = 50;
+pub const MAX_NODES_PER_FRAME: usize = 100;
 
 /// Library of loaded story graphs for sub-graph lookups.
 #[derive(Resource, Default)]
@@ -147,17 +241,17 @@ pub struct StoryGraphLibrary {
 }
 
 impl GraphExecutor {
-    pub fn start(&mut self, graph: StoryGraph) {
-        let start = graph.start_node;
-        self.active_graph = Some(graph);
-        self.current_node = start;
+    pub fn start(&mut self, graph_id: String, start_node: Option<NodeId>) {
+        self.active_graph_id = Some(graph_id);
+        self.current_node = start_node;
         self.status = ExecutionStatus::Running;
         self.stack.clear();
+        self.current_depth = 0;
     }
 
     /// Helper to bridge Editor Data -> Runtime Graph
-    pub fn load_from_data(&mut self, data: &StoryGraphData) {
-        let mut graph = StoryGraph::new();
+    pub fn load_from_data(&mut self, data: &StoryGraphData, library: &mut StoryGraphLibrary) {
+        let mut graph = StoryGraph::new(data.id.clone());
         let mut id_map: HashMap<String, NodeId> = HashMap::new();
 
         // Pass 1: Allocate IDs
@@ -185,6 +279,7 @@ impl GraphExecutor {
                     text: d.text.get("en").cloned().unwrap_or_default(),
                     portrait: d.portrait_id.clone(),
                     next: resolve(&d.next_node_id),
+                    effects: d.effects.clone(),
                 },
                 StoryNodeVariant::Choice(c) => StoryNode::Choice {
                     speaker: "Player".into(), // Default?
@@ -195,7 +290,8 @@ impl GraphExecutor {
                         .map(|o| GraphChoice {
                             text: o.text.get("en").cloned().unwrap_or_default(),
                             next: Some(id_map[&o.target_node_id]), // Choices must have targets?
-                            flag_required: None,
+                            conditions: o.conditions.iter().map(bridge_condition).collect(),
+                            effects: o.effects.clone(),
                         })
                         .collect(),
                 },
@@ -215,11 +311,48 @@ impl GraphExecutor {
                         StoryNode::End
                     }
                 }
+                StoryNodeVariant::Conditional(c) => StoryNode::Branch {
+                    condition: match &c.condition {
+                        crate::data::story::StoryCondition::IsTrue { flag } => {
+                            StoryCondition::IsTrue(flag.clone())
+                        }
+                        crate::data::story::StoryCondition::Equals { flag, value } => {
+                            StoryCondition::Equals(flag.clone(), bridge_flag_value(value))
+                        }
+                        crate::data::story::StoryCondition::GreaterThan { flag, value } => {
+                            StoryCondition::GreaterThan(flag.clone(), *value)
+                        }
+                        crate::data::story::StoryCondition::LessThan { flag, value } => {
+                            StoryCondition::LessThan(flag.clone(), *value)
+                        }
+                        crate::data::story::StoryCondition::LuaExpression { script } => {
+                            StoryCondition::LuaExpression(script.clone())
+                        }
+                    },
+                    if_true: id_map.get(&c.true_target_node_id).cloned(),
+                    if_false: id_map.get(&c.false_target_node_id).cloned(),
+                },
+                StoryNodeVariant::SetFlag(s) => StoryNode::SetFlag {
+                    flag: s.flag.clone(),
+                    value: bridge_flag_value(&s.value),
+                    next: resolve(&s.next_node_id),
+                },
+                StoryNodeVariant::Camera(c) => StoryNode::Camera {
+                    preset_id: c.preset_id.clone(),
+                    position: Vec3::new(c.position.x, c.position.y, c.position.z),
+                    zoom: c.zoom,
+                    duration: c.duration,
+                    next: resolve(&c.next_node_id),
+                },
+                StoryNodeVariant::TimeControl(t) => StoryNode::TimeControl {
+                    time_scale: t.time_scale,
+                    pause: t.pause_gameplay,
+                    next: resolve(&t.next_node_id),
+                },
                 StoryNodeVariant::SubGraph(s) => StoryNode::SubGraph {
                     graph_id: s.graph_id.clone(),
                     next: resolve(&s.next_node_id),
                 },
-                _ => StoryNode::End, // Unimplemented variants
             };
 
             graph.nodes.insert(runtime_id, node);
@@ -229,7 +362,36 @@ impl GraphExecutor {
             graph.set_start(*start_id);
         }
 
-        self.start(graph);
+        let start_node = graph.start_node;
+        let id = graph.id.clone();
+        library.graphs.insert(id.clone(), graph);
+        self.start(id, start_node);
+    }
+}
+
+fn bridge_flag_value(val: &crate::data::story::FlagValue) -> FlagValue {
+    match val {
+        crate::data::story::FlagValue::Bool(b) => FlagValue::Bool(*b),
+        crate::data::story::FlagValue::Number(n) => FlagValue::Number(*n),
+        crate::data::story::FlagValue::String(s) => FlagValue::String(s.clone()),
+    }
+}
+
+fn bridge_condition(cond: &crate::data::story::StoryCondition) -> StoryCondition {
+    match cond {
+        crate::data::story::StoryCondition::IsTrue { flag } => StoryCondition::IsTrue(flag.clone()),
+        crate::data::story::StoryCondition::Equals { flag, value } => {
+            StoryCondition::Equals(flag.clone(), bridge_flag_value(value))
+        }
+        crate::data::story::StoryCondition::GreaterThan { flag, value } => {
+            StoryCondition::GreaterThan(flag.clone(), *value)
+        }
+        crate::data::story::StoryCondition::LessThan { flag, value } => {
+            StoryCondition::LessThan(flag.clone(), *value)
+        }
+        crate::data::story::StoryCondition::LuaExpression { script } => {
+            StoryCondition::LuaExpression(script.clone())
+        }
     }
 }
 

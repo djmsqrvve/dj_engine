@@ -97,29 +97,60 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
 
             // VIEW MENU
             ui.menu_button("View", |ui| {
-                let mut dock_state = world.resource_mut::<EditorDockState>();
-                
                 let tab_toggles = [
                     ("📁 Hierarchy", EditorView::Hierarchy),
                     ("🎨 Palette", EditorView::Palette),
-                    ("📁 Assets", EditorView::Assets),
+                    ("📦 Assets", EditorView::Assets),
                     ("🔍 Inspector", EditorView::Inspector),
                     ("💻 Console", EditorView::Console),
+                    ("📽 Story Graph", EditorView::StoryGraph),
+                    ("🎹 Timeline", EditorView::Timeline),
+                    ("🔷 Feature Grid", EditorView::FeatureGrid),
                 ];
 
-                for (label, tab) in tab_toggles {
-                    let is_open = dock_state.0.find_tab(&tab).is_some();
-                    if ui.selectable_label(is_open, label).clicked() {
-                        if is_open {
-                            if let Some(tab_pos) = dock_state.0.find_tab(&tab) {
-                                dock_state.0.remove_tab(tab_pos);
-                            }
+                let mut spawn_view = None;
+
+                for (label, view) in tab_toggles {
+                    // Check if open in workspace
+                    let is_open = {
+                        let ui_state = world.resource::<EditorUiState>();
+                        let ws = if let Some(branch) = ui_state.current_branch() {
+                            &branch.workspace
                         } else {
-                            // We need to borrow the surface specifically here
-                            dock_state.0.main_surface_mut().push_to_first_leaf(tab);
+                            &ui_state.workspace
+                        };
+                        ws.elements.iter().any(|e| e.view == view)
+                    };
+
+                    if ui.selectable_label(is_open, label).clicked() {
+                        if !is_open {
+                            spawn_view = Some(view);
+                        } else {
+                            // Focus logic or close? Let's just focus for now.
                         }
                     }
                 }
+
+                if let Some(view) = spawn_view {
+                    let mut ui_state = world.resource_mut::<EditorUiState>();
+                    let ws = if let Some(branch) = ui_state.current_branch_mut() {
+                        &mut branch.workspace
+                    } else {
+                        &mut ui_state.workspace
+                    };
+
+                    ws.elements.push(StudioElement {
+                        id: uuid::Uuid::new_v4().to_string(),
+                        view,
+                        rect: egui::Rect::from_min_size(egui::pos2(50.0, 50.0), egui::vec2(400.0, 300.0)),
+                        z_index: ws.elements.len() as u32,
+                        is_minimized: false,
+                    });
+                }
+
+                ui.separator();
+                let mut diag_config = world.resource_mut::<crate::types::DiagnosticConfig>();
+                ui.checkbox(&mut diag_config.show_inspector, "🔍 World Inspector (External)");
 
                 ui.separator();
                 let _ = ui.button("Zoom In");
@@ -298,6 +329,7 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                         active_tab: SidePanelTab::Hierarchy,
                         history: vec![],
                         node_overrides: std::collections::HashMap::new(),
+                        workspace: WorkspaceState::default(),
                     });
                 let new_idx = world.resource::<EditorUiState>().active_branches.len() - 1;
                 world.resource_mut::<EditorUiState>().active_branch_idx = new_idx;
@@ -330,24 +362,26 @@ pub fn draw_left_panel(ui: &mut egui::Ui, world: &mut World) {
     let mut selected_tab = current_tab;
 
     ui.horizontal(|ui| {
+        ui.spacing_mut().item_spacing.x = 15.0;
         ui.style_mut().visuals.selection.bg_fill = COLOR_PRIMARY.linear_multiply(0.2);
-        if ui
-            .selectable_label(selected_tab == SidePanelTab::Hierarchy, "Hierarchy")
-            .clicked()
-        {
-            selected_tab = SidePanelTab::Hierarchy;
-        }
-        if ui
-            .selectable_label(selected_tab == SidePanelTab::Palette, "Palette")
-            .clicked()
-        {
-            selected_tab = SidePanelTab::Palette;
-        }
-        if ui
-            .selectable_label(selected_tab == SidePanelTab::Assets, "Assets")
-            .clicked()
-        {
-            selected_tab = SidePanelTab::Assets;
+        
+        let tabs = [
+            ("📁 Hierarchy", SidePanelTab::Hierarchy),
+            ("🎨 Palette", SidePanelTab::Palette),
+            ("📦 Assets", SidePanelTab::Assets),
+        ];
+
+        for (label, tab) in tabs {
+            let is_selected = selected_tab == tab;
+            let text = if is_selected {
+                RichText::new(label).color(COLOR_PRIMARY).strong()
+            } else {
+                RichText::new(label).color(Color32::GRAY)
+            };
+
+            if ui.selectable_label(is_selected, text).clicked() {
+                selected_tab = tab;
+            }
         }
     });
 

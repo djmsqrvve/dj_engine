@@ -98,20 +98,23 @@ pub struct GamePhasePlugin;
 
 impl Plugin for GamePhasePlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<GamePhase>()
-            .insert_resource(PhaseManager::new())
-            .register_type::<GamePhase>()
-            .register_type::<TaskStatus>()
-            .register_type::<PhaseManager>()
-            .add_event::<PhaseChangeEvent>()
-            .add_systems(
-                OnEnter(GamePhase::Loading),
-                (
-                    setup_loading_tasks,
-                    validate_assets_system.after(setup_loading_tasks),
-                ),
-            )
-            .add_systems(Update, sync_bevy_state);
+        app.init_state::<GamePhase>();
+        app.insert_resource(PhaseManager::new());
+        app.register_type::<GamePhase>();
+        app.register_type::<TaskStatus>();
+        app.register_type::<PhaseManager>();
+        
+        // Split this out to ensure type inference works
+        app.add_event::<PhaseChangeEvent>();
+        
+        app.add_systems(
+            OnEnter(GamePhase::Loading),
+            (
+                setup_loading_tasks,
+                validate_assets_system.after(setup_loading_tasks),
+            ),
+        );
+        app.add_systems(Update, sync_bevy_state);
     }
 }
 

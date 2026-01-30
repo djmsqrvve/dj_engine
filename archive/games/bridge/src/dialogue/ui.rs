@@ -226,6 +226,9 @@ pub fn update_dialogue_ui(
                 }
                 next_state.set(GameState::Overworld);
             }
+            StoryFlowEvent::CameraControl { .. } | StoryFlowEvent::TimeControl { .. } => {
+                // Not handled by dialogue UI
+            }
         }
     }
 }

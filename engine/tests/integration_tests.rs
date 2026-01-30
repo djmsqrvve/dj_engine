@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use dj_engine::midi::MidiManager;
 use dj_engine::prelude::*;
+use dj_engine::story_graph::types::{FlagValue, StoryCondition};
 
 #[test]
 fn test_engine_initialization() {
@@ -35,18 +36,18 @@ fn test_story_graph_branching() {
     app.init_asset::<AudioSource>();
     app.add_plugins(DJEnginePlugin::default().without_diagnostics());
 
-    let mut graph = StoryGraph::new();
+    let mut graph = StoryGraph::new("branching_test");
 
     // Node 0: Set flag 'met_hamster' to true
     let n0 = graph.add(StoryNode::SetFlag {
         flag: "met_hamster".to_string(),
-        value: true,
+        value: FlagValue::Bool(true),
         next: Some(1),
     });
 
     // Node 1: Branch based on 'met_hamster'
     let _n1 = graph.add(StoryNode::Branch {
-        flag: "met_hamster".to_string(),
+        condition: StoryCondition::IsTrue("met_hamster".to_string()),
         if_true: Some(2),
         if_false: Some(3),
     });
@@ -57,6 +58,7 @@ fn test_story_graph_branching() {
         text: "Hello again!".to_string(),
         portrait: None,
         next: Some(4),
+        effects: Vec::new(),
     });
 
     // Node 3: Dialogue for false branch
@@ -65,6 +67,7 @@ fn test_story_graph_branching() {
         text: "Who are you?".to_string(),
         portrait: None,
         next: Some(4),
+        effects: Vec::new(),
     });
 
     // Node 4: End
@@ -72,8 +75,12 @@ fn test_story_graph_branching() {
 
     graph.set_start(n0);
 
+    let id = graph.id.clone();
+    let start = graph.start_node;
+    app.world_mut().resource_mut::<StoryGraphLibrary>().graphs.insert(id.clone(), graph);
+
     let mut executor = app.world_mut().resource_mut::<GraphExecutor>();
-    executor.start(graph);
+    executor.start(id, start);
 
     // Run updates to process SetFlag and Branch (should take 0 frames to process intermediate logic)
     // But Dialogue blocks execution until input.
@@ -82,7 +89,7 @@ fn test_story_graph_branching() {
     let executor = app.world().resource::<GraphExecutor>();
     let flags = app.world().resource::<StoryFlags>();
 
-    assert_eq!(flags.get("met_hamster"), true);
+    assert!(flags.get_bool("met_hamster"));
     assert_eq!(executor.current_node, Some(2)); // Should have jumped to Node 2
     assert_eq!(executor.status, ExecutionStatus::WaitingForInput);
 }

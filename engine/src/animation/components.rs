@@ -4,6 +4,8 @@
 
 use bevy::prelude::*;
 
+use std::collections::HashMap;
+
 /// Component for breathing animation (body scale).
 #[derive(Component, Default)]
 pub struct BreathingAnimation {
@@ -28,6 +30,28 @@ impl BreathingAnimation {
     /// Default breathing animation for hamster body.
     pub fn hamster_default() -> Self {
         Self::new(0.05, 1.5) // 5% scale change at 1.5 Hz
+    }
+}
+
+/// Component for sprite-based facial expressions.
+#[derive(Component, Default)]
+pub struct ExpressionController {
+    pub current_expression: String,
+    /// Map of expression names to sprite indices (for texture atlases)
+    pub expressions: HashMap<String, usize>,
+}
+
+impl ExpressionController {
+    pub fn new() -> Self {
+        Self {
+            current_expression: "default".to_string(),
+            expressions: HashMap::new(),
+        }
+    }
+
+    pub fn with_expression(mut self, name: &str, index: usize) -> Self {
+        self.expressions.insert(name.to_string(), index);
+        self
     }
 }
 

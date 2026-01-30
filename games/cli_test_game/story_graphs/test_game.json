@@ -1,0 +1,49 @@
+{
+  "id": "test_game",
+  "format_version": "1.0",
+  "name": "CLI Intro",
+  "root_node_id": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "data": {
+        "type": "start",
+        "next_node_id": "d1"
+      }
+    },
+    {
+      "id": "d1",
+      "type": "dialogue",
+      "data": {
+        "type": "dialogue",
+        "speaker_id": "Hero",
+        "text": { "en": "This game was built via CLI!" },
+        "next_node_id": "c1"
+      }
+    },
+    {
+      "id": "c1",
+      "type": "choice",
+      "data": {
+        "type": "choice",
+        "prompt": { "en": "What next?" },
+        "options": [
+          {
+            "id": "opt1",
+            "text": { "en": "Finish" },
+            "target_node_id": "end"
+          }
+        ]
+      }
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "data": {
+        "type": "end",
+        "end_type": "return_to_gameplay"
+      }
+    }
+  ]
+}
