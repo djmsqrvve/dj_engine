@@ -1,6 +1,6 @@
-//! Scripting system for DJ Engine.
-
+//!use crate::story_graph::types::{StoryFlags, GraphExecutor, FlagValue};
 use bevy::prelude::*;
+use mlua::prelude::*;
 
 pub mod context;
 pub mod ffi;
@@ -37,7 +37,7 @@ fn process_script_commands(
     lua_ctx: Res<LuaContext>,
     mut commands: MessageReader<ScriptCommand>,
 ) {
-    let mut script_cmds = commands.read().collect::<Vec<_>>();
+    let script_cmds = commands.read().collect::<Vec<_>>();
     if script_cmds.is_empty() { return; }
 
     if let Ok(lua) = lua_ctx.lua.lock() {
@@ -55,12 +55,18 @@ fn process_script_commands(
                 }
                 ScriptCommand::Hook { name, args } => {
                     let globals = lua.globals();
-                    if let Ok(func) = globals.get::<_, mlua::Function>(name.as_str()) {
-                        let lua_args = mlua::Variadic(args.clone());
-                        if let Err(e) = func.call::<_, ()>(lua_args) {
-                            error!("Error calling Lua hook '{}': {}", name, e);
+                if let Ok(func) = globals.get::<mlua::Function>(name.as_str()) {
+                    let mut lua_args = mlua::MultiValue::new();
+                    for arg in args {
+                        match arg.clone().into_lua(&lua) {
+                            Ok(val) => lua_args.push_back(val),
+                            Err(e) => error!("Failed to convert hook arg: {}", e),
                         }
                     }
+                    if let Err(e) = func.call::<()>(lua_args) {
+                        error!("Error calling Lua hook '{}': {}", name, e);
+                    }
+                }
                 }
             }
         }

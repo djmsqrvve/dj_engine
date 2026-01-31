@@ -225,7 +225,7 @@ pub enum ExecutionStatus {
     Paused,
 }
 
-#[derive(Resource, Default, Reflect, Serialize, Deserialize)]
+#[derive(Resource, Default, Debug, Clone, Reflect, Serialize, Deserialize)]
 #[reflect(Resource)]
 pub struct GraphExecutor {
     pub active_graph_id: Option<String>,

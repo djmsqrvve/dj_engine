@@ -20,11 +20,42 @@ pub enum StoryNodeVariant {
     Start(StartNodeData),
     Dialogue(DialogueNodeData),
     Choice(ChoiceNodeData),
+    SetFlag(SetFlagNodeData),
+    Branch(BranchNodeData),
+    Battle(BattleNodeData),
+    SubGraph(SubGraphNodeData),
     End(EndNodeData),
-    // Simplified: skipping Action, Conditional, SetFlag, Camera, TimeControl, SubGraph
     #[serde(other)]
     Unknown,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SetFlagNodeData {
+    pub flag: String,
+    pub value: serde_json::Value, // Simplified
+    pub next_node_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BranchNodeData {
+    pub condition_flag: Option<String>, // Simplification for CLI
+    pub true_node_id: Option<String>,
+    pub false_node_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BattleNodeData {
+    pub enemy_id: String,
+    pub win_node_id: Option<String>,
+    pub loss_node_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SubGraphNodeData {
+    pub graph_id: String,
+    pub next_node_id: Option<String>,
+}
+
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct StartNodeData {
@@ -84,16 +115,20 @@ pub struct StoryGraphData {
 struct GameState {
     graph: StoryGraphData,
     current_node_id: String,
+    flags: HashMap<String, serde_json::Value>,
     running: bool,
+    auto_mode: bool,
 }
 
 impl GameState {
-    fn new(graph: StoryGraphData) -> Self {
+    fn new(graph: StoryGraphData, auto_mode: bool) -> Self {
         let start = graph.root_node_id.clone();
         Self {
             graph,
             current_node_id: start,
+            flags: HashMap::new(),
             running: true,
+            auto_mode,
         }
     }
 
@@ -146,21 +181,84 @@ impl GameState {
                     println!("  {}. {}", i + 1, opt_text);
                 }
 
-                loop {
-                    print!("> ");
-                    io::stdout().flush().unwrap();
-                    
-                    let mut input = String::new();
-                    io::stdin().read_line(&mut input).unwrap();
-                    
-                    if let Ok(choice) = input.trim().parse::<usize>() {
-                        if choice >= 1 && choice <= data.options.len() {
-                            let target = &data.options[choice - 1].target_node_id;
-                            self.current_node_id = target.clone();
-                            return true;
+                let choice = if self.auto_mode {
+                    let mut rng = rand::thread_rng();
+                    let c = (rand::Rng::gen::<usize>(&mut rng) % data.options.len()) + 1;
+                    println!("> [AUTO] Selecting: {}", c);
+                    c
+                } else {
+                    loop {
+                        print!("> ");
+                        io::stdout().flush().unwrap();
+                        
+                        let mut input = String::new();
+                        io::stdin().read_line(&mut input).unwrap();
+                        
+                        if let Ok(choice) = input.trim().parse::<usize>() {
+                            if choice >= 1 && choice <= data.options.len() {
+                                break choice;
+                            }
+                        }
+                        println!("Invalid choice. Enter 1-{}", data.options.len());
+                    }
+                };
+
+                let target = &data.options[choice - 1].target_node_id;
+                self.current_node_id = target.clone();
+                return true;
+            }
+            StoryNodeVariant::SetFlag(data) => {
+                println!("\n[SET] {} = {:?}", data.flag, data.value);
+                self.flags.insert(data.flag.clone(), data.value.clone());
+                if let Some(next) = &data.next_node_id {
+                    self.current_node_id = next.clone();
+                    return true;
+                }
+            }
+            StoryNodeVariant::Branch(data) => {
+                let result = if let Some(flag) = &data.condition_flag {
+                    self.flags.get(flag).and_then(|v| v.as_bool()).unwrap_or(false)
+                } else {
+                    false
+                };
+                println!("\n[BRANCH] {} -> {}", data.condition_flag.as_deref().unwrap_or("none"), result);
+                let target = if result { &data.true_node_id } else { &data.false_node_id };
+                if let Some(t) = target {
+                    self.current_node_id = t.clone();
+                    return true;
+                }
+            }
+            StoryNodeVariant::Battle(data) => {
+                println!("\n[BATTLE] Start vs {}", data.enemy_id);
+                let won = if self.auto_mode {
+                    rand::random::<bool>()
+                } else {
+                    println!("1. Win Battle\n2. Lose Battle");
+                    loop {
+                        print!("> ");
+                        io::stdout().flush().unwrap();
+                        let mut input = String::new();
+                        io::stdin().read_line(&mut input).unwrap();
+                        match input.trim().as_ref() {
+                            "1" => break true,
+                            "2" => break false,
+                            _ => println!("Invalid. Enter 1 or 2."),
                         }
                     }
-                    println!("Invalid choice. Enter 1-{}", data.options.len());
+                };
+                println!("[BATTLE] Result: {}", if won { "Victory" } else { "Defeat" });
+                let target = if won { &data.win_node_id } else { &data.loss_node_id };
+                if let Some(t) = target.as_ref() {
+                    self.current_node_id = t.clone();
+                    return true;
+                }
+            }
+            StoryNodeVariant::SubGraph(data) => {
+                println!("\n[SUBGRAPH] Entering: {}", data.graph_id);
+                // In CLI, we just advance to next if possible
+                if let Some(next) = &data.next_node_id {
+                    self.current_node_id = next.clone();
+                    return true;
                 }
             }
             StoryNodeVariant::End(_) => {
@@ -176,6 +274,7 @@ impl GameState {
     }
 
     fn wait_for_enter(&self) {
+        if self.auto_mode { return; }
         print!("(Press Enter to continue) ");
         io::stdout().flush().unwrap();
         let mut input = String::new();
@@ -203,12 +302,16 @@ fn main() {
 
     let args: Vec<String> = std::env::args().collect();
     
-    let graph_path = if args.len() > 1 {
-        args[1].clone()
-    } else {
-        // Default path
-        "games/cli_test_game/story_graphs/test_game.json".to_string()
-    };
+    let mut auto_mode = false;
+    let mut graph_path = "games/cli_test_game/story_graphs/test_game.json".to_string();
+
+    for arg in args.iter().skip(1) {
+        if arg == "--auto" {
+            auto_mode = true;
+        } else {
+            graph_path = arg.clone();
+        }
+    }
 
     println!("Loading story from: {}", graph_path);
     
@@ -240,6 +343,6 @@ fn main() {
     println!("Nodes: {}", graph.nodes.len());
     println!("\n-------------------------------------------\n");
 
-    let mut state = GameState::new(graph);
+    let mut state = GameState::new(graph, auto_mode);
     state.run();
 }

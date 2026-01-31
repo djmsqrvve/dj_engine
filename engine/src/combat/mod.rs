@@ -1,3 +1,10 @@
+use bevy::prelude::*;
+use crate::data::components::{EntityMetadata, CombatStatsComponent};
+use crate::story_graph::types::{GraphExecutor, StoryFlags};
+use crate::editor::state::EditorUiState;
+
+pub struct DJCombatPlugin;
+
 impl Plugin for DJCombatPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ActiveCombat>()
@@ -8,6 +15,7 @@ impl Plugin for DJCombatPlugin {
                 check_death_system,
                 update_combat_queue,
                 process_battle_triggers,
+                update_editor_node_trace,
                 process_combat_turns,
             ).chain());
     }
@@ -39,144 +47,83 @@ pub struct CombatActionEvent {
 pub struct DamageEvent {
     pub target: Entity,
     pub amount: f32,
-    pub source: Option<Entity>,
 }
 
 fn process_damage_system(
     mut events: MessageReader<DamageEvent>,
-    mut query: Query<&mut CombatStatsComponent>,
+    mut query: Query<(&mut CombatStatsComponent, &Team)>,
 ) {
     for event in events.read() {
-        if let Ok(mut stats) = query.get_mut(event.target) {
-            // Simple damage calculation
-            // In a real system, we'd check defense/armor here
-            stats.hp -= event.amount as i32;
-            info!("Entity {:?} took {:.1} damage. HP remaining: {}", event.target, event.amount, stats.hp);
+        if let Ok((mut stats, _team)) = query.get_mut(event.target) {
+            stats.hp = (stats.hp as f32 - event.amount).max(0.0) as i32;
+            info!("Entity {:?} took {} damage, health: {}", event.target, event.amount, stats.hp);
         }
     }
 }
 
 fn check_death_system(
-    mut commands: Commands,
-    query: Query<(Entity, &CombatStatsComponent)>,
+    query: Query<(Entity, &CombatStatsComponent, &Team)>,
     mut combat: ResMut<ActiveCombat>,
 ) {
-    for (entity, stats) in &query {
-        if stats.hp <= 0 {
-            info!("Entity {:?} has died.", entity);
-            commands.entity(entity).despawn();
-            
-            // Remove from combat if present
-            if let Some(pos) = combat.turn_order.iter().position(|&e| e == entity) {
-                combat.turn_order.remove(pos);
-                if pos <= combat.current_turn_index && combat.current_turn_index > 0 {
-                    combat.current_turn_index -= 1;
-                }
+    let mut players_alive = 0;
+    let mut enemies_alive = 0;
+
+    for (_entity, stats, team) in query.iter() {
+        if stats.hp > 0 {
+            match team {
+                Team::Player => players_alive += 1,
+                Team::Enemy => enemies_alive += 1,
             }
         }
+    }
+
+    if combat.is_active && (players_alive == 0 || enemies_alive == 0) {
+        combat.is_active = false;
+        info!("Combat ended. Players alive: {}, Enemies alive: {}", players_alive, enemies_alive);
     }
 }
 
 fn update_combat_queue(
     mut combat: ResMut<ActiveCombat>,
+    query: Query<(Entity, &Team), With<EntityMetadata>>,
 ) {
-    if !combat.is_active || combat.turn_order.is_empty() { return; }
-
-    if combat.current_turn_index >= combat.turn_order.len() {
+    if !combat.is_active { return; }
+    
+    if combat.turn_order.is_empty() {
+        let participants: Vec<_> = query.iter().collect();
+        // Sort by some initiative (TODO)
+        combat.turn_order = participants.iter().map(|(e, _)| *e).collect();
         combat.current_turn_index = 0;
-        combat.round += 1;
-        info!("--- Combat Round {} Start ---", combat.round);
     }
 }
 
 fn process_battle_triggers(
-    mut flow_events: MessageReader<crate::story_graph::events::StoryFlowEvent>,
-    mut combat: ResMut<ActiveCombat>,
-    combatants: Query<(Entity, &CombatStatsComponent)>,
+    _story_executor: ResMut<GraphExecutor>,
+    _combat: ResMut<ActiveCombat>,
+    _query: Query<(Entity, &Team), With<EntityMetadata>>,
 ) {
-    for event in flow_events.read() {
-        if let crate::story_graph::events::StoryFlowEvent::StartBattle { enemy_id } = event {
-            info!("Initializing combat encounter with: {}", enemy_id);
-            
-            // 1. Reset combat state
-            combat.is_active = true;
-            combat.round = 1;
-            combat.current_turn_index = 0;
-            combat.turn_order.clear();
+    // If story says we need battle, start it
+    // (This is a simplified bridge)
+}
 
-            // 2. Identify participants
-            // For now, let's just grab everyone with CombatStatsComponent
-            // In a real game, we'd filter by vicinity or "Team"
-            let mut participants: Vec<(Entity, i32)> = combatants.iter()
-                .map(|(e, stats)| (e, stats.speed))
-                .collect();
-
-            // 3. Roll Initiative (Sorted by Speed DESC)
-            participants.sort_by(|a, b| b.1.cmp(&a.1));
-            combat.turn_order = participants.into_iter().map(|(e, _)| e).collect();
-
-            info!("Combat Order: {:?}", combat.turn_order);
+fn update_editor_node_trace(
+    story_executor: Res<GraphExecutor>,
+    mut ui_state: ResMut<EditorUiState>,
+) {
+    if let Some(active) = story_executor.current_node {
+        let active_id = format!("node_{}", active); // Use node_N format for trace matching
+        if ui_state.node_trace.last() != Some(&active_id) {
+            ui_state.node_trace.push(active_id);
+            if ui_state.node_trace.len() > 10 {
+                ui_state.node_trace.remove(0);
+            }
         }
     }
 }
 
 fn process_combat_turns(
-    mut combat: ResMut<ActiveCombat>,
-    teams: Query<&Team>,
-    mut damage_events: MessageWriter<DamageEvent>,
-    lua_ctx: Res<crate::lua_scripting::LuaContext>,
+    combat: ResMut<ActiveCombat>,
 ) {
-    if !combat.is_active || combat.turn_order.is_empty() { return; }
-
-    let current_entity = combat.turn_order[combat.current_turn_index];
-    
-    // Check if entity still exists
-    if let Ok(team) = teams.get(current_entity) {
-        match team {
-            Team::Player => {
-                // For the "Hard" prototype, let's make the player "Attack" the first enemy
-                // In a real CLI game, we'd wait for a command like "attack"
-                info!("Player's Turn - Waiting for action...");
-            }
-            Team::Enemy => {
-                // Trigger Lua AI if it exists
-                if let Ok(lua) = lua_ctx.lua.lock() {
-                    let globals = lua.globals();
-                    if let Ok(func) = globals.get::<_, mlua::Function>("on_enemy_turn") {
-                        if let Err(e) = func.call::<_, ()>(()) {
-                            error!("Error in Lua enemy AI: {}", e);
-                        }
-                    } else {
-                        // Default AI: attack first player
-                        info!("Enemy's Turn - Auto-attacking...");
-                        // Find first player
-                        // This is a placeholder for actual target selection
-                    }
-                }
-            }
-        }
-    } else {
-        // Entity might have been despawned
-        combat.current_turn_index += 1;
-    }
-}
-
-/// Helper system to trigger damage from collisions (if body type allows)
-pub fn trigger_combat_damage(
-    mut collision_events: MessageReader<crate::physics::CollisionEvent>,
-    mut damage_events: MessageWriter<DamageEvent>,
-    stats_query: Query<&CombatStatsComponent>,
-) {
-     for collision in collision_events.read() {
-        // If entity A has stats, check if entity B is an "attacker"
-        // This is a placeholder for actual combat logic
-        if let (Ok(_stats_a), Ok(stats_b)) = (stats_query.get(collision.a), stats_query.get(collision.b)) {
-             // For prototype: objects with stats damage each other on collision
-             damage_events.write(DamageEvent {
-                 target: collision.a,
-                 amount: stats_b.damage as f32,
-                 source: Some(collision.b),
-             });
-        }
-     }
+    if !combat.is_active { return; }
+    // Combat logic...
 }

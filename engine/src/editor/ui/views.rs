@@ -1,10 +1,13 @@
-use crate::data::components::Vec3Data;
 use crate::data::loader;
-use crate::data::story::{StoryNodeData, StoryNodeVariant};
+use crate::data::components::Vec3Data;
+use crate::data::story::{
+    StoryNodeData, StoryNodeVariant, DialogueNodeData, ChoiceNodeData,
+    ActionNodeData
+};
+use crate::editor::state::{EditorUiState, COLOR_PRIMARY, COLOR_SECONDARY, ActiveStoryGraph};
 use bevy::prelude::*;
-use egui::Stroke;
-
-use bevy_egui::egui::{self, Color32, RichText};
+pub use bevy_egui::egui;
+use bevy_egui::egui::{Color32, Stroke, RichText};
 
 use super::super::state::*;
 
@@ -263,15 +266,43 @@ pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
     
     // Get runtime state for highlighting
     let executor = world.resource::<crate::story_graph::types::GraphExecutor>();
-    let library = world.get_resource::<crate::story_graph::types::StoryGraphLibrary>();
-    let active_node_name = if let (Some(node_id), Some(graph_id), Some(lib)) = (executor.current_node, &executor.active_graph_id, library) {
-        lib.graphs.get(graph_id).and_then(|g| g.node_names.get(&node_id))
-    } else {
-        None
+    let active_node_name = {
+        let library = world.get_resource::<crate::story_graph::types::StoryGraphLibrary>();
+        if let (Some(node_id), Some(graph_id), Some(lib)) = (executor.current_node, &executor.active_graph_id, library) {
+            lib.graphs.get(graph_id).and_then(|g| g.node_names.get(&node_id)).cloned()
+        } else {
+            None
+        }
     };
 
-    // Toolbar
+    // Toolbar & Breadcrumbs
     ui.horizontal(|ui| {
+        // Simulation Link
+        if ui.button("🚀 Simulator").on_hover_text("Launch Headless CLI Simulation").clicked() {
+             info!("Launching Headless Simulation...");
+        }
+
+        ui.separator();
+
+        // Breadcrumbs
+        let mut ui_state = world.resource_mut::<EditorUiState>();
+        if ui_state.graph_stack.is_empty() {
+             ui.label(RichText::new("Main Graph").strong().color(COLOR_PRIMARY));
+        } else {
+            if ui.link("Main").clicked() {
+                ui_state.graph_stack.clear();
+            }
+            for graph_name in ui_state.graph_stack.iter() {
+                ui.label(">");
+                if ui.link(graph_name).clicked() {
+                    // Truncate stack
+                    // (Actually we'd need to resize properly)
+                }
+            }
+        }
+
+        ui.add_space(20.0);
+        
         if ui.button("📂 Load Test Game").clicked() {
             let path =
                 std::path::PathBuf::from("games/dev/new_horizon/story_graphs/test_game.json");
@@ -367,10 +398,14 @@ pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
                 "Start" => StoryNodeData::start(id.clone(), None::<String>),
                 "Dialogue" => StoryNodeData::dialogue(id.clone(), "Stranger", "Hello world"),
                 "Choice" => {
-                    StoryNodeData::dialogue(id.clone(), "System", "Choice Node Placeholder")
+                    let mut n = StoryNodeData::dialogue(id.clone(), "System", "Choice Node Placeholder");
+                    n.data = StoryNodeVariant::Choice(ChoiceNodeData::default());
+                    n
                 }
                 "Action" => {
-                    StoryNodeData::dialogue(id.clone(), "System", "Action Node Placeholder")
+                    let mut n = StoryNodeData::dialogue(id.clone(), "System", "Action Node Placeholder");
+                    n.data = StoryNodeVariant::Action(ActionNodeData::default());
+                    n
                 }
                 "Container" | "SubGraph" | "Scene Container" => {
                     let mut n = StoryNodeData::end(id.clone());
@@ -402,6 +437,7 @@ pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
     // DRAW NODES AND LINES
     // We need to scope world to get graph
     world.resource_scope::<ActiveStoryGraph, _>(|world, mut graph| {
+        let library = world.get_resource::<crate::story_graph::types::StoryGraphLibrary>();
         let mut ui_state = world.resource_mut::<EditorUiState>();
 
         // 1. Draw Connections
@@ -438,38 +474,60 @@ pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
                 egui::vec2(150.0, 80.0),
             );
 
-            let (bg, stroke) = match node.node_type() {
-                crate::data::story::StoryNodeType::Start => {
+            let (bg, stroke) = match &node.data {
+                StoryNodeVariant::Start(_) => {
                     (Color32::from_rgb(0, 80, 40), Color32::GREEN)
                 }
-                crate::data::story::StoryNodeType::End => {
+                StoryNodeVariant::End(_) => {
                     (Color32::from_rgb(80, 0, 0), Color32::RED)
                 }
-                crate::data::story::StoryNodeType::Dialogue => {
+                StoryNodeVariant::Dialogue(_) => {
                     (Color32::from_rgb(0, 40, 100), COLOR_PRIMARY)
                 }
-                crate::data::story::StoryNodeType::SubGraph => {
+                StoryNodeVariant::SubGraph(_) => {
                     (Color32::from_rgb(60, 20, 80), Color32::GOLD)
                 }
-                crate::data::story::StoryNodeType::Action => {
+                StoryNodeVariant::Action(_) => {
                     (Color32::from_rgb(80, 60, 0), Color32::YELLOW)
+                }
+                StoryNodeVariant::Choice(_) => {
+                    (Color32::from_rgb(0, 80, 100), COLOR_SECONDARY)
+                }
+                StoryNodeVariant::Conditional(_) => {
+                    (Color32::from_rgb(100, 40, 0), Color32::ORANGE)
+                }
+                StoryNodeVariant::SetFlag(_) => {
+                    (Color32::from_rgb(40, 80, 0), Color32::LIGHT_GREEN)
                 }
                 _ => (Color32::from_rgb(40, 40, 40), Color32::GRAY),
             };
 
             painter.rect_filled(node_rect, 6.0, bg);
             
-            // Highlight if active in runtime
-            if Some(&node.id) == active_node_name {
-                 painter.rect_stroke(node_rect.expand(2.0), 8.0, Stroke::new(3.0, Color32::YELLOW), egui::StrokeKind::Inside);
+            // 1. Trace Highlight (Recent Path)
+            if let Some(pos) = ui_state.node_trace.iter().position(|id| id == &node.id) {
+                let age = (ui_state.node_trace.len() - 1 - pos) as f32;
+                let alpha = (1.0 - (age / 5.0).min(0.8)) * 255.0;
+                let trace_color = Color32::from_rgba_unmultiplied(255, 255, 0, alpha as u8);
+                painter.rect_stroke(node_rect, 6.0, Stroke::new(2.0, trace_color), egui::StrokeKind::Inside);
+            }
+
+            // 2. Active Node Highlight (Current)
+            if Some(&node.id) == active_node_name.as_ref() {
+                 painter.rect_stroke(node_rect.expand(4.0), 10.0, Stroke::new(4.0, Color32::YELLOW), egui::StrokeKind::Inside);
             }
 
             // Double stroke for SubGraph (Container)
             if matches!(
-                node.node_type(),
-                crate::data::story::StoryNodeType::SubGraph
+                node.data,
+                StoryNodeVariant::SubGraph(_)
             ) {
-                painter.rect_stroke(node_rect.expand(2.0), 8.0, Stroke::new(1.0, stroke), egui::StrokeKind::Inside);
+                painter.rect_stroke(
+                    node_rect.shrink(3.0),
+                    4.0,
+                    Stroke::new(1.0, stroke.linear_multiply(0.5)),
+                    egui::StrokeKind::Inside,
+                );
             }
             painter.rect_stroke(node_rect, 6.0, Stroke::new(1.5, stroke), egui::StrokeKind::Inside);
 
@@ -489,21 +547,33 @@ pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
             );
 
             // Ports Labels
-            let is_start = matches!(node.node_type(), crate::data::story::StoryNodeType::Start);
+            let _is_start = matches!(node.node_type(), crate::data::story::StoryNodeType::Start);
             let is_end = matches!(node.node_type(), crate::data::story::StoryNodeType::End);
 
-            // Input Label (Left) - Not for Start
-            if !is_start {
-                painter.text(
-                    node_rect.left_center() + egui::vec2(5.0, 0.0),
-                    egui::Align2::LEFT_CENTER,
-                    "In",
-                    egui::FontId::monospace(10.0),
-                    Color32::GRAY,
-                );
-                // Input visual dot
-                painter.circle_filled(node_rect.left_center(), 3.0, Color32::GRAY);
+            // Input Label
+            match &node.data {
+                StoryNodeVariant::Dialogue(d) => {
+                    painter.text(
+                        node_rect.left_top() + egui::vec2(10.0, 10.0),
+                        egui::Align2::LEFT_TOP,
+                        &d.speaker_id,
+                        egui::FontId::proportional(14.0),
+                        Color32::WHITE,
+                    );
+                }
+                StoryNodeVariant::Choice(c) => {
+                    painter.text(
+                        node_rect.left_top() + egui::vec2(10.0, 10.0),
+                        egui::Align2::LEFT_TOP,
+                        format!("? {}", c.options.len()),
+                        egui::FontId::proportional(14.0),
+                        Color32::WHITE,
+                    );
+                }
+                _ => {}
             }
+            // Input visual dot
+            painter.circle_filled(node_rect.left_center(), 3.0, Color32::GRAY);
 
             // Output Label (Right) - Not for End
             if !is_end {

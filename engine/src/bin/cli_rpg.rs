@@ -62,6 +62,9 @@ fn rpg_output_system(mut events: MessageReader<StoryFlowEvent>) {
                 println!("Story graph execution completed.");
                 std::process::exit(0);
             }
+            StoryFlowEvent::StartBattle { enemy_id } => {
+                println!("\n[BATTLE] Incoming vs {}", enemy_id);
+            }
             StoryFlowEvent::CameraControl { .. } => {
                 println!("[DEBUG] Camera Move Triggered");
             }

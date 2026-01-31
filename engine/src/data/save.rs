@@ -47,9 +47,9 @@ fn handle_save_event(
             format_version: "1.1".to_string(),
             timestamp: 0.0, // TODO: Use real timestamp
             story_flags: flags.0.clone(),
-            inventory: inventory.clone(),
-            quest_log: quest_log.clone(),
-            executor: executor.clone(),
+            inventory: (*inventory).clone(),
+            quest_log: (*quest_log).clone(),
+            executor: (*executor).clone(),
             player_position: player_pos,
         };
 

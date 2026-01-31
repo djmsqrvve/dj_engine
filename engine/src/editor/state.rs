@@ -270,6 +270,10 @@ pub struct EditorUiState {
     pub dragged_node_id: Option<String>,
     pub connection_start_id: Option<String>,
     pub selected_node_id: Option<String>,
+    /// Recent path through the graph for trace visualization
+    pub node_trace: Vec<String>,
+    /// Stack for nested graph navigation (breadcrumbs)
+    pub graph_stack: Vec<String>,
     
     // Global workspace (fallback if no branch)
     pub workspace: WorkspaceState,
@@ -303,6 +307,8 @@ impl Default for EditorUiState {
             dragged_node_id: Default::default(),
             connection_start_id: Default::default(),
             selected_node_id: Default::default(),
+            node_trace: Vec::new(),
+            graph_stack: Vec::new(),
             workspace: WorkspaceState::default(),
         }
     }

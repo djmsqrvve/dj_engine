@@ -39,7 +39,7 @@ pub fn execute_graph(
                 StoryInputEvent::SelectChoice(index) => {
                     handle_choice_selection(&mut *executor, *index, &library, &mut flags, inventory.as_deref_mut(), quest_log.as_deref_mut());
                 }
-                StoryInputEvent::FinishBattle { won } => {
+                StoryInputEvent::FinishBattle { won: _ } => {
                     // This is handled in the next block, but we drain it here to be safe
                     error!("Received FinishBattle while in WaitingForInput! Ignoring.");
                 }
@@ -236,8 +236,8 @@ fn handle_battle_finish(
     if let Some(lua_ctx) = lua {
         if let Ok(l) = lua_ctx.lua.lock() {
             let globals = l.globals();
-            if let Ok(func) = globals.get::<_, mlua::Function>("on_battle_end") {
-                if let Err(e) = func.call::<_, ()>(won) {
+            if let Ok(func) = globals.get::<mlua::Function>("on_battle_end") {
+                if let Err(e) = func.call::<()>(won) {
                     error!("Error calling on_battle_end Lua hook: {}", e);
                 }
             }
