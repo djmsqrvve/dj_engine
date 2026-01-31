@@ -11,6 +11,7 @@ pub mod events;
 
 use bevy::prelude::*;
 
+
 pub use types::*;
 
 pub use events::*;
@@ -28,10 +29,10 @@ impl Plugin for StoryGraphPlugin {
             .init_resource::<GraphExecutor>()
             .init_resource::<StoryFlags>()
             .init_resource::<StoryGraphLibrary>()
-            .add_event::<StoryFlowEvent>()
-            .add_event::<StoryInputEvent>()
-            .add_event::<StoryEvent>()
-            .add_event::<executor::StoryActionEvent>()
+            .add_message::<StoryFlowEvent>()
+            .add_message::<StoryInputEvent>()
+            .add_message::<StoryEvent>()
+            .add_message::<executor::StoryActionEvent>()
             .add_systems(Update, executor::execute_graph);
     }
 }

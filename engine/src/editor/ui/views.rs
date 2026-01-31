@@ -2,6 +2,8 @@ use crate::data::components::Vec3Data;
 use crate::data::loader;
 use crate::data::story::{StoryNodeData, StoryNodeVariant};
 use bevy::prelude::*;
+use egui::Stroke;
+
 use bevy_egui::egui::{self, Color32, RichText};
 
 use super::super::state::*;
@@ -31,9 +33,9 @@ pub fn draw_core_dashboard(ui: &mut egui::Ui, world: &mut World) {
     ui.painter()
         .rect_filled(legend_rect, 5.0, Color32::from_black_alpha(200));
     ui.painter()
-        .rect_stroke(legend_rect, 5.0, (1.0, COLOR_PRIMARY.linear_multiply(0.2)));
+        .rect_stroke(legend_rect, 5.0, Stroke::new(1.0, COLOR_PRIMARY.linear_multiply(0.2)), egui::StrokeKind::Inside);
 
-    ui.allocate_new_ui(egui::UiBuilder::new().max_rect(legend_rect.shrink(10.0)), |ui| {
+    ui.scope_builder(egui::UiBuilder::new().max_rect(legend_rect.shrink(10.0)), |ui| {
         ui.label(RichText::new("ACTIVE TEST PLANES").strong().small());
         ui.separator();
         egui::ScrollArea::vertical().show(ui, |ui| {
@@ -97,7 +99,7 @@ fn draw_celestial_dashboard_placeholder(ui: &mut egui::Ui, rect: egui::Rect) {
     // -- FLOATING CONSTRUCTION WINDOWS (Mimicking the image) --
     let box_style = |painter: &egui::Painter, r: egui::Rect, title: &str, color: Color32| {
         painter.rect_filled(r, 4.0, Color32::from_black_alpha(220));
-        painter.rect_stroke(r, 4.0, (1.5, color.linear_multiply(0.4)));
+        painter.rect_stroke(r, 4.0, Stroke::new(1.5, color.linear_multiply(0.4)), egui::StrokeKind::Inside);
         painter.rect_filled(r.with_max_y(r.min.y + 25.0), 4.0, color.linear_multiply(0.1));
         
         painter.text(r.min + egui::vec2(8.0, 5.0), egui::Align2::LEFT_TOP, title, egui::FontId::proportional(12.0), Color32::WHITE);
@@ -122,7 +124,7 @@ fn draw_celestial_dashboard_placeholder(ui: &mut egui::Ui, rect: egui::Rect) {
     // Build Core (Bottom Right)
     let build_core_rect = egui::Rect::from_center_size(center + egui::vec2(380.0, 180.0), egui::vec2(200.0, 80.0));
     painter.rect_filled(build_core_rect, 4.0, Color32::from_black_alpha(220));
-    painter.rect_stroke(build_core_rect, 4.0, (2.0, COLOR_PRIMARY));
+    painter.rect_stroke(build_core_rect, 4.0, Stroke::new(2.0, COLOR_PRIMARY), egui::StrokeKind::Inside);
     painter.text(build_core_rect.center(), egui::Align2::CENTER_CENTER, "BUILD CORE: PASSED", egui::FontId::proportional(14.0), COLOR_PRIMARY);
 
     // -- HUD LABELS --
@@ -332,19 +334,15 @@ pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
         ui.separator();
         if ui.button("🎬 Start").clicked() {
             add_node_cmd = Some("Start".to_string());
-            ui.close_menu();
         }
         if ui.button("💬 Dialogue").clicked() {
             add_node_cmd = Some("Dialogue".to_string());
-            ui.close_menu();
         }
         if ui.button("📦 Scene Container").clicked() {
             add_node_cmd = Some("SubGraph".to_string());
-            ui.close_menu();
         }
         if ui.button("🔚 End").clicked() {
             add_node_cmd = Some("End".to_string());
-            ui.close_menu();
         }
     });
 
@@ -456,9 +454,9 @@ pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
                 node.node_type(),
                 crate::data::story::StoryNodeType::SubGraph
             ) {
-                painter.rect_stroke(node_rect.expand(2.0), 8.0, (1.0, stroke));
+                painter.rect_stroke(node_rect.expand(2.0), 8.0, Stroke::new(1.0, stroke), egui::StrokeKind::Inside);
             }
-            painter.rect_stroke(node_rect, 6.0, (1.5, stroke));
+            painter.rect_stroke(node_rect, 6.0, Stroke::new(1.5, stroke), egui::StrokeKind::Inside);
 
             painter.text(
                 node_rect.min + egui::vec2(10.0, 10.0),

@@ -2,10 +2,12 @@ use super::events::*;
 use super::types::*;
 use crate::audio::AudioCommand;
 use crate::scene::ChangeSceneEvent;
+
 use bevy::prelude::*;
 
+
 /// Event sent to scripting layer to trigger an action
-#[derive(Event, Debug, Clone)]
+#[derive(Message, Debug, Clone)]
 pub struct StoryActionEvent {
     pub script_id: String,
     pub params: serde_json::Value,
@@ -14,15 +16,15 @@ pub struct StoryActionEvent {
 pub fn execute_graph(
     executor_res: ResMut<GraphExecutor>,
     library: Option<Res<StoryGraphLibrary>>,
-    lua: Option<Res<crate::scripting::LuaContext>>,
+    lua: Option<Res<crate::lua_scripting::LuaContext>>,
     mut flags: ResMut<StoryFlags>,
     mut inventory: Option<ResMut<crate::game::Inventory>>,
     mut quest_log: Option<ResMut<crate::game::QuestLog>>,
-    mut audio_events: EventWriter<AudioCommand>,
-    mut scene_events: EventWriter<ChangeSceneEvent>,
-    mut flow_events: EventWriter<StoryFlowEvent>,
-    mut action_events: EventWriter<StoryActionEvent>,
-    mut input_events: EventReader<StoryInputEvent>,
+    mut audio_events: MessageWriter<AudioCommand>,
+    mut scene_events: MessageWriter<ChangeSceneEvent>,
+    mut flow_events: MessageWriter<StoryFlowEvent>,
+    mut action_events: MessageWriter<StoryActionEvent>,
+    mut input_events: MessageReader<StoryInputEvent>,
     time: Res<Time>,
 ) {
     let executor = executor_res.into_inner();
@@ -44,7 +46,7 @@ pub fn execute_graph(
     // 2. Handle Timer (if waiting)
     if executor.status == ExecutionStatus::WaitingForTimer {
         executor.wait_timer.tick(time.delta());
-        if executor.wait_timer.finished() {
+        if executor.wait_timer.is_finished() {
             executor.status = ExecutionStatus::Running;
             advance_node(&mut *executor, &library, &mut flags, inventory.as_deref_mut(), quest_log.as_deref_mut());
         }
@@ -118,7 +120,7 @@ pub fn execute_graph(
                         executor.current_depth = executor.current_depth.saturating_sub(1);
                     } else {
                         executor.status = ExecutionStatus::Idle;
-                        flow_events.send(StoryFlowEvent::GraphComplete);
+                        flow_events.write(StoryFlowEvent::GraphComplete);
                     }
                 }
             }
@@ -132,7 +134,7 @@ pub fn execute_graph(
                 executor.current_depth = executor.current_depth.saturating_sub(1);
             } else {
                 executor.status = ExecutionStatus::Idle;
-                flow_events.send(StoryFlowEvent::GraphComplete);
+                flow_events.write(StoryFlowEvent::GraphComplete);
             }
         }
     }
@@ -207,15 +209,15 @@ fn handle_choice_selection(
 fn process_node(
     node: &StoryNode,
     library: &Option<Res<StoryGraphLibrary>>,
-    lua: &Option<Res<crate::scripting::LuaContext>>,
+    lua: &Option<Res<crate::lua_scripting::LuaContext>>,
     stack: &mut Vec<(String, Option<NodeId>)>,
     active_graph_id: &mut Option<String>,
     current_depth: &mut usize,
     flags: &mut StoryFlags,
-    flow: &mut EventWriter<StoryFlowEvent>,
-    audio: &mut EventWriter<AudioCommand>,
-    scene: &mut EventWriter<ChangeSceneEvent>,
-    action_events: &mut EventWriter<StoryActionEvent>,
+    flow: &mut MessageWriter<StoryFlowEvent>,
+    audio: &mut MessageWriter<AudioCommand>,
+    scene: &mut MessageWriter<ChangeSceneEvent>,
+    action_events: &mut MessageWriter<StoryActionEvent>,
 ) -> NodeAction {
     match node {
         StoryNode::Dialogue {
@@ -224,7 +226,7 @@ fn process_node(
             portrait,
             ..
         } => {
-            flow.send(StoryFlowEvent::ShowDialogue {
+            flow.write(StoryFlowEvent::ShowDialogue {
                 speaker: speaker.clone(),
                 text: text.clone(),
                 portrait: portrait.clone(),
@@ -235,18 +237,18 @@ fn process_node(
             prompt, options, ..
         } => {
             let option_texts = options.iter().map(|o| o.text.clone()).collect();
-            flow.send(StoryFlowEvent::ShowChoices {
+            flow.write(StoryFlowEvent::ShowChoices {
                 prompt: prompt.clone(),
                 options: option_texts,
             });
             NodeAction::WaitInput
         }
         StoryNode::Audio { command, .. } => {
-            audio.send(command.clone());
+            audio.write(command.clone());
             NodeAction::Advance
         }
         StoryNode::Background { path, duration, .. } => {
-            scene.send(ChangeSceneEvent {
+            scene.write(ChangeSceneEvent {
                 background_path: path.clone(),
                 duration: *duration,
             });
@@ -323,7 +325,7 @@ fn process_node(
             event_id, payload, ..
         } => {
             // Bridge to StoryAction
-            action_events.send(StoryActionEvent {
+            action_events.write(StoryActionEvent {
                 script_id: event_id.clone(),
                 params: serde_json::Value::String(payload.clone()),
             });
@@ -361,7 +363,7 @@ fn execute_conditional(
     if_true: Option<NodeId>,
     if_false: Option<NodeId>,
     flags: &StoryFlags,
-    lua: &Option<Res<crate::scripting::LuaContext>>,
+    lua: &Option<Res<crate::lua_scripting::LuaContext>>,
 ) -> NodeAction {
     let result = if let StoryCondition::LuaExpression(script) = condition {
         if let Some(lua_ctx) = lua {
@@ -400,9 +402,9 @@ fn execute_camera(
     position: Vec3,
     zoom: f32,
     duration: f32,
-    flow: &mut EventWriter<StoryFlowEvent>,
+    flow: &mut MessageWriter<StoryFlowEvent>,
 ) -> NodeAction {
-    flow.send(StoryFlowEvent::CameraControl {
+    flow.write(StoryFlowEvent::CameraControl {
         preset_id,
         position,
         zoom,
@@ -414,9 +416,9 @@ fn execute_camera(
 fn execute_time_control(
     time_scale: f32,
     pause: bool,
-    flow: &mut EventWriter<StoryFlowEvent>,
+    flow: &mut MessageWriter<StoryFlowEvent>,
 ) -> NodeAction {
-    flow.send(StoryFlowEvent::TimeControl {
+    flow.write(StoryFlowEvent::TimeControl {
         time_scale,
         pause,
     });

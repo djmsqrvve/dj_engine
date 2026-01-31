@@ -1,10 +1,11 @@
 use bevy::audio::PlaybackMode;
+use bevy::audio::Volume;
 use bevy::prelude::*;
 use midly::{MetaMessage, MidiMessage, Smf, TrackEventKind};
 use std::collections::HashMap;
 
 /// Events for controlling MIDI playback
-#[derive(Event, Debug, Clone)]
+#[derive(Message, Debug, Clone)]
 pub enum MidiCommand {
     NoteOn { key: u8, velocity: u8 },
     NoteOff { key: u8 },
@@ -58,7 +59,7 @@ pub struct MidiPlugin;
 
 impl Plugin for MidiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MidiCommand>()
+        app.add_message::<MidiCommand>()
             .init_resource::<MidiManager>()
             .init_resource::<MidiPlayback>()
             .add_systems(Startup, (setup_midi_assets, load_overworld_midi))
@@ -188,7 +189,7 @@ fn midi_sequencer(
     time: Res<Time>,
     sequence: Option<Res<MidiSequence>>,
     mut playback: ResMut<MidiPlayback>,
-    mut commands: EventWriter<MidiCommand>,
+    mut commands: MessageWriter<MidiCommand>,
 ) {
     let Some(sequence) = sequence else { return };
     if !playback.is_playing {
@@ -214,13 +215,13 @@ fn midi_sequencer(
                     match message {
                         MidiMessage::NoteOn { key, vel } => {
                             // Midly key/vel are wrappers.
-                            commands.send(MidiCommand::NoteOn {
+                            commands.write(MidiCommand::NoteOn {
                                 key: key.as_int(),
                                 velocity: vel.as_int(),
                             });
                         }
                         MidiMessage::NoteOff { key, .. } => {
-                            commands.send(MidiCommand::NoteOff { key: key.as_int() });
+                            commands.write(MidiCommand::NoteOff { key: key.as_int() });
                         }
                         _ => {}
                     }
@@ -283,7 +284,7 @@ fn generate_wav_square(num_samples: u32, sample_rate: u32, freq: f32) -> AudioSo
 
 fn handle_midi_commands(
     mut commands: Commands,
-    mut events: EventReader<MidiCommand>,
+    mut events: MessageReader<MidiCommand>,
     mut manager: ResMut<MidiManager>,
     midi_assets: Option<Res<MidiAssets>>,
 ) {
@@ -310,7 +311,7 @@ fn handle_midi_commands(
                         PlaybackSettings {
                             mode: PlaybackMode::Loop,
                             speed,
-                            volume: bevy::audio::Volume::new(volume),
+                            volume: Volume::Linear(volume),
                             ..default()
                         },
                     ))

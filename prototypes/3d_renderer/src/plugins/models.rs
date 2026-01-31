@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::asset::LoadState;
 use bevy::gltf::GltfAssetLabel;
 
 pub struct ModelPlugin;
@@ -38,14 +39,11 @@ fn check_gltf_loaded(
         return;
     }
     
-    if asset_server.load_state(&drow_asset.scene) == bevy::asset::LoadState::Loaded {
+    if matches!(asset_server.load_state(&drow_asset.scene), LoadState::Loaded) {
         info!("Drow model loaded successfully! Spawning scene...");
         commands.spawn((
-            SceneBundle {
-                scene: drow_asset.scene.clone(),
-                transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                ..default()
-            },
+            SceneRoot(drow_asset.scene.clone()),
+            Transform::from_xyz(0.0, 0.0, 0.0),
         ));
         *done = true;
     }
@@ -98,14 +96,14 @@ fn spawn_pbr_test_objects(
         let x = (i as f32 - 2.0) * 2.5;
         
         commands.spawn((
-            meshes.add(Cuboid::new(1.0, 1.0, 1.0)),
-            material.clone(),
+            Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
+            MeshMaterial3d(material.clone()),
             Transform::from_xyz(x, 0.5, -5.0),
         ));
 
         commands.spawn((
-            meshes.add(Sphere::new(0.5).mesh().uv(32, 18)),
-            material.clone(),
+            Mesh3d(meshes.add(Sphere::new(0.5).mesh().uv(32, 18))),
+            MeshMaterial3d(material.clone()),
             Transform::from_xyz(x, 0.5, -3.0),
         ));
     }

@@ -19,6 +19,9 @@ pub enum DJEngineError {
 
     #[error("Animation error: {0}")]
     AnimationError(String),
+
+    #[error("Runtime error: {0}")]
+    RuntimeError(String),
 }
 
 /// Result type alias for DJ Engine operations.

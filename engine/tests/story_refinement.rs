@@ -3,7 +3,7 @@ use dj_engine::prelude::*;
 use dj_engine::story_graph::types::{
     ExecutionStatus, FlagValue, GraphExecutor, StoryFlags, StoryGraph, StoryGraphLibrary, StoryNode, StoryCondition,
 };
-use dj_engine::data::story::{StoryGraphData, StoryNodeData, StoryNodeVariant, StartNodeData, ConditionalNodeData, SetFlagNodeData, FlagValue as DataFlagValue, StoryCondition as DataCondition};
+use dj_engine::data::story::{StoryGraphData, StoryNodeData, StoryNodeVariant, StartNodeData, SetFlagNodeData, FlagValue as DataFlagValue};
 
 #[test]
 fn test_iteration_limit() {

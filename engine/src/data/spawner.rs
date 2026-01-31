@@ -194,7 +194,7 @@ pub fn despawn_scene_entities(
     query: Query<Entity, With<SceneEntityMarker>>,
 ) {
     for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }
 

@@ -29,7 +29,7 @@ pub mod navigation;
 pub mod physics;
 pub mod rendering;
 pub mod scene;
-pub mod scripting;
+pub mod lua_scripting;
 pub mod story_graph;
 pub mod types;
 pub mod ui;

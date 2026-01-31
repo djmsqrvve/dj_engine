@@ -9,22 +9,26 @@ use crate::diagnostics::console::ConsoleLogStore;
 use bevy::prelude::*;
 use bevy_egui::egui::{self, Color32};
 
+
 use super::state::*;
 
 pub fn configure_visuals_system(mut contexts: bevy_egui::EguiContexts) {
     let ctx = contexts.ctx_mut();
-    let mut visuals = egui::Visuals::dark();
+    // In Bevy 0.18+ / bevy_egui updated, ctx_mut might return a reference directly or Result?
+    // The error said `ctx` is a Result.
+    if let Ok(ctx) = ctx {
+        let mut visuals = egui::Visuals::dark();
 
-    // Cyberpunk tweaks
-    visuals.window_rounding = 2.0.into();
-    visuals.widgets.noninteractive.bg_fill = COLOR_BG;
-    visuals.widgets.inactive.bg_fill = Color32::from_rgb(25, 25, 35);
-    visuals.widgets.hovered.bg_fill = Color32::from_rgb(40, 40, 50);
-    visuals.widgets.active.bg_fill = Color32::from_rgb(50, 50, 65);
-    visuals.selection.bg_fill = COLOR_PRIMARY.linear_multiply(0.3);
-    visuals.selection.stroke = egui::Stroke::new(1.0, COLOR_PRIMARY);
+        // Cyberpunk tweaks
+        visuals.widgets.noninteractive.bg_fill = COLOR_BG;
+        visuals.widgets.inactive.bg_fill = Color32::from_rgb(25, 25, 35);
+        visuals.widgets.hovered.bg_fill = Color32::from_rgb(40, 40, 50);
+        visuals.widgets.active.bg_fill = Color32::from_rgb(50, 50, 65);
+        visuals.selection.bg_fill = COLOR_PRIMARY.linear_multiply(0.3);
+        visuals.selection.stroke = egui::Stroke::new(1.0, COLOR_PRIMARY);
 
-    ctx.set_visuals(visuals);
+        ctx.set_visuals(visuals);
+    }
 }
 
 pub fn automated_ui_test_system(
@@ -33,10 +37,10 @@ pub fn automated_ui_test_system(
     mut test_state: ResMut<AutomatedTestActive>,
     mut ui_state: ResMut<EditorUiState>,
     mut console: ResMut<ConsoleLogStore>,
-    mut app_exit: EventWriter<bevy::app::AppExit>,
+    mut app_exit: MessageWriter<bevy::app::AppExit>,
 ) {
     test_state.timer.tick(time.delta());
-    if !test_state.timer.finished() {
+    if !test_state.timer.is_finished() {
         return;
     }
 
@@ -77,7 +81,7 @@ pub fn automated_ui_test_system(
         4 => {
             console.log("TEST: Validation Complete. Exiting.".into());
             info!("Automated UI Test Passed");
-            app_exit.send(bevy::app::AppExit::Success);
+            app_exit.write(bevy::app::AppExit::Success);
         }
         _ => {}
     }
@@ -85,7 +89,7 @@ pub fn automated_ui_test_system(
 
 pub fn launch_project_system(
     project: Res<ProjectMetadata>,
-    mut script_events: EventWriter<crate::scripting::ScriptCommand>,
+    mut script_events: MessageWriter<crate::lua_scripting::ScriptCommand>,
 ) {
     let Some(path) = &project.path else {
         warn!("No project path mounted! Cannot launch.");
@@ -97,7 +101,7 @@ pub fn launch_project_system(
     // Look for a main.lua or hamster_test.lua in the project's script folder
     let script_path = path.join("assets/scripts/hamster_test.lua");
     if script_path.exists() {
-        script_events.send(crate::scripting::ScriptCommand::Load {
+        script_events.write(crate::lua_scripting::ScriptCommand::Load {
             path: script_path.to_string_lossy().into(),
         });
     } else {
@@ -249,7 +253,7 @@ pub fn apply_window_settings_system(
     mut windows: Query<&mut Window, With<bevy::window::PrimaryWindow>>,
 ) {
     if settings.is_changed() {
-        if let Ok(mut window) = windows.get_single_mut() {
+        if let Some(mut window) = windows.iter_mut().next() {
             // Check if resolution actually changed (epsilon check)
             let current_width = window.resolution.width();
             let current_height = window.resolution.height();
@@ -266,7 +270,7 @@ pub fn apply_window_settings_system(
 
             let target_mode = match settings.window_mode_index {
                 1 => bevy::window::WindowMode::BorderlessFullscreen(target_monitor),
-                2 => bevy::window::WindowMode::SizedFullscreen(target_monitor),
+                2 => bevy::window::WindowMode::Fullscreen(target_monitor, bevy::window::VideoModeSelection::Current), // SizedFullscreen removed in Bevy 0.18
                 _ => bevy::window::WindowMode::Windowed,
             };
 

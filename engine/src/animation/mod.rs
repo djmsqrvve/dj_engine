@@ -22,8 +22,8 @@ pub struct DJAnimationPlugin;
 
 impl Plugin for DJAnimationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<AnimationCommand>()
-            .init_resource::<SharedAnimationCommands>()
+        app.add_message::<AnimationCommand>()
+            .insert_resource(SharedAnimationCommands::default())
             .add_systems(
                 Update,
                 (

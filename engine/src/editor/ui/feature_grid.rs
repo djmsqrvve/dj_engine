@@ -187,22 +187,15 @@ pub fn draw_feature_grid(ui: &mut egui::Ui, world: &mut World) {
                 toggle_node = Some(node.id.clone());
             }
 
-            if response.hovered() {
-                egui::show_tooltip_at_pointer(
-                    ui.ctx(),
-                    ui.layer_id(),
-                    egui::Id::new(&node.id),
-                    |ui| {
-                        ui.label(RichText::new(&node.name).strong());
-                        ui.label(&node.description);
-                        ui.label(if is_enabled {
-                            "✅ Enabled"
-                        } else {
-                            "❌ Disabled"
-                        });
-                    },
-                );
-            }
+            response.on_hover_ui(|ui| {
+                ui.label(RichText::new(&node.name).strong());
+                ui.label(&node.description);
+                ui.label(if is_enabled {
+                    "✅ Enabled"
+                } else {
+                    "❌ Disabled"
+                });
+            });
         }
     }
 

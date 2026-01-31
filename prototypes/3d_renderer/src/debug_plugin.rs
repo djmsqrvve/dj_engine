@@ -28,8 +28,8 @@ fn spawn_debug_grid(
             let height = (x * x + z * z) as f32 * 0.5;
             
             commands.spawn((
-                meshes.add(Cuboid::new(0.3, 0.3, 0.3)),
-                debug_material.clone(),
+                Mesh3d(meshes.add(Cuboid::new(0.3, 0.3, 0.3))),
+                MeshMaterial3d(debug_material.clone()),
                 Transform::from_xyz(x as f32 * 2.0, height + 1.0, z as f32 * 2.0),
             ));
             
@@ -39,11 +39,11 @@ fn spawn_debug_grid(
     
     // Spawn a bright reference point at origin
     commands.spawn((
-        meshes.add(Cuboid::new(0.5, 0.5, 0.5)),
-        materials.add(StandardMaterial {
+        Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
+        MeshMaterial3d(materials.add(StandardMaterial {
             base_color: Color::srgb(1.0, 0.0, 0.0),
             ..default()
-        }),
+        })),
         Transform::from_xyz(0.0, 0.5, 0.0),
     ));
     
@@ -52,10 +52,10 @@ fn spawn_debug_grid(
 }
 
 fn log_entity_count(
-    query: Query<&Transform, With<Handle<Mesh>>>,
+    query: Query<&Transform, With<Mesh3d>>,
     time: Res<Time>,
 ) {
-    if time.elapsed_seconds() > 1.0 && time.elapsed_seconds() < 1.1 {
+    if time.elapsed_secs() > 1.0 && time.elapsed_secs() < 1.1 {
         info!("Total entities with meshes: {}", query.iter().len());
     }
 }

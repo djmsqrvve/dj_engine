@@ -112,7 +112,7 @@ pub struct InputConfig {
     pub gamepad: HashMap<String, InputAction>,
 }
 
-#[derive(Default)]
+#[derive(Default, TypePath)]
 pub struct InputConfigLoader;
 
 impl AssetLoader for InputConfigLoader {
@@ -125,14 +125,14 @@ impl AssetLoader for InputConfigLoader {
         reader: &mut dyn bevy::asset::io::Reader,
         _settings: &(),
         _load_context: &mut LoadContext,
-    ) -> impl bevy::utils::ConditionalSendFuture<Output = Result<Self::Asset, Self::Error>> {
-        async move {
+    ) -> impl bevy::tasks::ConditionalSendFuture<Output = Result<Self::Asset, Self::Error>> {
+        Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
             let s = std::str::from_utf8(&bytes)?;
             let config: InputConfig = toml::from_str(s)?;
             Ok(config)
-        }
+        })
     }
 
     fn extensions(&self) -> &[&str] {
@@ -293,7 +293,7 @@ fn update_action_state(
     action_state.pressed.clear();
 
     // Update cursor position
-    if let Ok(window) = windows.get_single() {
+    if let Some(window) = windows.iter().next() {
         if let Some(pos) = window.cursor_position() {
             action_state.cursor_position = pos;
         }

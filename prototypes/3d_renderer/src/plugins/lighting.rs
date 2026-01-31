@@ -47,7 +47,7 @@ fn animate_point_lights(
     mut point_lights: Query<&mut Transform, With<PointLight>>,
     time: Res<Time>,
 ) {
-    let t = time.elapsed_seconds();
+    let t = time.elapsed_secs();
 
     for (i, mut transform) in point_lights.iter_mut().enumerate() {
         let offset = i as f32 * std::f32::consts::PI;

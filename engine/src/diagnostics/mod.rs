@@ -26,7 +26,7 @@ impl Plugin for DiagnosticsPlugin {
             .init_resource::<SystemTimer>()
             .register_type::<DiagnosticConfig>()
             .register_type::<SystemTimer>()
-            .add_plugins(FrameTimeDiagnosticsPlugin)
+            .add_plugins(FrameTimeDiagnosticsPlugin::default())
             .add_plugins(inspector::InspectorPlugin)
             .add_plugins(console::ConsolePlugin)
             .add_systems(Startup, setup_diagnostic_overlay)
@@ -127,7 +127,7 @@ fn console_fps_logger_system(
     time: Res<Time>,
     diagnostics: Res<DiagnosticsStore>,
     mut last_log: Local<f32>,
-    windows: Query<&Window>,
+    window: Single<&Window>,
 ) {
     if time.elapsed_secs() - *last_log > 5.0 {
         let fps = diagnostics
@@ -135,11 +135,7 @@ fn console_fps_logger_system(
             .and_then(|diag| diag.smoothed())
             .unwrap_or(0.0);
 
-        let (w, h) = if let Ok(window) = windows.get_single() {
-            (window.width() as i32, window.height() as i32)
-        } else {
-            (0, 0)
-        };
+        let (w, h) = (window.width() as i32, window.height() as i32);
 
         info!("Performance: {:.1} FPS | Window: {}x{}", fps, w, h);
         *last_log = time.elapsed_secs();

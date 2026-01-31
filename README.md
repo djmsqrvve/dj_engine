@@ -5,116 +5,63 @@
 </p>
 
 <p align="center">
-  <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Rust-1.75+-orange?style=flat-square" alt="Rust"></a>
-  <a href="https://bevyengine.org/"><img src="https://img.shields.io/badge/Bevy-0.15-green?style=flat-square" alt="Bevy"></a>
+  <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Rust-1.92-orange?style=flat-square" alt="Rust"></a>
+  <a href="https://bevyengine.org/"><img src="https://img.shields.io/badge/Bevy-0.18-green?style=flat-square" alt="Bevy"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License"></a>
-  <a href="https://github.com/djmsqrvve/dj_engine/actions"><img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build"></a>
 </p>
-
-<p align="center">
-  <img src="docs/images/editor_screenshot.png" alt="DJ Engine Editor" width="800">
-</p>
-
----
 
 ## ✨ Features
 
-| Feature | Description |
-|---------|-------------|
-| **Story Graph** | Node-based dialogue and narrative branching |
-| **Egui Editor** | Visual editor for scenes and story graphs |
-| **Lua Scripting** | Runtime scripting via mlua |
-| **Data-Driven** | JSON-serializable scenes, databases, and graphs |
-| **Modular Design** | Plugin-based architecture for extensibility |
+- **Story Graph System**: Node-based narrative engine for complex dialogue branching.
+- **Procedural Animation**: Built-in generic systems for breathing, blinking, and idle motion.
+- **Lua Scripting**: Full scripting support via `mlua` to control engine systems at runtime.
+- **Egui Editor**: Integrated tooling for scene editing, story graph management, and debugging.
+- **RPG Systems**: Modular inventory, quest logging, and combat stats.
+- **Navigation**: Grid-based A* pathfinding.
 
 ## 🚀 Quick Start
 
-```bash
-# Clone the repository
-git clone https://github.com/djmsqrvve/dj_engine.git
-cd dj_engine
+### Prerequisites
+- Rust 1.92+
+- Bevy 0.18 compatible environments (Vulkan/Metal/DX12)
 
-# Run the editor
-./dj e
+### Running the CLI RPG Demo
 
-# Run all tests
-./dj t
-
-# Build for release
-./dj b
-```
-
-## 🛠️ CLI Commands
-
-All commands go through the `dj` helper script:
+The `cli_rpg` tool demonstrates the story graph engine running in a terminal environment without the graphical overhead.
 
 ```bash
-# Development
-./dj e          # Run editor
-./dj d          # Run DoomExe game
-./dj m          # Run minimal test
-
-# Testing & Quality
-./dj t          # Run all tests
-./dj c          # Check code compiles
-./dj fmt        # Format code
-./dj lint       # Run Clippy linter
-
-# Build
-./dj b          # Build release
-./dj doc        # Generate documentation
-./dj clean      # Clean build artifacts
+cargo run -p cli_rpg
 ```
 
-## 📁 Project Structure
+### Running Tests
+
+```bash
+# Run generic tests
+cargo test -p dj_engine
+
+# Run all workspace tests (some integration tests may be heavy)
+cargo test --workspace
+```
+
+## 📁 Repository Structure
 
 ```
 dj_engine/
-├── engine/              # Core engine library
+├── engine/              # Core library crate
 │   ├── src/
-│   │   ├── core/        # Engine initialization
-│   │   ├── data/        # Serializable data types
-│   │   ├── editor/      # Egui visual editor
-│   │   ├── story_graph/ # Narrative system
-│   │   ├── scripting/   # Lua integration
-│   │   └── diagnostics/ # Debug tools
-│   └── examples/        # Example JSON files
-├── games/               # Game projects
-│   └── dev/doomexe/     # Main development game
-├── docs/                # Documentation
-└── tools/               # Asset utilities
+│   │   ├── animation/   # Generic procedural animation
+│   │   ├── story_graph/ # Narrative engine
+│   │   ├── editor/      # Egui-based tools
+│   │   ├── lua_scripting/ # Scripting bridge
+│   │   └── game/        # RPG systems (Inventory, Quests)
+│   └── tests/           # Integration tests
+├── tools/
+│   └── cli_rpg/         # Terminal-based story runner
+└── games/               # Active game projects
 ```
 
-## 📖 Documentation
-
-| Document | Description |
-|----------|-------------|
-| [Getting Started](docs/GETTING_STARTED.md) | First-time setup guide |
-| [Architecture](docs/ARCHITECTURE.md) | System design overview |
-| [Code Style](docs/CODE_STYLE.md) | Coding standards |
-| [Testing Guide](docs/TESTING.md) | How to write and run tests |
-| [Project Structure](docs/PROJECT_STRUCTURE.md) | Detailed file layout |
-
-## 🛠️ Prerequisites
-
-- **Rust 1.75+** - [Install Rust](https://rustup.rs/)
-- **Git** - For version control
-- **Linux/WSL2** recommended (Windows native works but may have graphics quirks)
-
-## 🤝 Contributing
-
-We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting a PR.
-
-- 🐛 [Report a Bug](.github/ISSUE_TEMPLATE/bug_report.md)
-- 💡 [Request a Feature](.github/ISSUE_TEMPLATE/feature_request.md)
-- 📖 [Improve Documentation](docs/)
+> **Note**: Historical reference code and the `bridge` prototype have been moved to `../dj_engine_archive` to keep this repository clean and focused on the core engine.
 
 ## 📜 License
 
 MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/djmsqrvve">djmsqrvve</a>
-</p>

@@ -8,7 +8,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "MINIMAL TEST WINDOW".into(),
-                resolution: WindowResolution::new(800.0, 600.0).with_scale_factor_override(1.0),
+                resolution: WindowResolution::new(800, 600).with_scale_factor_override(1.0),
                 position: WindowPosition::Centered(MonitorSelection::Primary),
                 ..default()
             }),

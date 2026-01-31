@@ -37,7 +37,6 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
             ui.menu_button("File", |ui| {
                 if ui.button("💾 Save Project").clicked() {
                     save_project_impl(world);
-                    ui.close_menu();
                 }
                 if ui.button("📂 Load Project").clicked() {
                     let path = PathBuf::from("games/dev/new_horizon");
@@ -81,7 +80,6 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                     }
 
                     info!("Editor: Loaded project path 'games/dev/new_horizon'");
-                    ui.close_menu();
                 }
             });
 
@@ -226,18 +224,15 @@ pub fn draw_top_menu(ui: &mut egui::Ui, world: &mut World) {
                         ui.horizontal(|ui| {
                             if ui.selectable_label(is_active, text).clicked() {
                                 switch_branch_idx = Some(idx);
-                                ui.close_menu();
                             }
                             if branches.len() > 1 && ui.small_button("x").clicked() {
                                 close_branch_idx = Some(idx);
-                                ui.close_menu();
                             }
                         });
                     }
                     ui.separator();
                     if ui.button("+ New Branch").clicked() {
                         add_branch = true;
-                        ui.close_menu();
                     }
                 },
             );
@@ -583,7 +578,7 @@ pub fn draw_right_panel(ui: &mut egui::Ui, world: &mut World) {
                                 .monospace()
                                 .color(COLOR_SECONDARY),
                         );
-                        if gen > 10 {
+                        if gen.to_bits() > 10 {
                             ui.label(RichText::new("⚠️ High gen!").color(Color32::YELLOW).small());
                         }
                     });
@@ -714,7 +709,7 @@ pub fn draw_console_panel(ui: &mut egui::Ui, world: &mut World) {
         }
 
         // Send command event
-        world.send_event(ConsoleCommandEvent(command_to_send));
+        world.trigger(ConsoleCommandEvent(command_to_send));
 
         // Clear input
         world.resource_mut::<EditorUiState>().console_input.clear();

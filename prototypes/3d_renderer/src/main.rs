@@ -7,7 +7,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "GLTF Test (Press SPACE)".into(),
-                resolution: (1920.0, 1080.0).into(),
+                resolution: (1920, 1080).into(),
                 ..default()
             }),
             ..default()
@@ -26,7 +26,7 @@ fn setup_scene(
         "test_models/dota_models/models/heroes/drow/drow_base.gltf"
     );
     
-    commands.spawn(model_handle);
+    commands.spawn(SceneRoot(model_handle));
     
     // Camera
     commands.spawn((Camera3d::default(), Transform::from_xyz(0.0, 5.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y)));

@@ -5,7 +5,7 @@ pub struct DJCombatPlugin;
 
 impl Plugin for DJCombatPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<DamageEvent>()
+        app.add_message::<DamageEvent>()
             .add_systems(Update, (
                 process_damage_system,
                 check_death_system,
@@ -13,7 +13,7 @@ impl Plugin for DJCombatPlugin {
     }
 }
 
-#[derive(Event, Debug)]
+#[derive(Message, Debug, Clone)]
 pub struct DamageEvent {
     pub target: Entity,
     pub amount: f32,
@@ -21,7 +21,7 @@ pub struct DamageEvent {
 }
 
 fn process_damage_system(
-    mut events: EventReader<DamageEvent>,
+    mut events: MessageReader<DamageEvent>,
     mut query: Query<&mut CombatStatsComponent>,
 ) {
     for event in events.read() {
@@ -41,7 +41,7 @@ fn check_death_system(
     for (entity, stats) in &query {
         if stats.hp <= 0 {
             info!("Entity {:?} has died.", entity);
-            commands.entity(entity).despawn_recursive();
+            commands.entity(entity).despawn();
             // TODO(#103): Trigger Loot drops or Death effects
         }
     }
@@ -49,19 +49,19 @@ fn check_death_system(
 
 /// Helper system to trigger damage from collisions (if body type allows)
 pub fn trigger_combat_damage(
-    mut collision_events: EventReader<crate::physics::CollisionEvent>,
-    mut damage_events: EventWriter<DamageEvent>,
+    mut collision_events: MessageReader<crate::physics::CollisionEvent>,
+    mut damage_events: MessageWriter<DamageEvent>,
     stats_query: Query<&CombatStatsComponent>,
 ) {
      for collision in collision_events.read() {
         // If entity A has stats, check if entity B is an "attacker"
         // This is a placeholder for actual combat logic
-        if let (Ok(_stats_a), Ok(stats_b)) = (stats_query.get(collision.entity_a), stats_query.get(collision.entity_b)) {
+        if let (Ok(_stats_a), Ok(stats_b)) = (stats_query.get(collision.a), stats_query.get(collision.b)) {
              // For prototype: objects with stats damage each other on collision
-             damage_events.send(DamageEvent {
-                 target: collision.entity_a,
+             damage_events.write(DamageEvent {
+                 target: collision.a,
                  amount: stats_b.damage as f32,
-                 source: Some(collision.entity_b),
+                 source: Some(collision.b),
              });
         }
      }

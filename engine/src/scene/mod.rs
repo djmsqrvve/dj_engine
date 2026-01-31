@@ -5,6 +5,7 @@
 
 use bevy::prelude::*;
 
+
 /// Component marking an entity as a background image.
 #[derive(Component)]
 pub struct SceneBackground;
@@ -32,7 +33,7 @@ pub struct SceneManager {
 }
 
 /// Event to trigger a scene change.
-#[derive(Event)]
+#[derive(Message, Debug, Clone)]
 pub struct ChangeSceneEvent {
     /// Path to the new background image
     pub background_path: String,
@@ -46,7 +47,7 @@ pub struct DJScenePlugin;
 impl Plugin for DJScenePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<SceneManager>()
-            .add_event::<ChangeSceneEvent>()
+            .add_message::<ChangeSceneEvent>()
             .add_systems(Startup, setup_transition_overlay)
             .add_systems(Update, (handle_scene_change, update_transition));
 
@@ -75,7 +76,7 @@ pub struct TransitionOverlay;
 
 /// System to handle scene change events.
 fn handle_scene_change(
-    mut events: EventReader<ChangeSceneEvent>,
+    mut events: MessageReader<ChangeSceneEvent>,
     mut manager: ResMut<SceneManager>,
 ) {
     for event in events.read() {

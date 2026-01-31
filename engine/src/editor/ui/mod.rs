@@ -146,11 +146,11 @@ impl<'a> egui_dock::TabViewer for EditorTabViewer<'a> {
 }
 
 pub fn editor_ui_system(world: &mut World) {
-    let ctx = world
-        .query_filtered::<&mut bevy_egui::EguiContext, With<bevy::window::PrimaryWindow>>()
-        .get_single_mut(world)
-        .map(|mut c| c.get_mut().clone())
-        .expect("Missing primary window EguiContext");
+    let mut query = world.query_filtered::<&mut bevy_egui::EguiContext, With<bevy::window::PrimaryWindow>>();
+    let Ok(mut egui_ctx) = query.single_mut(world) else {
+        return;
+    };
+    let ctx = egui_ctx.get_mut().clone();
 
     // Top Menu
     egui::TopBottomPanel::top("top_panel").show(&ctx, |ui| {
@@ -159,7 +159,7 @@ pub fn editor_ui_system(world: &mut World) {
 
     // Workspace Canvas (Rest of the screen)
     egui::CentralPanel::default()
-        .frame(egui::Frame::none().fill(Color32::TRANSPARENT))
+        .frame(egui::Frame::NONE.fill(Color32::TRANSPARENT))
         .show(&ctx, |ui| {
             workspace::draw_workspace_canvas(ui, world);
         });

@@ -42,6 +42,7 @@ pub fn draw_campaign_editor(ui: &mut egui::Ui, state: &mut CampaignEditorState) 
                 act_rect,
                 5.0,
                 egui::Stroke::new(3.0, egui::Color32::from_rgb(0, 255, 204)), // COLOR_PRIMARY (Mint)
+                egui::StrokeKind::Inside,
             );
             painter.text(
                 node_pos + egui::vec2(15.0, 15.0),

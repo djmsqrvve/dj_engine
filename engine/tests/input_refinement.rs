@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use dj_engine::prelude::*;
 use dj_engine::input::{ActionState, InputAction, InputConfig};
-use dj_engine::scripting::{LuaContext, SharedInputStateResource};
+use dj_engine::lua_scripting::{LuaContext, SharedInputStateResource};
 
 #[test]
 fn test_action_state_mouse_mapping() {

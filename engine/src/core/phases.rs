@@ -88,7 +88,7 @@ impl PhaseManager {
 }
 
 /// Event triggered when the game phase changes.
-#[derive(Event, Debug, Clone)]
+#[derive(Message, Debug, Clone)]
 pub struct PhaseChangeEvent {
     pub prev: GamePhase,
     pub next: GamePhase,
@@ -105,7 +105,8 @@ impl Plugin for GamePhasePlugin {
         app.register_type::<PhaseManager>();
         
         // Split this out to ensure type inference works
-        app.add_event::<PhaseChangeEvent>();
+        app.add_message::<PhaseChangeEvent>();
+
         
         app.add_systems(
             OnEnter(GamePhase::Loading),

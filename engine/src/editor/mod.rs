@@ -10,7 +10,7 @@ pub mod validation;
 use crate::data::EditorPreferences;
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
-use egui_dock::{DockState, NodeIndex}; // Add imports
+use egui_dock::{DockState, NodeIndex};
 pub use state::*;
 use systems::*;
 use ui::campaign::CampaignEditorState;
@@ -23,7 +23,7 @@ pub struct EditorPlugin;
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
         if !app.is_plugin_added::<EguiPlugin>() {
-            app.add_plugins(EguiPlugin);
+            app.add_plugins(EguiPlugin::default());
         }
 
         // Load user preferences from disk

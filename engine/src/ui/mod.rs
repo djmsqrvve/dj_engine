@@ -67,7 +67,7 @@ pub struct ChoiceButton(pub usize);
 
 fn render_dialogue(
     mut commands: Commands,
-    mut flow_events: EventReader<StoryFlowEvent>,
+    mut flow_events: MessageReader<StoryFlowEvent>,
     query: Query<Entity, With<DialogueUiRoot>>,
     theme: Res<UiTheme>,
 ) {
@@ -75,7 +75,7 @@ fn render_dialogue(
         if let StoryFlowEvent::ShowDialogue { speaker, text, .. } = event {
             // Clear old UI
             for entity in &query {
-                commands.entity(entity).despawn_recursive();
+                commands.entity(entity).despawn();
             }
 
             // Spawn new dialogue box
@@ -93,7 +93,7 @@ fn render_dialogue(
                         ..default()
                     },
                     BackgroundColor(theme.bg_color),
-                    BorderColor(theme.border_color),
+                    BorderColor::all(theme.border_color),
                     DialogueUiRoot,
                 ))
                 .with_children(|parent| {
@@ -120,7 +120,7 @@ fn render_dialogue(
                 });
         } else if matches!(event, StoryFlowEvent::GraphComplete) {
             for entity in &query {
-                commands.entity(entity).despawn_recursive();
+                commands.entity(entity).despawn();
             }
         }
     }
@@ -128,7 +128,7 @@ fn render_dialogue(
 
 fn render_choices(
     mut commands: Commands,
-    mut flow_events: EventReader<StoryFlowEvent>,
+    mut flow_events: MessageReader<StoryFlowEvent>,
     query: Query<Entity, With<ChoiceUiRoot>>,
     theme: Res<UiTheme>,
 ) {
@@ -136,7 +136,7 @@ fn render_choices(
         if let StoryFlowEvent::ShowChoices { options, .. } = event {
              // Clear old UI
              for entity in &query {
-                commands.entity(entity).despawn_recursive();
+                commands.entity(entity).despawn();
             }
 
             commands.spawn((
@@ -181,7 +181,7 @@ fn handle_ui_input(
         (&Interaction, &ChoiceButton),
         (Changed<Interaction>, With<Button>),
     >,
-    mut input_events: EventWriter<StoryInputEvent>,
+    mut input_events: MessageWriter<StoryInputEvent>,
     mut commands: Commands,
     choice_root: Query<Entity, With<ChoiceUiRoot>>,
     _dialogue_root: Query<Entity, With<DialogueUiRoot>>,
@@ -191,10 +191,10 @@ fn handle_ui_input(
     // Handle Button Clicks
     for (interaction, choice) in &mut interaction_query {
         if *interaction == Interaction::Pressed {
-            input_events.send(StoryInputEvent::SelectChoice(choice.0));
+            input_events.write(StoryInputEvent::SelectChoice(choice.0));
             // Cleanup Choice UI
             for entity in &choice_root {
-                commands.entity(entity).despawn_recursive();
+                commands.entity(entity).despawn();
             }
         }
     }
@@ -204,7 +204,7 @@ fn handle_ui_input(
         if executor.status == ExecutionStatus::WaitingForInput {
              // If Choice UI is NOT open, we can advance
              if choice_root.is_empty() {
-                input_events.send(StoryInputEvent::Advance);
+                input_events.write(StoryInputEvent::Advance);
                 // Simple feedback: could also clear dialogue here if it's the end
              }
         }

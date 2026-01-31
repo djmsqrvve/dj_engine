@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use dj_engine::prelude::*;
+use dj_engine::diagnostics::console::ConsoleCommandEvent;
 use std::path::Path;
 
 fn main() {
@@ -16,7 +17,7 @@ fn main() {
 }
 
 fn setup_rpg(
-    mut commands: Commands,
+    // mut commands: Commands, // Unused
     mut library: ResMut<StoryGraphLibrary>,
     mut executor: ResMut<GraphExecutor>,
 ) {
@@ -43,20 +44,17 @@ fn setup_rpg(
     }
 }
 
-fn rpg_output_system(mut events: EventReader<StoryFlowEvent>) {
+fn rpg_output_system(mut events: MessageReader<StoryFlowEvent>) {
     for event in events.read() {
         match event {
             StoryFlowEvent::ShowDialogue { speaker, text, .. } => {
-                let content = text.get("en").unwrap_or(&"???".to_string());
-                println!("\n[{}] {}", speaker.as_degug_str(), content);
+                println!("\n[{}] {}", speaker, text);
                 println!("(Press Enter to continue)");
             }
             StoryFlowEvent::ShowChoices { prompt, options } => {
-                let content = prompt.get("en").unwrap_or(&"???".to_string());
-                println!("\n? {}", content);
+                println!("\n? {}", prompt);
                 for (i, opt) in options.iter().enumerate() {
-                    let opt_text = opt.get("en").unwrap_or(&"???".to_string());
-                    println!("  {}. {}", i + 1, opt_text);
+                    println!("  {}. {}", i + 1, opt);
                 }
             }
             StoryFlowEvent::GraphComplete => {
@@ -75,44 +73,17 @@ fn rpg_output_system(mut events: EventReader<StoryFlowEvent>) {
 }
 
 fn rpg_input_system(
-    mut console_events: EventReader<dj_engine::diagnostics::console::ConsoleCommandEvent>,
-    mut story_events: EventWriter<StoryInputEvent>,
+    mut console_events: MessageReader<ConsoleCommandEvent>,
+    mut story_events: MessageWriter<StoryInputEvent>,
 ) {
     for event in console_events.read() {
-        let input = event.0.trim();
-        
-        // Check if input is a number
-        if let Ok(index) = input.parse::<usize>() {
-            if index > 0 {
-                 println!("> Selected option {}", index);
-                 story_events.send(StoryInputEvent::SelectChoice(index - 1));
-                 continue;
-            }
-        }
-
-        // Check for advance commands
-        match input.to_lowercase().as_str() {
-            "" | "next" | "n" => {
-                story_events.send(StoryInputEvent::Advance);
-            }
-            "quit" | "exit" => {
-                println!("Quitting...");
-                std::process::exit(0);
-            }
-            _ => {
-                // If not a number or command, treat empty enter as advance too?
-                // The console plugin filters empty strings usually, but let's see.
-            }
+        let cmd = event.0.trim();
+        if cmd == "next" || cmd.is_empty() {
+            story_events.write(StoryInputEvent::Advance);
+        } else if let Ok(choice) = cmd.parse::<usize>() {
+            story_events.write(StoryInputEvent::SelectChoice(choice.saturating_sub(1)));
         }
     }
 }
 
-trait DebugStr {
-    fn as_degug_str(&self) -> String;
-}
 
-impl DebugStr for Option<String> {
-    fn as_degug_str(&self) -> String {
-        self.clone().unwrap_or("Narrator".to_string())
-    }
-}

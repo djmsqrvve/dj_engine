@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 use bevy::time::TimePlugin;
-use dj_engine::prelude::*;
+
 use dj_engine::animation::components::{BlinkingAnimation, BreathingAnimation, ExpressionController};
+use dj_engine::animation::DJAnimationPlugin;
 
 fn setup_app() -> App {
     let mut app = App::new();

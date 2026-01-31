@@ -48,7 +48,20 @@ impl Plugin for DJEnginePlugin {
         app.insert_resource(self.config.clone());
 
         // Add core engine plugins
-        app.add_plugins(phases::GamePhasePlugin);
+        app.add_plugins(phases::GamePhasePlugin)
+           .add_plugins(crate::assets::DJAssetPlugin)
+           .add_plugins(crate::input::DJInputPlugin)
+           .add_plugins(crate::audio::DJAudioPlugin)
+           .add_plugins(crate::animation::DJAnimationPlugin)
+           .add_plugins(crate::scene::DJScenePlugin)
+           .add_plugins(crate::story_graph::StoryGraphPlugin)
+           .add_plugins(crate::physics::DJPhysicsPlugin)
+           .add_plugins(crate::midi::MidiPlugin)
+           .add_plugins(crate::lua_scripting::DJScriptingPlugin);
+
+        if self.with_diagnostics {
+            app.add_plugins(crate::diagnostics::DiagnosticsPlugin);
+        }
 
         info!(
             "DJ Engine v{} initialized ({}x{}, debug={})",

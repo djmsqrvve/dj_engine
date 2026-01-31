@@ -130,6 +130,7 @@ pub fn draw_timeline_view(ui: &mut egui::Ui, _world: &mut World) {
             Rect::from_min_size(Pos2::new(name_pos.x, btn_y), Vec2::new(20.0, 20.0)),
             2.0,
             Stroke::new(1.0, Color32::GRAY),
+            egui::StrokeKind::Inside,
         );
         painter.text(
             Pos2::new(name_pos.x + 10.0, btn_y + 10.0),
@@ -143,6 +144,7 @@ pub fn draw_timeline_view(ui: &mut egui::Ui, _world: &mut World) {
             Rect::from_min_size(Pos2::new(name_pos.x + 25.0, btn_y), Vec2::new(20.0, 20.0)),
             2.0,
             Stroke::new(1.0, Color32::GRAY),
+            egui::StrokeKind::Inside,
         );
         painter.text(
             Pos2::new(name_pos.x + 35.0, btn_y + 10.0),
@@ -162,7 +164,7 @@ pub fn draw_timeline_view(ui: &mut egui::Ui, _world: &mut World) {
             );
 
             painter.rect_filled(clip_rect, 4.0, track.color.linear_multiply(0.3));
-            painter.rect_stroke(clip_rect, 4.0, Stroke::new(1.0, track.color));
+            painter.rect_stroke(clip_rect, 4.0, Stroke::new(1.0, track.color), egui::StrokeKind::Inside);
 
             painter.text(
                 clip_rect.left_center() + Vec2::new(5.0, 0.0),

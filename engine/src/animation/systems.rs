@@ -87,23 +87,24 @@ pub fn idle_motion_system(time: Res<Time>, mut query: Query<(&mut IdleMotion, &m
 /// System to flush commands from the shared queue to Bevy events.
 pub fn flush_animation_commands(
     shared: Res<SharedAnimationCommands>,
-    mut events: EventWriter<AnimationCommand>,
+    mut events: MessageWriter<AnimationCommand>,
 ) {
     if let Ok(mut queue) = shared.0.lock() {
         for cmd in queue.drain(..) {
-            events.send(cmd);
+            events.write(cmd);
         }
     }
 }
 
 /// System to process animation commands.
 pub fn handle_animation_commands(
-    mut events: EventReader<AnimationCommand>,
+    mut events: MessageReader<AnimationCommand>,
     mut query: Query<(Entity, &Name, &mut ExpressionController)>,
 ) {
     for event in events.read() {
         match event {
             AnimationCommand::SetExpression { target_id, expression } => {
+
                 // Find entity by name (Slow O(N), needs optimization map later)
                 for (_entity, name, mut controller) in query.iter_mut() {
                     if name.as_str() == target_id {

@@ -39,11 +39,14 @@ pub fn update_camera_viewport(
     mut camera_query: Query<&mut Camera, With<MainCamera>>,
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
 ) {
-    let Ok(window) = windows.get_single() else {
+    let Some(window) = windows.iter().next() else {
         return;
     };
     let Some(rect) = viewport_rect.0 else { return };
-    let mut camera = camera_query.single_mut();
+    let mut camera = match camera_query.iter_mut().next() {
+        Some(c) => c,
+        None => return,
+    };
 
     // Bevy Viewport expects physical pixels or logical scaled?
     // Usually logical pixels if we use with_scale_factor_override(1.0) in main.rs
@@ -64,7 +67,7 @@ pub fn update_camera_viewport(
     let width = (max_x - min_x).max(1.0);
     let height = (max_y - min_y).max(1.0);
 
-    camera.viewport = Some(bevy::render::camera::Viewport {
+    camera.viewport = Some(bevy::camera::Viewport {
         physical_position: UVec2::new(min_x as u32, min_y as u32),
         physical_size: UVec2::new(width as u32, height as u32),
         depth: 0.0..1.0,

@@ -34,7 +34,7 @@ impl ConsoleLogStore {
 }
 
 /// Event fired when a CLI command is entered.
-#[derive(Event)]
+#[derive(Event, Message, Clone)]
 pub struct ConsoleCommandEvent(pub String);
 
 pub struct ConsolePlugin;
@@ -67,7 +67,7 @@ impl Plugin for ConsolePlugin {
 
         app.insert_resource(ConsoleReceiver(Arc::new(Mutex::new(rx))))
             .init_resource::<ConsoleLogStore>()
-            .add_event::<ConsoleCommandEvent>()
+            .add_message::<ConsoleCommandEvent>()
             .add_systems(Update, listen_for_console_input)
             .add_systems(Update, handle_console_commands);
 
@@ -77,18 +77,19 @@ impl Plugin for ConsolePlugin {
 
 fn listen_for_console_input(
     receiver: Res<ConsoleReceiver>,
-    mut events: EventWriter<ConsoleCommandEvent>,
+    mut events: MessageWriter<ConsoleCommandEvent>,
 ) {
     if let Ok(rx) = receiver.0.lock() {
         while let Ok(cmd) = rx.try_recv() {
-            events.send(ConsoleCommandEvent(cmd));
+            events.write(ConsoleCommandEvent(cmd)); // MessageWriter use send() not write()
         }
     }
 }
 
 fn handle_console_commands(
-    mut events: EventReader<ConsoleCommandEvent>,
-    mut app_exit: EventWriter<AppExit>,
+    mut events: MessageReader<ConsoleCommandEvent>,
+    mut app_exit: MessageWriter<AppExit>,
+
     windows: Query<(Entity, &Window)>,
     entities: Query<(Entity, Option<&Name>)>,
     executor: Option<Res<GraphExecutor>>,
@@ -137,7 +138,7 @@ fn handle_console_commands(
                     count += 1;
                     let gen = entity.generation();
                     let name_str = name.map(|n| n.as_str()).unwrap_or("<unnamed>");
-                    if gen > 10 {
+                    if gen.to_bits() > 10 {
                         high_gen_count += 1;
                         println!("⚠️  HIGH GEN: {:?} | Name: \"{}\"", entity, name_str);
                     }
@@ -170,7 +171,7 @@ fn handle_console_commands(
             }
             "exit" | "quit" => {
                 println!("Exiting engine...");
-                app_exit.send(AppExit::Success);
+                app_exit.write(AppExit::Success);
             }
             _ => {
                 println!(

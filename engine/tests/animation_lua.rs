@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use dj_engine::prelude::*;
 use dj_engine::animation::components::ExpressionController;
 
+
 #[test]
 fn test_animation_lua_integration() {
     let mut app = App::new();
@@ -30,7 +31,7 @@ fn test_animation_lua_integration() {
     // or use a temporary file.
     // Accessing LuaContext is better.
     
-    let lua_ctx = app.world().resource::<dj_engine::scripting::LuaContext>();
+    let lua_ctx = app.world().resource::<dj_engine::lua_scripting::LuaContext>();
     let result = if let Ok(lua) = lua_ctx.lua.lock() {
         lua.load(r#"
             animation.set_expression("hero", "angry")

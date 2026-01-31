@@ -13,6 +13,10 @@ path = "src/lib.rs"
 name = "bevy-3d-renderer"
 path = "src/main.rs"
 
+[[bin]]
+name = "debug-text"
+path = "src/main_debug_text.rs"
+
 [dependencies]
 bevy = { version = "0.18", features = ["wayland", "bevy_gltf"] }
 

@@ -1,6 +1,7 @@
 use crate::data::components::{CollisionComponent, CollisionShape, BodyType};
 use bevy::prelude::*;
 
+
 /// Default collision box size in pixels (32x32).
 /// TODO(#108): Get collision size from actual sprite/component data instead of default.
 const DEFAULT_COLLISION_SIZE: f32 = 32.0;
@@ -12,22 +13,22 @@ pub struct DJPhysicsPlugin;
 
 impl Plugin for DJPhysicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<CollisionEvent>()
+        app.add_message::<CollisionEvent>()
             .add_systems(Update, (
                 update_collision_system,
-                resolve_collision_system,
-            ).chain());
+                resolve_collision_system.after(update_collision_system),
+            ));
     }
 }
 
-#[derive(Event, Debug)]
+#[derive(Message, Debug, Clone)]
 pub struct CollisionEvent {
-    pub entity_a: Entity,
-    pub entity_b: Entity,
+    pub a: Entity,
+    pub b: Entity,
 }
 
 fn update_collision_system(
-    mut collision_events: EventWriter<CollisionEvent>,
+    mut collision_events: MessageWriter<CollisionEvent>,
     query: Query<(Entity, &Transform, &CollisionComponent)>,
 ) {
     let entities: Vec<_> = query.iter().collect();
@@ -38,9 +39,9 @@ fn update_collision_system(
             let (entity_b, transform_b, collision_b) = entities[j];
 
             if check_collision(transform_a, collision_a, transform_b, collision_b) {
-                collision_events.send(CollisionEvent {
-                    entity_a,
-                    entity_b,
+                collision_events.write(CollisionEvent {
+                    a: entity_a,
+                    b: entity_b,
                 });
             }
         }
@@ -73,11 +74,11 @@ fn check_collision(
 
 fn resolve_collision_system(
     mut query: Query<(&mut Transform, &CollisionComponent)>,
-    mut events: EventReader<CollisionEvent>,
+    mut events: MessageReader<CollisionEvent>,
 ) {
     for event in events.read() {
         // Simple static response: prevent overlap if one is static
-        if let Ok([q1, q2]) = query.get_many_mut([event.entity_a, event.entity_b]) {
+        if let Ok([q1, q2]) = query.get_many_mut([event.a, event.b]) {
             let (mut t1, c1) = q1;
             let (mut t2, c2) = q2;
 

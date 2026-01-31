@@ -10,7 +10,6 @@ fn test_editor_initialization_and_state() {
 
     // Minimal plugins required for the editor resources and states to be registered
     app.add_plugins(MinimalPlugins);
-    app.add_plugins(bevy::hierarchy::HierarchyPlugin);
     app.add_plugins(bevy::state::app::StatesPlugin);
 
     app.init_state::<EditorState>()
