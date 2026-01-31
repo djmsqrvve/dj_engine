@@ -26,25 +26,30 @@ pub struct GameSaveData {
     pub format_version: String,
     pub timestamp: f64,
     pub story_flags: HashMap<String, FlagValue>,
-    pub current_node: Option<NodeId>,
+    pub inventory: crate::game::Inventory,
+    pub quest_log: crate::game::QuestLog,
+    pub executor: crate::story_graph::types::GraphExecutor,
     pub player_position: Vec3,
-    // TODO(#104): Add Inventory and Quests to save data
 }
 
 fn handle_save_event(
     mut events: MessageReader<SaveEvent>,
     flags: Res<StoryFlags>,
     executor: Res<GraphExecutor>,
+    inventory: Res<crate::game::Inventory>,
+    quest_log: Res<crate::game::QuestLog>,
     player_query: Query<&Transform, With<crate::editor::state::LogicalEntity>>,
 ) {
     for event in events.read() {
         let player_pos = player_query.iter().next().map(|t| t.translation).unwrap_or(Vec3::ZERO);
         
         let save_data = GameSaveData {
-            format_version: "1.0".to_string(),
-            timestamp: 0.0, // Should use real time
+            format_version: "1.1".to_string(),
+            timestamp: 0.0, // TODO: Use real timestamp
             story_flags: flags.0.clone(),
-            current_node: executor.current_node,
+            inventory: inventory.clone(),
+            quest_log: quest_log.clone(),
+            executor: executor.clone(),
             player_position: player_pos,
         };
 
@@ -54,7 +59,7 @@ fn handle_save_event(
                 if let Err(e) = fs::write(&path, json) {
                     error!("Failed to write save file {}: {}", path, e);
                 } else {
-                    info!("Game saved to {}", path);
+                    info!("Robust game state saved to {}", path);
                 }
             }
             Err(e) => error!("Failed to serialize save data: {}", e),
@@ -66,6 +71,8 @@ fn handle_load_event(
     mut events: MessageReader<LoadEvent>,
     mut flags: ResMut<StoryFlags>,
     mut executor: ResMut<GraphExecutor>,
+    mut inventory: ResMut<crate::game::Inventory>,
+    mut quest_log: ResMut<crate::game::QuestLog>,
     mut player_query: Query<&mut Transform, With<crate::editor::state::LogicalEntity>>,
 ) {
     for event in events.read() {
@@ -75,17 +82,20 @@ fn handle_load_event(
                 match serde_json::from_str::<GameSaveData>(&json) {
                     Ok(data) => {
                         *flags = StoryFlags(data.story_flags);
-                        executor.current_node = data.current_node;
-                        // Force executor to resume if it was running/waiting
-                        if executor.active_graph_id.is_some() {
-                           executor.status = crate::story_graph::types::ExecutionStatus::Running;
+                        *executor = data.executor;
+                        *inventory = data.inventory;
+                        *quest_log = data.quest_log;
+                        
+                        // Force a state update for visibility in editor
+                        if executor.active_graph_id.is_some() && executor.status == crate::story_graph::types::ExecutionStatus::Idle {
+                           executor.status = crate::story_graph::types::ExecutionStatus::Paused;
                         }
                         
                         if let Some(mut transform) = player_query.iter_mut().next() {
                             transform.translation = data.player_position;
                         }
                         
-                        info!("Game loaded from {}", path);
+                        info!("Robust game state loaded from {}", path);
                     }
                     Err(e) => error!("Failed to deserialize save file {}: {}", path, e),
                 }

@@ -22,6 +22,9 @@ pub enum StoryFlowEvent {
         time_scale: f32,
         pause: bool,
     },
+    StartBattle {
+        enemy_id: String,
+    },
     GraphComplete,
 }
 
@@ -30,6 +33,7 @@ pub enum StoryFlowEvent {
 pub enum StoryInputEvent {
     Advance,
     SelectChoice(usize),
+    FinishBattle { won: bool },
 }
 
 /// Generic story event

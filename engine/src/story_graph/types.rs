@@ -103,6 +103,12 @@ pub enum StoryNode {
         pause: bool,
         next: Option<NodeId>,
     },
+    /// Transition to a combat encounter.
+    Battle {
+        enemy_id: String,
+        next_win: Option<NodeId>,
+        next_loss: Option<NodeId>,
+    },
     /// Start execution of the graph.
     Start { next: Option<NodeId> },
     /// End execution of the current graph.
@@ -124,6 +130,7 @@ pub struct GraphChoice {
 pub struct StoryGraph {
     pub id: String,
     pub nodes: HashMap<NodeId, StoryNode>,
+    pub node_names: HashMap<NodeId, String>,
     pub start_node: Option<NodeId>,
     pub next_id: usize,
 }
@@ -133,6 +140,7 @@ impl StoryGraph {
         Self {
             id: id.into(),
             nodes: HashMap::new(),
+            node_names: HashMap::new(),
             start_node: None,
             next_id: 0,
         }
@@ -213,6 +221,7 @@ pub enum ExecutionStatus {
     Running,
     WaitingForInput,
     WaitingForTimer,
+    WaitingForBattle,
     Paused,
 }
 
@@ -362,6 +371,11 @@ impl GraphExecutor {
             graph.set_start(*start_id);
         }
 
+        // Pass 3: Map IDs back to names for debug visualization
+        for (name, id) in id_map {
+            graph.node_names.insert(id, name);
+        }
+
         let start_node = graph.start_node;
         let id = graph.id.clone();
         library.graphs.insert(id.clone(), graph);
@@ -401,6 +415,7 @@ pub enum NodeAction {
     Advance,
     WaitInput,
     WaitTimer(f32),
+    WaitBattle,
     Jump(NodeId),
     End,
 }

@@ -39,6 +39,20 @@ pub fn execute_graph(
                 StoryInputEvent::SelectChoice(index) => {
                     handle_choice_selection(&mut *executor, *index, &library, &mut flags, inventory.as_deref_mut(), quest_log.as_deref_mut());
                 }
+                StoryInputEvent::FinishBattle { won } => {
+                    // This is handled in the next block, but we drain it here to be safe
+                    error!("Received FinishBattle while in WaitingForInput! Ignoring.");
+                }
+            }
+        }
+    }
+
+    // New: Handle Battle (if waiting)
+    if executor.status == ExecutionStatus::WaitingForBattle {
+        for event in input_events.read() {
+            if let StoryInputEvent::FinishBattle { won } = event {
+                handle_battle_finish(&mut *executor, &library, &mut flags, *won, inventory.as_deref_mut(), quest_log.as_deref_mut(), &lua);
+                executor.status = ExecutionStatus::Running;
             }
         }
     }
@@ -108,6 +122,9 @@ pub fn execute_graph(
                 NodeAction::Advance => {
                     advance_node(&mut *executor, &library, &mut flags, inventory.as_deref_mut(), quest_log.as_deref_mut());
                 }
+                NodeAction::WaitBattle => {
+                    executor.status = ExecutionStatus::WaitingForBattle;
+                }
                 NodeAction::Jump(target_id) => {
                     executor.current_node = Some(target_id);
                 }
@@ -162,6 +179,7 @@ fn advance_node(
                         StoryNode::TimeControl { next, .. } => (*next, None),
                         StoryNode::Start { next, .. } => (*next, None),
                         StoryNode::SubGraph { next, .. } => (*next, None),
+                        StoryNode::Battle { .. } => (None, None), // Battle handles jumps explicitly
                         _ => (None, None),
                     }
                 } else { (None, None) }
@@ -204,6 +222,39 @@ fn handle_choice_selection(
 
     executor.current_node = next_id;
     executor.status = ExecutionStatus::Running;
+}
+
+fn handle_battle_finish(
+    executor: &mut GraphExecutor,
+    library: &Option<Res<StoryGraphLibrary>>,
+    _flags: &mut StoryFlags,
+    won: bool,
+    _inventory: Option<&mut crate::game::Inventory>,
+    _quest_log: Option<&mut crate::game::QuestLog>,
+    lua: &Option<Res<crate::lua_scripting::LuaContext>>,
+) {
+    if let Some(lua_ctx) = lua {
+        if let Ok(l) = lua_ctx.lua.lock() {
+            let globals = l.globals();
+            if let Ok(func) = globals.get::<_, mlua::Function>("on_battle_end") {
+                if let Err(e) = func.call::<_, ()>(won) {
+                    error!("Error calling on_battle_end Lua hook: {}", e);
+                }
+            }
+        }
+    }
+
+    let next_id = if let (Some(id), Some(lib)) = (&executor.active_graph_id, library) {
+        if let Some(graph) = lib.graphs.get(id) {
+            if let Some(node_id) = executor.current_node {
+                if let Some(StoryNode::Battle { next_win, next_loss, .. }) = graph.nodes.get(&node_id) {
+                    if won { *next_win } else { *next_loss }
+                } else { None }
+            } else { None }
+        } else { None }
+    } else { None };
+
+    executor.current_node = next_id;
 }
 
 fn process_node(
@@ -349,6 +400,12 @@ fn process_node(
         } => execute_time_control(*time_scale, *pause, flow),
         StoryNode::End => NodeAction::End,
         StoryNode::Start { .. } => NodeAction::Advance,
+        StoryNode::Battle { enemy_id, .. } => {
+            flow.write(StoryFlowEvent::StartBattle {
+                enemy_id: enemy_id.clone(),
+            });
+            NodeAction::WaitBattle
+        }
         // Fallback for safety/future-proofing
         #[allow(unreachable_patterns)]
         _ => {

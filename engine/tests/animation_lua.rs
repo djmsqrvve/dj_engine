@@ -26,11 +26,9 @@ fn test_animation_lua_integration() {
         Transform::default(),
     ));
 
-    // Execute Lua script
-    // We can't easily inject a script file without IO, but we can use the LuaContext resource directly
-    // or use a temporary file.
-    // Accessing LuaContext is better.
-    
+    // Run updates to trigger Startup systems (including Lua registration)
+    app.update();
+
     let lua_ctx = app.world().resource::<dj_engine::lua_scripting::LuaContext>();
     let result = if let Ok(lua) = lua_ctx.lua.lock() {
         lua.load(r#"

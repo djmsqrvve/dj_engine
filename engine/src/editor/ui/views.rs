@@ -260,6 +260,15 @@ pub fn draw_grid(ui: &mut egui::Ui, world: &mut World) {
 
 pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
     let painter = ui.painter().clone();
+    
+    // Get runtime state for highlighting
+    let executor = world.resource::<crate::story_graph::types::GraphExecutor>();
+    let library = world.get_resource::<crate::story_graph::types::StoryGraphLibrary>();
+    let active_node_name = if let (Some(node_id), Some(graph_id), Some(lib)) = (executor.current_node, &executor.active_graph_id, library) {
+        lib.graphs.get(graph_id).and_then(|g| g.node_names.get(&node_id))
+    } else {
+        None
+    };
 
     // Toolbar
     ui.horizontal(|ui| {
@@ -449,6 +458,12 @@ pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
             };
 
             painter.rect_filled(node_rect, 6.0, bg);
+            
+            // Highlight if active in runtime
+            if Some(&node.id) == active_node_name {
+                 painter.rect_stroke(node_rect.expand(2.0), 8.0, Stroke::new(3.0, Color32::YELLOW), egui::StrokeKind::Inside);
+            }
+
             // Double stroke for SubGraph (Container)
             if matches!(
                 node.node_type(),
