@@ -24,10 +24,10 @@ fn main() {
                 ..default()
             }),
     )
-    // Engine plugins (bundled)
-    .add_plugins(DJEnginePlugin::default())
-    // Editor UI
-    .add_plugins(EditorPlugin);
+    // Editor UI (adds EguiPlugin)
+    .add_plugins(EditorPlugin)
+    // Engine plugins (includes WorldInspectorPlugin)
+    .add_plugins(DJEnginePlugin::default());
 
     // If a project path was provided, mount it
     if let Some(path) = project_path {

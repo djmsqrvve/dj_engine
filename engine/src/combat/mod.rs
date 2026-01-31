@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::data::components::{EntityMetadata, CombatStatsComponent};
-use crate::story_graph::types::{GraphExecutor, StoryFlags};
+use crate::story_graph::types::GraphExecutor;
 use crate::editor::state::EditorUiState;
 
 pub struct DJCombatPlugin;

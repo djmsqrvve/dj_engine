@@ -1,7 +1,7 @@
 use crate::data::loader;
 use crate::data::components::Vec3Data;
 use crate::data::story::{
-    StoryNodeData, StoryNodeVariant, DialogueNodeData, ChoiceNodeData,
+    StoryNodeData, StoryNodeVariant, ChoiceNodeData,
     ActionNodeData
 };
 use crate::editor::state::{EditorUiState, COLOR_PRIMARY, COLOR_SECONDARY, ActiveStoryGraph};
@@ -437,7 +437,7 @@ pub fn draw_story_graph(ui: &mut egui::Ui, world: &mut World) {
     // DRAW NODES AND LINES
     // We need to scope world to get graph
     world.resource_scope::<ActiveStoryGraph, _>(|world, mut graph| {
-        let library = world.get_resource::<crate::story_graph::types::StoryGraphLibrary>();
+        let _library = world.get_resource::<crate::story_graph::types::StoryGraphLibrary>();
         let mut ui_state = world.resource_mut::<EditorUiState>();
 
         // 1. Draw Connections
