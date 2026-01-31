@@ -264,12 +264,26 @@
 - Implementation roadmap (week-by-week)
 - How to use docs by role
 - Complete deliverables checklist
+- **Added: LOGGING.md (Persistent Tracing)**
 - Next immediate actions
 - Key documentation principles
 - Support & troubleshooting
 - Project timeline visualization
 
 **When to Read**: Week 1 (get oriented)
+
+---
+
+#### 📝 LOGGING.md (NEW)
+**Purpose**: Tracing and persistent logging documentation  
+**Audience**: Developers, QA  
+**Key Sections**:
+- Log file locations
+- Implementation details (tracing-appender)
+- Mirroring stdout vs file
+- Verbosity configuration
+
+**When to Read**: Before debugging (15 min)
 
 ---
 

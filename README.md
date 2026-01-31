@@ -1,14 +1,10 @@
 # DJ Engine
 
-<p align="center">
-  <strong>A modular game engine for narrative-heavy JRPGs and visual novels</strong>
-</p>
+**A modular game engine for narrative-heavy JRPGs and visual novels**
 
-<p align="center">
-  <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Rust-1.92-orange?style=flat-square" alt="Rust"></a>
-  <a href="https://bevyengine.org/"><img src="https://img.shields.io/badge/Bevy-0.18-green?style=flat-square" alt="Bevy"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License"></a>
-</p>
+![Rust](https://img.shields.io/badge/Rust-1.92-orange?style=flat-square)
+![Bevy](https://img.shields.io/badge/Bevy-0.18-green?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
 
 ## ✨ Features
 
@@ -18,10 +14,12 @@
 - **Egui Editor**: Integrated tooling for scene editing, story graph management, and debugging.
 - **RPG Systems**: Modular inventory, quest logging, and combat stats.
 - **Navigation**: Grid-based A* pathfinding.
+- **Logging**: Automatic persistent file mapping to `~/.dj_engine/logs/`.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Rust 1.92+
 - Bevy 0.18 compatible environments (Vulkan/Metal/DX12)
 
@@ -45,7 +43,7 @@ cargo test --workspace
 
 ## 📁 Repository Structure
 
-```
+```text
 dj_engine/
 ├── engine/              # Core library crate
 │   ├── src/
