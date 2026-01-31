@@ -5,6 +5,7 @@
 use bevy::prelude::*;
 
 pub mod phases;
+pub mod logging;
 
 pub use phases::{GamePhase, GamePhasePlugin, PhaseManager};
 

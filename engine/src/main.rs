@@ -4,6 +4,7 @@ use dj_engine::editor::EditorPlugin;
 use dj_engine::prelude::*;
 
 fn main() {
+    let _log_guard = dj_engine::core::logging::init_logging();
     let args: Vec<String> = std::env::args().collect();
     let project_path = args.get(1).map(std::path::PathBuf::from);
 
@@ -22,7 +23,8 @@ fn main() {
                     ..default()
                 }),
                 ..default()
-            }),
+            })
+            .disable::<bevy::log::LogPlugin>(),
     )
     // Editor UI (adds EguiPlugin)
     .add_plugins(EditorPlugin)
